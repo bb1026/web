@@ -1,7 +1,12 @@
-[
-  {"name": "首页", "href": "pages/home.html"},
-  {"name": "VBA 工具", "href": "pages/vba.html"},
-  {"name": "二维码生成", "href": "pages/qrcode.html"},
-  {"name": "Base64 编码", "href": "pages/base64.html"},
-  {"name": "JSON 格式化", "href": "pages/json.html"}
-]
+{
+  "开发工具": [
+    ["VBA 字符还原", "pages/vba.html"],
+    ["JSON 格式化", "pages/json.html"],
+    ["Base64 编解码", "pages/base64.html"]
+  ],
+  "图像工具": [
+    ["二维码生成", "pages/qrcode.html"],
+    ["图像占位", "pages/imgplaceholder.html"],
+    ["图像转Base64", "pages/img2base64.html"]
+  ]
+}

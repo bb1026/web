@@ -7,13 +7,21 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="sidebar">
-    <button id="menuToggle">☰</button>
-    <nav id="menu" class="hidden"></nav>
-  </div>
-  <div id="content">
-    <iframe name="mainFrame" src="pages/home.html" frameborder="0"></iframe>
-  </div>
+  <header>
+    <h1>在线工具箱</h1>
+    <div id="header-controls">
+      <input type="text" id="searchInput" placeholder="搜索工具..." />
+      <button id="toggleDark">🌙</button>
+    </div>
+  </header>
+  <section id="banner">
+    <img src="banner1.png" alt="展示图1" />
+    <img src="banner2.png" alt="展示图2" />
+  </section>
+  <main id="menuContainer">
+    <!-- 分类菜单自动生成 -->
+  </main>
+  <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
   <script src="main.js"></script>
 </body>
 </html>
