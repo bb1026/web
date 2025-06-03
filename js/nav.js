@@ -1,5 +1,5 @@
 // js/nav.js
-fetch('menu.json')
+fetch('../menu.json')
   .then(res => res.json())
   .then(menu => {
     const navList = document.getElementById('navList');
