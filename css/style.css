@@ -42,15 +42,18 @@ header {
 }
 #banner {
   display: flex;
-  justify-content: center;
+  overflow-x: auto;
+  white-space: nowrap;
+  height: 200px; /* 可按需调整高度 */
   gap: 10px;
-  padding: 1rem;
-  background: var(--card);
+  padding: 10px;
+  scroll-behavior: smooth;
 }
 #banner img {
-  max-width: 45%;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 main {
   padding: 1rem;
