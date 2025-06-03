@@ -1,34 +1,16 @@
-function showTab(tabId) {
-  document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-  document.getElementById(tabId).style.display = 'block';
-}
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('menu').classList.toggle('hidden');
+});
 
-function restoreVBA() {
-  const input = document.getElementById('vbaInput').value;
-  const output = input.replace(/ChrW\((\d+)\)/g, (_, num) => String.fromCharCode(parseInt(num)));
-  document.getElementById('vbaOutput').value = output;
-}
-
-function toBase64() {
-  const input = document.getElementById('base64Input').value;
-  document.getElementById('base64Output').value = btoa(unescape(encodeURIComponent(input)));
-}
-
-function fromBase64() {
-  const input = document.getElementById('base64Input').value;
-  try {
-    document.getElementById('base64Output').value = decodeURIComponent(escape(atob(input)));
-  } catch (e) {
-    document.getElementById('base64Output').value = '解码失败：无效的 Base64 字符串';
-  }
-}
-
-function formatJSON() {
-  const input = document.getElementById('jsonInput').value;
-  try {
-    const obj = JSON.parse(input);
-    document.getElementById('jsonOutput').value = JSON.stringify(obj, null, 2);
-  } catch (e) {
-    document.getElementById('jsonOutput').value = '格式化失败：请输入合法的 JSON';
-  }
-}
+fetch('menu.json')
+  .then(response => response.json())
+  .then(items => {
+    const menu = document.getElementById('menu');
+    items.forEach(item => {
+      const a = document.createElement('a');
+      a.href = item.href;
+      a.textContent = item.name;
+      a.target = 'mainFrame';
+      menu.appendChild(a);
+    });
+  });

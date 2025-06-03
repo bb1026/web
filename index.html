@@ -3,46 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>在线实用工具箱</title>
+  <title>在线工具箱</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>在线实用工具箱</h1>
-    <nav>
-      <button onclick="showTab('vba')">VBA 工具</button>
-      <button onclick="showTab('text')">文本工具</button>
-      <button onclick="showTab('code')">编码工具</button>
-    </nav>
-  </header>
-  <main>
-    <section id="vba" class="tab">
-      <h2>VBA 字符串还原</h2>
-      <textarea id="vbaInput" placeholder="输入包含 ChrW 的字符串..."></textarea>
-      <button onclick="restoreVBA()">还原字符串</button>
-      <textarea id="vbaOutput" readonly placeholder="输出结果..."></textarea>
-    </section>
-
-    <section id="text" class="tab" style="display:none">
-      <h2>Base64 编码/解码</h2>
-      <textarea id="base64Input" placeholder="输入文本..."></textarea>
-      <button onclick="toBase64()">编码</button>
-      <button onclick="fromBase64()">解码</button>
-      <textarea id="base64Output" readonly placeholder="输出结果..."></textarea>
-    </section>
-
-    <section id="code" class="tab" style="display:none">
-      <h2>JSON 格式化</h2>
-      <textarea id="jsonInput" placeholder="输入 JSON..."></textarea>
-      <button onclick="formatJSON()">格式化</button>
-      <textarea id="jsonOutput" readonly placeholder="格式化结果..."></textarea>
-    </section>
-  </main>
-
-  <footer>
-    <p>由 GitHub Pages 提供支持 | 纯前端运行</p>
-  </footer>
-
+  <div id="sidebar">
+    <button id="menuToggle">☰</button>
+    <nav id="menu" class="hidden"></nav>
+  </div>
+  <div id="content">
+    <iframe name="mainFrame" src="pages/home.html" frameborder="0"></iframe>
+  </div>
   <script src="main.js"></script>
 </body>
 </html>
