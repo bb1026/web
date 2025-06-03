@@ -41,19 +41,27 @@ header {
   cursor: pointer;
 }
 #banner {
+  padding: 10px;
+  background: var(--bg);
+  /* 可根据需要调整整体样式 */
+}
+.scroll-container {
   display: flex;
   overflow-x: auto;
   white-space: nowrap;
-  height: 200px; /* 可按需调整高度 */
+  height: 200px;       /* 固定高度，限制显示区域 */
   gap: 10px;
-  padding: 10px;
   scroll-behavior: smooth;
-}
-#banner img {
-  height: 100%;
-  object-fit: cover;
-  flex-shrink: 0;
+  border: 1px solid #ccc; /* 可选，方便看区域 */
   border-radius: 8px;
+  background: #fff;
+}
+.scroll-container img {
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+  min-width: 300px; /* 或根据图片实际调整 */
 }
 main {
   padding: 1rem;
