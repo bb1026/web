@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <!-- 🔼 顶部插入导航 -->
+  <div id="commonNav"></div>
+
+  <!-- 🔧 加载导航HTML + 脚本 -->
+  <script>
+    fetch("nav.html")
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById("commonNav").innerHTML = html;
+        const script = document.createElement('script');
+        script.src = 'js/nav.js';
+        document.body.appendChild(script);
+      });
+  </script>
+
+  <!-- 页面主结构 -->
   <header>
     <h1>在线工具箱</h1>
     <div id="header-controls">
@@ -14,6 +30,7 @@
       <button id="toggleDark">🌙</button>
     </div>
   </header>
+
   <section id="banner">
     <div class="scroll-container">
       <img src="imgs/bgimage0.jpg" />
@@ -23,10 +40,13 @@
       <img src="imgs/bgimage18.jpg" />
     </div>
   </section>
+
   <main id="menuContainer">
     <!-- 分类菜单自动生成 -->
   </main>
+
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
+
   <script src="js/main.js"></script>
 </body>
 </html>
