@@ -1,0 +1,1 @@
+<!DOCTYPE html><html><body><h2>VBA 字符串还原</h2><textarea id='vbaInput'></textarea><button onclick="document.getElementById('vbaOutput').value = document.getElementById('vbaInput').value.replace(/ChrW\((\d+)\)/g, (_,n)=>String.fromCharCode(n));">还原</button><textarea id='vbaOutput'></textarea></body></html>
