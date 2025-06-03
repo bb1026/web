@@ -1,4 +1,3 @@
-// js/nav.js
 fetch('../menu.json')
   .then(res => res.json())
   .then(menu => {
@@ -13,7 +12,11 @@ fetch('../menu.json')
     for (const category in menu) {
       const dropdown = document.createElement('li');
       dropdown.className = 'dropdown';
-      dropdown.innerHTML = `<span>${category}</span>`;
+
+      const toggleSpan = document.createElement('span');
+      toggleSpan.textContent = category;
+      toggleSpan.className = 'dropdown-toggle';
+      dropdown.appendChild(toggleSpan);
 
       const submenu = document.createElement('ul');
       submenu.className = 'submenu';
@@ -26,5 +29,10 @@ fetch('../menu.json')
 
       dropdown.appendChild(submenu);
       navList.appendChild(dropdown);
+
+      // 点击分类标题展开/收起子菜单
+      toggleSpan.addEventListener('click', () => {
+        submenu.classList.toggle('visible');
+      });
     }
   });
