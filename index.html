@@ -51,33 +51,32 @@
   <script src="js/main.js"></script>
 
   <!-- 自动轮播图片滚动 -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const scrollContainer = document.querySelector('.scroll-container');
-      if (!scrollContainer) return;
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const scrollContainer = document.querySelector('.scroll-container');
 
-      let scrollSpeed = 1;        // 每次滚动1像素
-      let scrollInterval = 20;    // 每20毫秒滚动一次
-      let autoScroll;
+    let scrollSpeed = 1; // 每次滚动的像素数
+    let scrollInterval = 20; // 滚动频率（ms）
+    let autoScroll;
 
-      function startAutoScroll() {
-        autoScroll = setInterval(() => {
-          scrollContainer.scrollLeft += scrollSpeed;
-          if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
-            scrollContainer.scrollLeft = 0;
-          }
-        }, scrollInterval);
-      }
+    function startAutoScroll() {
+      autoScroll = setInterval(() => {
+        scrollContainer.scrollLeft += scrollSpeed;
+        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
+          scrollContainer.scrollLeft = 0;
+        }
+      }, scrollInterval);
+    }
 
-      function stopAutoScroll() {
-        clearInterval(autoScroll);
-      }
+    function stopAutoScroll() {
+      clearInterval(autoScroll);
+    }
 
-      scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-      scrollContainer.addEventListener('mouseleave', startAutoScroll);
+    scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+    scrollContainer.addEventListener('mouseleave', startAutoScroll);
 
-      startAutoScroll();
-    });
-  </script>
+    startAutoScroll();
+  });
+</script>
 </body>
 </html>
