@@ -1,17 +1,18 @@
+// 防止 nav.js 被重复执行
 if (window.navInitialized) return;
 window.navInitialized = true;
+
+// 加载菜单 JSON 并构建导航栏
 fetch('menu.json')
   .then(res => res.json())
   .then(menu => {
     const navList = document.getElementById('navList');
 
-    // 添加首页
+    // 添加首页链接
     const homeLi = document.createElement('li');
     const homeLink = document.createElement('a');
-    homeLink.href = "#"; // 使用 # 防止跳转页面
+    homeLink.href = "#";
     homeLink.textContent = "首页";
-    
-    // 点击首页时显示 banner 和菜单，隐藏 iframe
     homeLink.onclick = (e) => {
       e.preventDefault();
       document.getElementById('mainFrame').style.display = 'none';
@@ -19,7 +20,6 @@ fetch('menu.json')
       document.getElementById('menuContainer').style.display = '';
       window.scrollTo(0, 0);
     };
-    
     homeLi.appendChild(homeLink);
     navList.appendChild(homeLi);
 
@@ -38,38 +38,31 @@ fetch('menu.json')
 
       for (const [name, href] of menu[category]) {
         const item = document.createElement('li');
-        for (const [name, href] of menu[category]) {
-  const item = document.createElement('li');
-  const link = document.createElement('a');
-  link.href = href;
-  link.target = 'mainFrame';
-  link.textContent = name;
+        const link = document.createElement('a');
+        link.href = href;
+        link.target = 'mainFrame';
+        link.textContent = name;
 
-  // 点击子菜单时显示 iframe，隐藏主页内容
-  link.onclick = () => {
+        link.onclick = () => {
+          // 显示 iframe，隐藏 banner 和菜单
           document.getElementById('mainFrame').style.display = 'block';
           document.getElementById('banner').style.display = 'none';
           document.getElementById('menuContainer').style.display = 'none';
           window.scrollTo(0, 0);
         };
-      
+
         item.appendChild(link);
-        submenu.appendChild(item);
-    }
         submenu.appendChild(item);
       }
 
       dropdown.appendChild(submenu);
       navList.appendChild(dropdown);
 
-      // 点击分类标题展开/收起子菜单
-            toggleSpan.addEventListener('click', () => {
-        // 先关闭所有 submenu
+      // 分类点击展开/收起
+      toggleSpan.addEventListener('click', () => {
         document.querySelectorAll('#topNav .submenu').forEach(s => {
           if (s !== submenu) s.classList.remove('visible');
         });
-      
-        // 切换当前 submenu
         submenu.classList.toggle('visible');
       });
     }
