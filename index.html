@@ -48,34 +48,57 @@
   <script src="js/main.js"></script>
 
   <!-- 自动轮播图片滚动 -->
-<script>
-  window.addEventListener('load', () => {
-    const scrollContainer = document.querySelector('.scroll-container');
-    let scrollSpeed = 1; // 每次滚动的像素数
-    let scrollInterval = 20; // 滚动频率（ms）
-    let autoScroll;
-
-    function startAutoScroll() {
-      autoScroll = setInterval(() => {
-        scrollContainer.scrollLeft += scrollSpeed;
-
-        // 到最右侧时重置回左边，实现无限滚动视觉
-        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) {
-          scrollContainer.scrollLeft = 0;
+  <script>
+      window.addEventListener('load', () => {
+        const scrollContainer = document.querySelector('.scroll-container');
+        if (!scrollContainer) return;
+    
+        const images = scrollContainer.querySelectorAll('img');
+        let imagesLoaded = 0;
+    
+        // 等待所有图片加载完再启动滚动
+        images.forEach(img => {
+          if (img.complete) {
+            imagesLoaded++;
+          } else {
+            img.addEventListener('load', () => {
+              imagesLoaded++;
+              if (imagesLoaded === images.length) startAutoScroll();
+            });
+            img.addEventListener('error', () => {
+              imagesLoaded++;
+              if (imagesLoaded === images.length) startAutoScroll();
+            });
+          }
+        });
+    
+        // 如果图片都已经加载完，立即开始滚动
+        if (imagesLoaded === images.length) {
+          startAutoScroll();
         }
-      }, scrollInterval);
-    }
-
-    function stopAutoScroll() {
-      clearInterval(autoScroll);
-    }
-
-    // 鼠标移入暂停，移出继续
-    scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-    scrollContainer.addEventListener('mouseleave', startAutoScroll);
-
-    startAutoScroll();
-  });
+    
+        let scrollSpeed = 1;
+        let scrollInterval = 20;
+        let autoScroll;
+    
+        function startAutoScroll() {
+          clearInterval(autoScroll); // 避免重复启动
+          autoScroll = setInterval(() => {
+            scrollContainer.scrollLeft += scrollSpeed;
+    
+            if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) {
+              scrollContainer.scrollLeft = 0;
+            }
+          }, scrollInterval);
+        }
+    
+        function stopAutoScroll() {
+          clearInterval(autoScroll);
+        }
+    
+scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+        scrollContainer.addEventListener('mouseleave', startAutoScroll);
+      });
 </script>
 </body>
 </html>
