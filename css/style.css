@@ -90,6 +90,7 @@ nav {
   height: 200px;
   gap: 10px;
   scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
   -ms-overflow-style: none;      /* IE/Edge */
   scrollbar-width: none;         /* Firefox */
 }
@@ -100,6 +101,7 @@ nav {
   height: 100%;
   flex-shrink: 0;
   object-fit: cover;
+  scroll-snap-align: start;
   border-radius: 6px;
   min-width: 300px;
 }
