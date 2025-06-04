@@ -16,10 +16,13 @@
       .then(res => res.text())
       .then(html => {
         document.getElementById("commonNav").innerHTML = html;
+        if (!window.navLoaded) {
         const script = document.createElement('script');
         script.src = 'js/nav.js';
         document.body.appendChild(script);
-      });
+        window.navLoaded = true; // 防止重复加载
+      }
+    });
   });
 </script>
 
