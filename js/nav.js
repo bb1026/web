@@ -4,17 +4,21 @@ fetch('menu.json')
     const navList = document.getElementById('navList');
 
     // 添加首页
-        const homeLi = document.createElement('li');
+    const homeLi = document.createElement('li');
     const homeLink = document.createElement('a');
-    homeLink.href = "#";
+    homeLink.href = "#"; // 使用 # 防止跳转页面
     homeLink.textContent = "首页";
-homeLink.onclick = (e) => {
-  e.preventDefault();
-              document.getElementById('mainFrame').style.display = 'none';
+    
+    // 点击首页时显示 banner 和菜单，隐藏 iframe
+    homeLink.onclick = (e) => {
+      e.preventDefault();
+      document.getElementById('mainFrame').style.display = 'none';
+      document.getElementById('banner').style.display = '';
+      document.getElementById('menuContainer').style.display = '';
       window.scrollTo(0, 0);
     };
+    
     homeLi.appendChild(homeLink);
-    navList.appendChild(homeLi);
     navList.appendChild(homeLi);
 
     // 添加分类及子项
