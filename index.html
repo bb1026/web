@@ -8,21 +8,25 @@
 </head>
 <body>
   <!-- 🔼 顶部插入导航 -->
-<div id="commonNav"></div>
+  <div id="commonNav"></div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    fetch("./nav.html")
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("commonNav").innerHTML = html;
-        const script = document.createElement('script');
-        script.src = 'js/nav.js';
-        document.body.appendChild(script);
-        window.navLoaded = true; // 防止重复加载
+  <script>
+    // 动态加载导航栏 HTML 和 JS，只加载一次
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.navLoaded) {
+        fetch('./nav.html')
+          .then(res => res.text())
+          .then(html => {
+            document.getElementById("commonNav").innerHTML = html;
+            const script = document.createElement('script');
+            script.src = 'js/nav.js';
+            script.defer = true;
+            document.body.appendChild(script);
+            window.navLoaded = true;
+          });
+      }
     });
-  });
-</script>
+  </script>
 
   <!-- 页面主结构 -->
   <header>
@@ -33,6 +37,7 @@
     </div>
   </header>
 
+  <!-- banner 仅主页显示 -->
   <section id="banner">
     <div class="scroll-container">
       <img src="imgs/bgimage0.jpg" />
@@ -43,13 +48,15 @@
     </div>
   </section>
 
+  <!-- 分类菜单区域，仅主页显示 -->
   <main id="menuContainer">
     <!-- 分类菜单自动生成 -->
   </main>
 
+  <!-- iframe 区域，仅点击项目后显示 -->
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
 
-  <!-- 你的主菜单功能和搜索、暗黑模式脚本 -->
+  <!-- 搜索 / 暗黑模式 / 菜单构建功能 -->
   <script src="js/main.js"></script>
 </body>
 </html>
