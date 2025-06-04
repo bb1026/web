@@ -17,16 +17,11 @@
         .then(res => res.text())
         .then(html => {
           document.getElementById("commonNav").innerHTML = html;
-
-          // 加载 nav.js，确保只加载一次
-          if (!window.navLoaded) {
             const script = document.createElement('script');
             script.src = 'js/nav.js';
             document.body.appendChild(script);
             window.navLoaded = true;
-          }
         })
-        .catch(err => console.error("导航加载失败:", err));
     });
   </script>
 
