@@ -103,6 +103,29 @@ header {
   background: var(--bg);
   overflow: hidden;
 }
+.scroll-container {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  height: 200px;
+  gap: 10px;
+  scroll-behavior: smooth;
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-container img {
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+  min-width: 300px;
+}
 
 /* 📋 分类菜单 */
 .category {
