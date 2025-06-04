@@ -31,7 +31,13 @@ fetch('menu.json')
       navList.appendChild(dropdown);
 
       // 点击分类标题展开/收起子菜单
-      toggleSpan.addEventListener('click', () => {
+            toggleSpan.addEventListener('click', () => {
+        // 先关闭所有 submenu
+        document.querySelectorAll('#topNav .submenu').forEach(s => {
+          if (s !== submenu) s.classList.remove('visible');
+        });
+      
+        // 切换当前 submenu
         submenu.classList.toggle('visible');
       });
     }
