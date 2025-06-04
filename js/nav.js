@@ -36,7 +36,24 @@ fetch('menu.json')
 
       for (const [name, href] of menu[category]) {
         const item = document.createElement('li');
-        item.innerHTML = `<a href="${href}" target="mainFrame">${name}</a>`;
+        for (const [name, href] of menu[category]) {
+  const item = document.createElement('li');
+  const link = document.createElement('a');
+  link.href = href;
+  link.target = 'mainFrame';
+  link.textContent = name;
+
+  // 点击子菜单时显示 iframe，隐藏主页内容
+  link.onclick = () => {
+          document.getElementById('mainFrame').style.display = 'block';
+          document.getElementById('banner').style.display = 'none';
+          document.getElementById('menuContainer').style.display = 'none';
+          window.scrollTo(0, 0);
+        };
+      
+        item.appendChild(link);
+        submenu.appendChild(item);
+    }
         submenu.appendChild(item);
       }
 
