@@ -7,24 +7,26 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- 🔼 顶部插入导航 -->
+  <!-- 顶部导航容器 -->
   <div id="commonNav"></div>
 
   <script>
-    // 动态加载导航栏 HTML 和 JS，只加载一次
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+      // 加载 nav.html 到 commonNav 容器
       fetch('./nav.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("commonNav").innerHTML = html;
-        if (!window.navLoaded) {
-          const script = document.createElement('script');
-          script.src = 'js/nav.js';
-          script.defer = true;
-          document.body.appendChild(script);
-          window.navLoaded = true;
-        }
-      });
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById("commonNav").innerHTML = html;
+
+          // 加载 nav.js，确保只加载一次
+          if (!window.navLoaded) {
+            const script = document.createElement('script');
+            script.src = 'js/nav.js';
+            document.body.appendChild(script);
+            window.navLoaded = true;
+          }
+        })
+        .catch(err => console.error("导航加载失败:", err));
     });
   </script>
 
@@ -37,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </header>
 
-  <!-- banner 仅主页显示 -->
+  <!-- banner 区域 -->
   <section id="banner">
     <div class="scroll-container">
       <img src="imgs/bgimage0.jpg" />
@@ -48,15 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </section>
 
-  <!-- 分类菜单区域，仅主页显示 -->
-  <main id="menuContainer">
-    <!-- 分类菜单自动生成 -->
-  </main>
+  <!-- 分类菜单自动生成 -->
+  <main id="menuContainer"></main>
 
-  <!-- iframe 区域，仅点击项目后显示 -->
+  <!-- iframe 工具展示区域 -->
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
 
-  <!-- 搜索 / 暗黑模式 / 菜单构建功能 -->
+  <!-- 主脚本 -->
   <script src="js/main.js"></script>
 </body>
 </html>
