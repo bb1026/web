@@ -44,6 +44,9 @@ fetch('menu.json')
           document.getElementById('mainFrame').style.display = 'block';
           document.getElementById('banner').style.display = 'none';
           document.getElementById('menuContainer').style.display = 'none';
+          document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+    menu.classList.remove('visible');
+  });
           window.scrollTo(0, 0);
         };
 
