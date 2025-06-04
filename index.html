@@ -8,11 +8,16 @@
 </head>
 <body>
   <!-- 🔼 顶部插入导航 -->
-  <nav id="topNav">
-    <ul id="navList"></ul>
-  </nav>
-  
-  <script src="js/nav.js"></script>
+  <script>
+    fetch("nav.html")
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById("commonNav").innerHTML = html;
+        const script = document.createElement('script');
+        script.src = 'js/nav.js';
+        document.body.appendChild(script);
+      });
+  </script>
 
   <!-- 页面主结构 -->
   <header>
