@@ -10,6 +10,7 @@ function renderMenu(filtered = null) {
     section.innerHTML = `<h2>${cat}</h2>`;
     const toolList = document.createElement('div');
     toolList.className = 'tool-list';
+
     const limited = tools.slice(0, 3);
     limited.forEach(([name, href]) => {
       const a = document.createElement('a');
@@ -23,7 +24,9 @@ function renderMenu(filtered = null) {
       };
       toolList.appendChild(a);
     });
+
     section.appendChild(toolList);
+
     if (tools.length > 3) {
       const more = document.createElement('a');
       more.className = 'more-link';
@@ -48,10 +51,12 @@ function renderMenu(filtered = null) {
       };
       section.appendChild(more);
     }
+
     container.appendChild(section);
   });
 }
 
+// 加载 menu.json 并渲染菜单
 fetch('menu.json')
   .then(response => response.json())
   .then(data => {
@@ -59,10 +64,12 @@ fetch('menu.json')
     renderMenu();
   });
 
+// 切换暗黑模式
 document.getElementById('toggleDark').onclick = () => {
   document.body.classList.toggle('dark');
 };
 
+// 搜索功能
 document.getElementById('searchInput').addEventListener('input', function() {
   const keyword = this.value.trim().toLowerCase();
   if (!keyword) return renderMenu();
