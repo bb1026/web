@@ -19,9 +19,10 @@ function renderMenu(filtered = null) {
       a.target = 'mainFrame';
       a.textContent = name;
       a.onclick = () => {
-        document.getElementById('mainFrame').style.display = 'block';
-        window.scrollTo(0, 0);
-      };
+  const frame = document.getElementById('mainFrame');
+  frame.style.display = 'block';
+  frame.scrollIntoView({ behavior: 'smooth' });
+};
       toolList.appendChild(a);
     });
 
@@ -42,9 +43,10 @@ function renderMenu(filtered = null) {
           a.target = 'mainFrame';
           a.textContent = name;
           a.onclick = () => {
-            document.getElementById('mainFrame').style.display = 'block';
-            window.scrollTo(0, 0);
-          };
+  const frame = document.getElementById('mainFrame');
+  frame.style.display = 'block';
+  frame.scrollIntoView({ behavior: 'smooth' });
+};
           toolList.appendChild(a);
         });
         more.remove();
