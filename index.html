@@ -33,13 +33,11 @@
   </header>
 
   <section id="banner">
-    <div class="scroll-container">
       <img src="imgs/bgimage0.jpg" alt="banner1" />
       <img src="imgs/bgimage14.jpg" alt="banner2" />
       <img src="imgs/bgimage15.jpg" alt="banner3" />
       <img src="imgs/bgimage17.jpg" alt="banner4" />
       <img src="imgs/bgimage18.jpg" alt="banner5" />
-    </div>
   </section>
 
   <main id="menuContainer">
@@ -50,59 +48,5 @@
 
   <!-- 你的主菜单功能和搜索、暗黑模式脚本 -->
   <script src="js/main.js"></script>
-
-  <!-- 自动轮播图片滚动 -->
-  <script>
-      window.addEventListener('load', () => {
-        const scrollContainer = document.querySelector('.scroll-container');
-        if (!scrollContainer) return;
-    
-        const images = scrollContainer.querySelectorAll('img');
-        let imagesLoaded = 0;
-    
-        // 等待所有图片加载完再启动滚动
-        images.forEach(img => {
-          if (img.complete) {
-            imagesLoaded++;
-          } else {
-            img.addEventListener('load', () => {
-              imagesLoaded++;
-              if (imagesLoaded === images.length) startAutoScroll();
-            });
-            img.addEventListener('error', () => {
-              imagesLoaded++;
-              if (imagesLoaded === images.length) startAutoScroll();
-            });
-          }
-        });
-    
-        // 如果图片都已经加载完，立即开始滚动
-        if (imagesLoaded === images.length) {
-          startAutoScroll();
-        }
-    
-        let scrollSpeed = 1;
-        let scrollInterval = 20;
-        let autoScroll;
-    
-        function startAutoScroll() {
-          clearInterval(autoScroll); // 避免重复启动
-          autoScroll = setInterval(() => {
-            scrollContainer.scrollLeft += scrollSpeed;
-    
-            if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 1) {
-              scrollContainer.scrollLeft = 0;
-            }
-          }, scrollInterval);
-        }
-    
-        function stopAutoScroll() {
-          clearInterval(autoScroll);
-        }
-    
-scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-        scrollContainer.addEventListener('mouseleave', startAutoScroll);
-      });
-</script>
 </body>
 </html>
