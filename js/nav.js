@@ -1,3 +1,5 @@
+if (window.navInitialized) return;
+window.navInitialized = true;
 fetch('menu.json')
   .then(res => res.json())
   .then(menu => {
