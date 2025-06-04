@@ -31,6 +31,7 @@
     </div>
   </header>
 
+  <!-- 🔄 自动横向滚动图片横幅 -->
   <section id="banner">
     <div class="scroll-container">
       <img src="imgs/bgimage0.jpg" />
@@ -46,6 +47,33 @@
   </main>
 
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
+
+  <!-- ✅ 自动横向滚动脚本 -->
+  <script>
+    const scrollContainer = document.querySelector('.scroll-container');
+
+    let scrollSpeed = 1; // 每次滚动的像素数
+    let scrollInterval = 20; // 滚动频率（ms）
+    let autoScroll;
+
+    function startAutoScroll() {
+      autoScroll = setInterval(() => {
+        scrollContainer.scrollLeft += scrollSpeed;
+        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
+          scrollContainer.scrollLeft = 0;
+        }
+      }, scrollInterval);
+    }
+
+    function stopAutoScroll() {
+      clearInterval(autoScroll);
+    }
+
+    scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+    scrollContainer.addEventListener('mouseleave', startAutoScroll);
+
+    startAutoScroll();
+  </script>
 
   <script src="js/main.js"></script>
 </body>
