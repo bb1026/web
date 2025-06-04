@@ -1,7 +1,3 @@
-// 防止 nav.js 被重复执行
-if (window.navInitialized) return;
-window.navInitialized = true;
-
 // 加载菜单 JSON 并构建导航栏
 fetch('menu.json')
   .then(res => res.json())
