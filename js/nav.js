@@ -4,8 +4,17 @@ fetch('menu.json')
     const navList = document.getElementById('navList');
 
     // 添加首页
-    const homeLi = document.createElement('li');
-    homeLi.innerHTML = `<a href="index.html" target="_self">首页</a>`;
+        const homeLi = document.createElement('li');
+    const homeLink = document.createElement('a');
+    homeLink.href = "#";
+    homeLink.textContent = "首页";
+homeLink.onclick = (e) => {
+  e.preventDefault();
+              document.getElementById('mainFrame').style.display = 'none';
+      window.scrollTo(0, 0);
+    };
+    homeLi.appendChild(homeLink);
+    navList.appendChild(homeLi);
     navList.appendChild(homeLi);
 
     // 添加分类及子项
