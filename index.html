@@ -31,14 +31,13 @@
     </div>
   </header>
 
-  <!-- 🔄 自动横向滚动图片横幅 -->
   <section id="banner">
     <div class="scroll-container">
-      <img src="imgs/bgimage0.jpg" />
-      <img src="imgs/bgimage14.jpg" />
-      <img src="imgs/bgimage15.jpg" />
-      <img src="imgs/bgimage17.jpg" />
-      <img src="imgs/bgimage18.jpg" />
+      <img src="imgs/bgimage0.jpg" alt="banner1" />
+      <img src="imgs/bgimage14.jpg" alt="banner2" />
+      <img src="imgs/bgimage15.jpg" alt="banner3" />
+      <img src="imgs/bgimage17.jpg" alt="banner4" />
+      <img src="imgs/bgimage18.jpg" alt="banner5" />
     </div>
   </section>
 
@@ -48,33 +47,37 @@
 
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
 
-  <!-- ✅ 自动横向滚动脚本 -->
-  <script>
-    const scrollContainer = document.querySelector('.scroll-container');
-
-    let scrollSpeed = 1; // 每次滚动的像素数
-    let scrollInterval = 20; // 滚动频率（ms）
-    let autoScroll;
-
-    function startAutoScroll() {
-      autoScroll = setInterval(() => {
-        scrollContainer.scrollLeft += scrollSpeed;
-        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
-          scrollContainer.scrollLeft = 0;
-        }
-      }, scrollInterval);
-    }
-
-    function stopAutoScroll() {
-      clearInterval(autoScroll);
-    }
-
-    scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-    scrollContainer.addEventListener('mouseleave', startAutoScroll);
-
-    startAutoScroll();
-  </script>
-
+  <!-- 你的主菜单功能和搜索、暗黑模式脚本 -->
   <script src="js/main.js"></script>
+
+  <!-- 自动轮播图片滚动 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const scrollContainer = document.querySelector('.scroll-container');
+      if (!scrollContainer) return;
+
+      let scrollSpeed = 1;        // 每次滚动1像素
+      let scrollInterval = 20;    // 每20毫秒滚动一次
+      let autoScroll;
+
+      function startAutoScroll() {
+        autoScroll = setInterval(() => {
+          scrollContainer.scrollLeft += scrollSpeed;
+          if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
+            scrollContainer.scrollLeft = 0;
+          }
+        }, scrollInterval);
+      }
+
+      function stopAutoScroll() {
+        clearInterval(autoScroll);
+      }
+
+      scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+      scrollContainer.addEventListener('mouseleave', startAutoScroll);
+
+      startAutoScroll();
+    });
+  </script>
 </body>
 </html>
