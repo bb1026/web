@@ -12,19 +12,19 @@
 
   <script>
     // 动态加载导航栏 HTML 和 JS，只加载一次
-    document.addEventListener('DOMContentLoaded', () => {
-      if (!window.navLoaded) {
-        fetch('./nav.html')
-          .then(res => res.text())
-          .then(html => {
-            document.getElementById("commonNav").innerHTML = html;
-            const script = document.createElement('script');
-            script.src = 'js/nav.js';
-            script.defer = true;
-            document.body.appendChild(script);
-            window.navLoaded = true;
-          });
-      }
+document.addEventListener('DOMContentLoaded', () => {
+      fetch('./nav.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("commonNav").innerHTML = html;
+        if (!window.navLoaded) {
+          const script = document.createElement('script');
+          script.src = 'js/nav.js';
+          script.defer = true;
+          document.body.appendChild(script);
+          window.navLoaded = true;
+        }
+      });
     });
   </script>
 
