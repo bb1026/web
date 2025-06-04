@@ -9,7 +9,7 @@
 <body>
   <!-- 🔼 顶部插入导航 -->
   <script>
-    fetch("/nav.html")
+    fetch("./nav.html")
       .then(r => r.text())
       .then(html => {
         document.getElementById("commonNav").innerHTML = html;
