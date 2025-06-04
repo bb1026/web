@@ -19,9 +19,10 @@ function renderMenu(filtered = null) {
       a.target = 'mainFrame';
       a.textContent = name;
       a.onclick = () => {
-  const frame = document.getElementById('mainFrame');
-  frame.style.display = 'block';
-  frame.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('mainFrame').style.display = 'block';
+  document.getElementById('banner').style.display = 'none';
+  document.getElementById('menuContainer').style.display = 'none';
+  window.scrollTo(0, 0);
 };
       toolList.appendChild(a);
     });
@@ -43,9 +44,10 @@ function renderMenu(filtered = null) {
           a.target = 'mainFrame';
           a.textContent = name;
           a.onclick = () => {
-  const frame = document.getElementById('mainFrame');
-  frame.style.display = 'block';
-  frame.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('mainFrame').style.display = 'block';
+  document.getElementById('banner').style.display = 'none';
+  document.getElementById('menuContainer').style.display = 'none';
+  window.scrollTo(0, 0);
 };
           toolList.appendChild(a);
         });
