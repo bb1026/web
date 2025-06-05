@@ -69,6 +69,26 @@ body.dark {
   white-space: nowrap;
 }
 
+/* 📣滚动公告 */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  color: #007AFF;
+  font-size: 16px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+.marquee-inner {
+  display: inline-block;
+  animation: scroll 12s linear infinite;
+}
+@keyframes scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
 /* 🧠 页面标题与控制条 */
 header {
   display: flex;
