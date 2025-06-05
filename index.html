@@ -28,6 +28,19 @@
   <!-- 页面主结构 -->
   <header>
     <h1>在线工具箱</h1>
+    <!-- 滚动公告栏 -->
+    <div class="marquee" style="color: #007AFF; font-size: 18px; padding: 5px 10px; white-space: nowrap; overflow: hidden;">
+      <div class="marquee-inner" style="display: inline-block; animation: scroll 10s linear infinite;">
+        欢迎使用，本站工具仅供学习使用，所有内容生成后请自行核对准确性。
+      </div>
+    </div>
+    
+    <style>
+    @keyframes scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    </style>
     <div id="header-controls">
       <input type="text" id="searchInput" placeholder="搜索工具..." />
       <button id="toggleDark">🌙</button>
