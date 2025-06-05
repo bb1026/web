@@ -65,9 +65,8 @@ fetch('menu.json')
         submenu.classList.toggle('visible');
       });
     }
-  });
-  
-  // 添加“关于”链接
+    
+    // 添加“关于”链接
     const aboutLi = document.createElement('li');
     const aboutLink = document.createElement('a');
     aboutLink.href = "pages/about.html";
@@ -87,3 +86,4 @@ fetch('menu.json')
 
     aboutLi.appendChild(aboutLink);
     navList.appendChild(aboutLi);
+  });
