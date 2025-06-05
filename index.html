@@ -61,7 +61,7 @@
   <!-- 滚动公告 -->
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    fetch('notice.html')
+    fetch('./notice.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('noticeContainer').innerHTML = html;
