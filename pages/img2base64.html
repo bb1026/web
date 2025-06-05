@@ -2,212 +2,405 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图片 ↔ Base64 转换工具</title>
   <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #4cc9f0;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --border-radius: 12px;
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      color: var(--dark-color);
+      background-color: #f5f7ff;
       padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
       max-width: 900px;
-      margin: auto;
-      background: #f4f6f8;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 30px;
-      font-size: 24px;
+      margin: 20px 0 40px;
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
     }
 
-    .section {
-      background: #fff;
-      padding: 20px;
+    .card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 25px;
       margin-bottom: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+      transition: var(--transition);
     }
 
-    .upload-area {
-      border: 2px dashed #007bff;
-      border-radius: 10px;
-      height: 150px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .card:hover {
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h2 {
+      color: var(--secondary-color);
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      font-weight: 500;
+    }
+
+    .drag-area {
+      border: 2px dashed var(--primary-color);
+      border-radius: var(--border-radius);
+      padding: 40px 20px;
       text-align: center;
-      color: #007bff;
-      background: #f9f9ff;
       cursor: pointer;
-      transition: background 0.3s, border-color 0.3s;
+      transition: var(--transition);
+      background-color: rgba(67, 97, 238, 0.05);
+      margin-bottom: 15px;
+    }
+
+    .drag-area:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+    }
+
+    .drag-area.dragover {
+      background-color: rgba(67, 97, 238, 0.2);
+      border-color: var(--secondary-color);
+    }
+
+    .drag-area .icon {
+      font-size: 48px;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .drag-area .text {
+      font-size: 1.1rem;
+      color: var(--dark-color);
       margin-bottom: 10px;
-      font-size: 16px;
     }
 
-    .upload-area.dragover {
-      background: #e0f0ff;
-      border-color: #0056b3;
-    }
-
-    .upload-area input[type="file"] {
-      display: none;
+    .drag-area .hint {
+      font-size: 0.9rem;
+      color: #6c757d;
     }
 
     textarea {
       width: 100%;
-      height: 150px;
-      margin-top: 10px;
-      font-family: monospace;
-      font-size: 14px;
-      box-sizing: border-box;
+      min-height: 150px;
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: var(--border-radius);
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.95rem;
+      resize: vertical;
+      transition: var(--transition);
     }
 
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      background-color: #28a745;
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 500;
       cursor: pointer;
-      font-size: 14px;
-    }
-
-    button:hover {
-      background-color: #1e7e34;
-    }
-
-    img {
-      max-width: 100%;
+      transition: var(--transition);
       margin-top: 15px;
+    }
+
+    .btn:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+    }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+    }
+
+    .file-info {
+      font-size: 0.9rem;
+      color: #495057;
+      margin: 10px 0;
+      padding: 10px;
+      background-color: var(--light-color);
       border-radius: 6px;
     }
 
-    .info {
-      font-size: 13px;
-      color: #666;
-      margin-top: 8px;
-    }
-
-    .download-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: #007bff;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    footer {
+    .preview-container {
+      margin-top: 20px;
       text-align: center;
-      font-size: 13px;
-      color: #999;
-      margin-top: 40px;
     }
 
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 20px;
-      }
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
 
-      button {
-        width: 100%;
-        font-size: 16px;
+    .download-btn {
+      display: none;
+      margin-top: 15px;
+      background-color: var(--success-color);
+    }
+
+    .download-btn:hover {
+      background-color: #38b6db;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      .drag-area {
+        padding: 30px 15px;
+      }
+      
+      .btn {
+        padding: 10px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      h1 {
+        margin: 10px 0 30px;
+      }
+      
+      .drag-area .icon {
+        font-size: 36px;
+      }
+      
+      .drag-area .text {
+        font-size: 1rem;
       }
     }
   </style>
 </head>
 <body>
-
-  <h1>图片 ↔ Base64 转换工具</h1>
-
-  <div class="section">
-    <h2>图片转 Base64</h2>
-    <label class="upload-area" id="uploadArea">
-      点击或拖拽图片到此处上传
-      <input type="file" id="fileInput" accept="image/*">
-    </label>
-    <div id="fileInfo" class="info"></div>
-    <textarea id="base64Output" placeholder="生成的 Base64 会显示在这里"></textarea>
-    <button onclick="copyBase64()">复制 Base64</button>
-    <img id="previewImage" />
+  <div class="container">
+    <h1>图片 ↔ Base64 转换工具</h1>
+    
+    <div class="card">
+      <h2>图片转 Base64</h2>
+      <div class="drag-area" id="dragArea">
+        <div class="icon">📁</div>
+        <div class="text">点击或拖拽图片到此处</div>
+        <div class="hint">支持 JPG, PNG, GIF 等格式</div>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+      <div id="fileInfo" class="file-info"></div>
+      <textarea id="base64Output" placeholder="生成的 Base64 编码将显示在这里..." readonly></textarea>
+      <button class="btn btn-block" onclick="copyBase64()">复制 Base64 编码</button>
+      <div class="preview-container">
+        <img id="previewImage" class="preview-image" alt="图片预览"/>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>Base64 转图片</h2>
+      <textarea id="base64Input" placeholder="在此粘贴 Base64 图片编码..."></textarea>
+      <button class="btn btn-block" onclick="base64ToImage()">转换为图片</button>
+      <div class="preview-container">
+        <img id="outputImage" class="preview-image" alt="生成的图片"/>
+      </div>
+      <button id="downloadLink" class="btn btn-block download-btn">下载图片</button>
+    </div>
   </div>
-
-  <div class="section">
-    <h2>Base64 转图片</h2>
-    <textarea id="base64Input" placeholder="粘贴 Base64 图片字符串..."></textarea>
-    <button onclick="base64ToImage()">生成图片</button>
-    <img id="outputImage" />
-    <div id="downloadLink" class="download-link" style="display:none;">下载图片</div>
-  </div>
-
-  <footer>
-    本工具开源发布，遵循 MIT 协议，界面与功能可自由修改与扩展。<br>
-    版权所有 © 2025 图片转Base64
-  </footer>
 
   <script>
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("fileInput");
-
-    uploadArea.addEventListener("click", () => fileInput.click());
-
-    uploadArea.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      uploadArea.classList.add("dragover");
-    });
-
-    uploadArea.addEventListener("dragleave", () => {
-      uploadArea.classList.remove("dragover");
-    });
-
-    uploadArea.addEventListener("drop", (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove("dragover");
-      const file = e.dataTransfer.files[0];
-      handleImageFile(file);
-    });
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
-      handleImageFile(file);
-    });
-
-    function handleImageFile(file) {
-      if (!file || !file.type.startsWith('image/')) {
-        alert("请选择图片文件！");
-        return;
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('fileInput');
+      const dragArea = document.getElementById('dragArea');
+      
+      // 点击拖拽区域触发文件选择
+      dragArea.addEventListener('click', () => fileInput.click());
+      
+      // 拖拽处理
+      dragArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragArea.classList.add('dragover');
+      });
+      
+      dragArea.addEventListener('dragleave', () => {
+        dragArea.classList.remove('dragover');
+      });
+      
+      dragArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          processImageFile(e.dataTransfer.files[0]);
+        }
+      });
+      
+      // 文件选择处理
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+          processImageFile(fileInput.files[0]);
+        }
+      });
+      
+      function processImageFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          alert('请选择有效的图片文件！');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64Data = e.target.result;
+          const previewImage = document.getElementById('previewImage');
+          const fileInfo = document.getElementById('fileInfo');
+          
+          document.getElementById('base64Output').value = base64Data;
+          previewImage.src = base64Data;
+          previewImage.style.display = 'block';
+          
+          fileInfo.innerHTML = `
+            <strong>${file.name}</strong><br>
+            大小: ${(file.size / 1024).toFixed(1)} KB | 
+            类型: ${file.type} | 
+            尺寸: <span id="imageDimensions">计算中...</span>
+          `;
+          
+          // 获取图片实际尺寸
+          const img = new Image();
+          img.onload = function() {
+            document.getElementById('imageDimensions').textContent = 
+              `${this.width} × ${this.height} 像素`;
+          };
+          img.src = base64Data;
+        };
+        
+        reader.onerror = () => {
+          alert('读取文件时出错，请重试！');
+        };
+        
+        reader.readAsDataURL(file);
       }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        document.getElementById('base64Output').value = e.target.result;
-        document.getElementById('previewImage').src = e.target.result;
-        document.getElementById('fileInfo').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-      };
-      reader.readAsDataURL(file);
-    }
-
+    });
+    
     function copyBase64() {
       const textArea = document.getElementById('base64Output');
       textArea.select();
-      document.execCommand('copy');
-      alert("Base64 已复制到剪贴板！");
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast('Base64 编码已复制到剪贴板！');
+        } else {
+          throw new Error('复制失败');
+        }
+      } catch (err) {
+        // 使用现代 Clipboard API
+        navigator.clipboard.writeText(textArea.value)
+          .then(() => showToast('Base64 编码已复制到剪贴板！'))
+          .catch(() => alert('复制失败，请手动选择并复制文本。'));
+      }
     }
-
+    
     function base64ToImage() {
       const data = document.getElementById('base64Input').value.trim();
-      if (!data.startsWith("data:image/")) {
-        alert("请输入完整的 Base64 图片数据（必须包含 data:image/... 头部）");
+      if (!data) {
+        showToast('请输入Base64数据！', 'error');
         return;
       }
+      
+      if (!data.startsWith('data:image/')) {
+        showToast('请输入完整的Base64图片数据（必须以"data:image/"开头）', 'error');
+        return;
+      }
+      
       const output = document.getElementById('outputImage');
+      const downloadBtn = document.getElementById('downloadLink');
+      
+      output.onload = function() {
+        output.style.display = 'block';
+        downloadBtn.style.display = 'block';
+      };
+      
+      output.onerror = function() {
+        showToast('无效的Base64图片数据！', 'error');
+        output.style.display = 'none';
+        downloadBtn.style.display = 'none';
+      };
+      
       output.src = data;
-
-      const link = document.getElementById('downloadLink');
-      link.href = data;
-      link.download = "image.png";
-      link.style.display = 'inline-block';
+      downloadBtn.onclick = () => {
+        const link = document.createElement('a');
+        link.href = data;
+        link.download = `image_${Date.now()}.${getImageExtension(data)}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+    }
+    
+    function getImageExtension(base64Data) {
+      const match = base64Data.match(/^data:image\/(\w+);/);
+      return match ? match[1] : 'png';
+    }
+    
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.style.position = 'fixed';
+      toast.style.bottom = '20px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.padding = '12px 24px';
+      toast.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
+      toast.style.color = 'white';
+      toast.style.borderRadius = '4px';
+      toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+      toast.style.zIndex = '1000';
+      toast.style.animation = 'fadeIn 0.3s, fadeOut 0.3s 2.7s';
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s';
+        setTimeout(() => document.body.removeChild(toast), 300);
+      }, 3000);
     }
   </script>
-
 </body>
 </html>
