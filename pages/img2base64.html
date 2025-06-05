@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>图片 ↔ Base64 转换工具</title>
   <style>
     :root {
@@ -52,6 +52,7 @@
       padding: 25px;
       margin-bottom: 30px;
       transition: var(--transition);
+      position: relative;
     }
 
     .card:hover {
@@ -156,6 +157,8 @@
     .preview-container {
       margin-top: 20px;
       text-align: center;
+      position: relative;
+      display: inline-block;
     }
 
     .preview-image {
@@ -176,20 +179,43 @@
       background-color: #38b6db;
     }
 
-    /* 响应式设计 */
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: var(--transition);
+    }
+
+    .close-btn:hover {
+      background: rgba(0, 0, 0, 0.8);
+      transform: scale(1.1);
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
       }
-      
+
       .card {
         padding: 20px;
       }
-      
+
       .drag-area {
         padding: 30px 15px;
       }
-      
+
       .btn {
         padding: 10px 20px;
       }
@@ -199,15 +225,15 @@
       body {
         padding: 10px;
       }
-      
+
       h1 {
         margin: 10px 0 30px;
       }
-      
+
       .drag-area .icon {
         font-size: 36px;
       }
-      
+
       .drag-area .text {
         font-size: 1rem;
       }
@@ -217,7 +243,7 @@
 <body>
   <div class="container">
     <h1>图片 ↔ Base64 转换工具</h1>
-    
+
     <div class="card">
       <h2>图片转 Base64</h2>
       <div class="drag-area" id="dragArea">
@@ -231,176 +257,201 @@
       <button class="btn btn-block" onclick="copyBase64()">复制 Base64 编码</button>
       <div class="preview-container">
         <img id="previewImage" class="preview-image" alt="图片预览"/>
+        <button class="close-btn" onclick="clearUploadedImage()" id="closeUploadBtn">×</button>
       </div>
     </div>
-    
+
     <div class="card">
       <h2>Base64 转图片</h2>
       <textarea id="base64Input" placeholder="在此粘贴 Base64 图片编码..."></textarea>
       <button class="btn btn-block" onclick="base64ToImage()">转换为图片</button>
       <div class="preview-container">
         <img id="outputImage" class="preview-image" alt="生成的图片"/>
+        <button class="close-btn" onclick="clearGeneratedImage(true)" id="closeGeneratedBtn">×</button>
       </div>
       <button id="downloadLink" class="btn btn-block download-btn">下载图片</button>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const fileInput = document.getElementById('fileInput');
-      const dragArea = document.getElementById('dragArea');
-      
-      // 点击拖拽区域触发文件选择
-      dragArea.addEventListener('click', () => fileInput.click());
-      
-      // 拖拽处理
-      dragArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dragArea.classList.add('dragover');
-      });
-      
-      dragArea.addEventListener('dragleave', () => {
-        dragArea.classList.remove('dragover');
-      });
-      
-      dragArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dragArea.classList.remove('dragover');
-        if (e.dataTransfer.files.length) {
-          processImageFile(e.dataTransfer.files[0]);
-        }
-      });
-      
-      // 文件选择处理
-      fileInput.addEventListener('change', () => {
-        if (fileInput.files.length) {
-          processImageFile(fileInput.files[0]);
-        }
-      });
-      
-      function processImageFile(file) {
-        if (!file || !file.type.startsWith('image/')) {
-          alert('请选择有效的图片文件！');
-          return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const base64Data = e.target.result;
-          const previewImage = document.getElementById('previewImage');
-          const fileInfo = document.getElementById('fileInfo');
-          
-          document.getElementById('base64Output').value = base64Data;
-          previewImage.src = base64Data;
-          previewImage.style.display = 'block';
-          
-          fileInfo.innerHTML = `
-            <strong>${file.name}</strong><br>
-            大小: ${(file.size / 1024).toFixed(1)} KB | 
-            类型: ${file.type} | 
-            尺寸: <span id="imageDimensions">计算中...</span>
-          `;
-          
-          // 获取图片实际尺寸
-          const img = new Image();
-          img.onload = function() {
-            document.getElementById('imageDimensions').textContent = 
-              `${this.width} × ${this.height} 像素`;
-          };
-          img.src = base64Data;
-        };
-        
-        reader.onerror = () => {
-          alert('读取文件时出错，请重试！');
-        };
-        
-        reader.readAsDataURL(file);
+  // 用于标记是否为用户主动清除图片，避免触发错误提示
+  let userClearing = false;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('fileInput');
+    const dragArea = document.getElementById('dragArea');
+
+    dragArea.addEventListener('click', () => fileInput.click());
+
+    dragArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dragArea.classList.add('dragover');
+    });
+
+    dragArea.addEventListener('dragleave', () => {
+      dragArea.classList.remove('dragover');
+    });
+
+    dragArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        processImageFile(e.dataTransfer.files[0]);
       }
     });
-    
-    function copyBase64() {
-      const textArea = document.getElementById('base64Output');
-      textArea.select();
-      
-      try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-          showToast('Base64 编码已复制到剪贴板！');
-        } else {
-          throw new Error('复制失败');
-        }
-      } catch (err) {
-        // 使用现代 Clipboard API
-        navigator.clipboard.writeText(textArea.value)
-          .then(() => showToast('Base64 编码已复制到剪贴板！'))
-          .catch(() => alert('复制失败，请手动选择并复制文本。'));
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length) {
+        processImageFile(fileInput.files[0]);
       }
-    }
-    
-    function base64ToImage() {
-      const data = document.getElementById('base64Input').value.trim();
-      if (!data) {
-        showToast('请输入Base64数据！', 'error');
+    });
+
+    function processImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        alert('请选择有效的图片文件！');
         return;
       }
-      
-      if (!data.startsWith('data:image/')) {
-        showToast('请输入完整的Base64图片数据（必须以"data:image/"开头）', 'error');
-        return;
-      }
-      
-      const output = document.getElementById('outputImage');
-      const downloadBtn = document.getElementById('downloadLink');
-      
-      output.onload = function() {
-        output.style.display = 'block';
-        downloadBtn.style.display = 'block';
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Data = e.target.result;
+        const previewImage = document.getElementById('previewImage');
+        const fileInfo = document.getElementById('fileInfo');
+
+        document.getElementById('base64Output').value = base64Data;
+        previewImage.src = base64Data;
+        previewImage.style.display = 'block';
+        toggleCloseButtons();
+
+        fileInfo.innerHTML = `
+          <strong>${file.name}</strong><br>
+          大小: ${(file.size / 1024).toFixed(1)} KB |
+          类型: ${file.type} |
+          尺寸: <span id="imageDimensions">计算中...</span>
+        `;
+
+        const img = new Image();
+        img.onload = function () {
+          document.getElementById('imageDimensions').textContent =
+            `${this.width} × ${this.height} 像素`;
+        };
+        img.src = base64Data;
       };
-      
-      output.onerror = function() {
+
+      reader.onerror = () => alert('读取文件时出错，请重试！');
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // ✅ 修复：不再选中文本，只复制内容
+  function copyBase64() {
+    const text = document.getElementById('base64Output').value;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('Base64 编码已复制到剪贴板！'))
+      .catch(() => alert('复制失败，请手动复制文本'));
+  }
+
+  function base64ToImage() {
+    const data = document.getElementById('base64Input').value.trim();
+    if (!data) return;
+
+    if (!data.startsWith('data:image/')) {
+      showToast('请输入完整的Base64图片数据（必须以"data:image/"开头）', 'error');
+      return;
+    }
+
+    const output = document.getElementById('outputImage');
+    const downloadBtn = document.getElementById('downloadLink');
+
+    output.onload = () => {
+      output.style.display = 'block';
+      downloadBtn.style.display = 'block';
+      toggleCloseButtons();
+    };
+
+    // ✅ 修复：仅在非用户清除时才提示错误
+    output.onerror = () => {
+      if (!userClearing && data.length > 10) {
         showToast('无效的Base64图片数据！', 'error');
-        output.style.display = 'none';
-        downloadBtn.style.display = 'none';
-      };
-      
-      output.src = data;
-      downloadBtn.onclick = () => {
-        const link = document.createElement('a');
-        link.href = data;
-        link.download = `image_${Date.now()}.${getImageExtension(data)}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      };
-    }
-    
-    function getImageExtension(base64Data) {
-      const match = base64Data.match(/^data:image\/(\w+);/);
-      return match ? match[1] : 'png';
-    }
-    
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.textContent = message;
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.padding = '12px 24px';
-      toast.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
-      toast.style.color = 'white';
-      toast.style.borderRadius = '4px';
-      toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-      toast.style.zIndex = '1000';
-      toast.style.animation = 'fadeIn 0.3s, fadeOut 0.3s 2.7s';
-      
-      document.body.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.style.animation = 'fadeOut 0.3s';
-        setTimeout(() => document.body.removeChild(toast), 300);
-      }, 3000);
-    }
-  </script>
+      }
+      output.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      toggleCloseButtons();
+    };
+
+    output.src = data;
+
+    downloadBtn.onclick = () => {
+      const link = document.createElement('a');
+      link.href = data;
+      link.download = `image_${Date.now()}.${getImageExtension(data)}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  }
+
+  // ✅ 标记用户正在清除图片，避免触发错误提示
+  function clearUploadedImage() {
+    document.getElementById('previewImage').src = '';
+    document.getElementById('previewImage').style.display = 'none';
+    document.getElementById('base64Output').value = '';
+    document.getElementById('fileInfo').textContent = '';
+    document.getElementById('fileInput').value = '';
+    toggleCloseButtons();
+  }
+
+  // ✅ 标记用户主动清除生成图片
+  function clearGeneratedImage() {
+    userClearing = true; // 开始标记清除中
+    const output = document.getElementById('outputImage');
+    const downloadBtn = document.getElementById('downloadLink');
+
+    output.src = '';
+    output.style.display = 'none';
+    document.getElementById('base64Input').value = '';
+    downloadBtn.style.display = 'none';
+    toggleCloseButtons();
+
+    setTimeout(() => {
+      userClearing = false; // 稍后取消标记，避免误触其他逻辑
+    }, 100);
+  }
+
+  function getImageExtension(base64Data) {
+    const match = base64Data.match(/^data:image\/(\w+);/);
+    return match ? match[1] : 'png';
+  }
+
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.padding = '12px 24px';
+    toast.style.backgroundColor = type === 'error' ? '#ff4444' : '#4CAF50';
+    toast.style.color = 'white';
+    toast.style.borderRadius = '4px';
+    toast.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+    toast.style.zIndex = '1000';
+    toast.style.animation = 'fadeIn 0.3s, fadeOut 0.3s 2.7s';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'fadeOut 0.3s';
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+  }
+
+  function toggleCloseButtons() {
+    document.getElementById('closeUploadBtn').style.display =
+      document.getElementById('previewImage').style.display === 'block' ? 'flex' : 'none';
+    document.getElementById('closeGeneratedBtn').style.display =
+      document.getElementById('outputImage').style.display === 'block' ? 'flex' : 'none';
+  }
+</script>
 </body>
 </html>
