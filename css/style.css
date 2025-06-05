@@ -71,8 +71,8 @@ body.dark {
 
 /* 📣滚动公告 */
 .marquee {
-  width: 100%;
-  max-width: 100%;
+  width: 90%;
+  margin: 0 auto;
   overflow: hidden;
   white-space: nowrap;
   color: #007AFF;
