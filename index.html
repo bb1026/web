@@ -60,16 +60,18 @@
   
   <!-- 滚动公告加载 -->
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    fetch('./notice.html')
-      .then(res => res.text())
-      .then(text => {
-        document.getElementById('noticeContainer').textContent = text;
-      })
-      .catch(err => {
-        document.getElementById('noticeContainer').textContent = '公告加载失败';
-      });
-  });
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('./notice.html')
+        .then(res => res.text())
+        .then(text => {
+          document.getElementById('noticeContainer').innerHTML =
+            `<div class="marquee-inner">${text}</div>`;
+        })
+        .catch(err => {
+          document.getElementById('noticeContainer').innerHTML =
+            `<div class="marquee-inner">公告加载失败</div>`;
+        });
+    });
   </script>
 </body>
 </html>
