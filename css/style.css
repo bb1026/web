@@ -116,8 +116,11 @@ header {
 
 /* 🔍 搜索框样式 */
 #searchInput {
+  width: 100%;
+  max-width: 200px;
   padding: 5px 10px;
   font-size: 1em;
+  box-sizing: border-box;
 }
 
 /* banner 容器 */
