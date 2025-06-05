@@ -1,1 +1,595 @@
-<!DOCTYPE html><html><body><h2>二维码生成</h2><input id='qrInput'><button onclick="document.getElementById('qrImage').src='https://api.qrserver.com/v1/create-qr-code/?data='+encodeURIComponent(document.getElementById('qrInput').value);">生成</button><br><img id='qrImage'></body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>二维码生成器</title>
+<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 750px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f9fafc;
+    color: #222;
+  }
+.file-upload {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
+  .file-upload:hover {
+    background-color: #45a049;
+  }
+
+  .file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+  }
+#logoStatus {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  fieldset {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.2rem;
+    background: #fff;
+  }
+  legend {
+    font-weight: 600;
+    padding: 0 6px;
+  }
+  label {
+    margin-right: 15px;
+    cursor: pointer;
+    user-select: none;
+  }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="date"], textarea {
+    width: 100%;
+    padding: 7px 10px;
+    margin: 6px 0 12px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    font-size: 14px;
+  }
+  textarea {
+    resize: vertical;
+  }
+  .button {
+    display: inline-block;
+    background: #2874f0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.25s ease;
+    margin-top: 10px;
+  }
+  .button:hover {
+    background: #1a52d8;
+  }
+  #qr-section {
+    display: none;
+    margin-top: 30px;
+    text-align: center;
+  }
+  #qr-container {
+    margin: 0 auto;
+  }
+  #text-output {
+    margin-top: 12px;
+    font-size: 14px;
+    white-space: pre-line;
+    color: #333;
+  }
+  #save-btn {
+    margin-top: 14px;
+  }
+  .hidden {
+    display: none !important;
+  }
+  /* Responsive */
+  @media (max-width: 600px) {
+    body {
+      padding: 15px;
+    }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="date"], textarea {
+      font-size: 13px;
+    }
+    .button {
+      width: 100%;
+      padding: 12px 0;
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+<h2>二维码生成器</h2>
+
+<!-- 内容类型 -->
+<fieldset>
+  <legend>内容类型</legend>
+  <label><input type="radio" name="type" value="text" checked> 文本</label>
+  <label><input type="radio" name="type" value="url"> 网址</label>
+  <label><input type="radio" name="type" value="tel"> 电话</label>
+  <label><input type="radio" name="type" value="wifi"> WiFi</label>
+  <label><input type="radio" name="type" value="vcard"> vCard</label>
+</fieldset>
+
+<!-- 输入区域 -->
+<div id="inputs">
+  <label>输入内容：<input type="text" id="content" placeholder="请输入内容"></label>
+</div>
+
+<!-- WiFi 无加密时隐藏密码 -->
+<div id="wifi-password-wrapper" class="hidden">
+  <label>WiFi 密码：<input type="text" id="wifi-password"></label>
+</div>
+
+<!-- WiFi 加密方式 -->
+<div id="wifi-encryption-wrapper" class="hidden">
+  <fieldset>
+    <legend>加密方式</legend>
+    <label><input type="radio" name="wifi-encryption" value="WPA" checked> WPA/WPA2</label>
+    <label><input type="radio" name="wifi-encryption" value="WEP"> WEP</label>
+    <label><input type="radio" name="wifi-encryption" value="nopass"> 无加密</label>
+  </fieldset>
+</div>
+
+<!-- vCard 输入区域 -->
+<div id="vcard-inputs" class="hidden" style="background:#fafafa; padding:15px; border-radius:8px; border:1px solid #ccc; margin-bottom: 1rem;">
+  <label>姓名 (FN): <input type="text" id="vcard-fn" placeholder="必填"></label>
+  <label>昵称 (NICKNAME): <input type="text" id="vcard-nickname"></label>
+  <label>公司 (ORG): <input type="text" id="vcard-org"></label>
+  <label>职位 (TITLE): <input type="text" id="vcard-title"></label>
+  <label>电话 (TEL): <input type="tel" id="vcard-tel"></label>
+  <label>手机 (CELL): <input type="tel" id="vcard-cell"></label>
+  <label>传真 (FAX): <input type="tel" id="vcard-fax"></label>
+  <label>邮箱 (EMAIL): <input type="email" id="vcard-email"></label>
+  <label>网址 (URL): <input type="url" id="vcard-url" placeholder="https://"></label>
+  <label>地址 (ADR): <textarea id="vcard-adr" rows="3" placeholder="国家;省;市;街道;邮编，用分号分隔"></textarea></label>
+  <label>生日 (BDAY): <input type="date" id="vcard-bday"></label>
+  <label>备注 (NOTE): <textarea id="vcard-note" rows="2"></textarea></label>
+</div>
+
+<!-- 颜色 -->
+<fieldset>
+  <legend>颜色</legend>
+  <label><input type="radio" name="colorMode" value="black" checked> 黑色</label>
+  <label><input type="radio" name="colorMode" value="gradient"> 随机彩色渐变</label>
+</fieldset>
+
+<!-- 尺寸 -->
+<fieldset>
+  <legend>尺寸</legend>
+  <label><input type="radio" name="size" value="256" checked> 256</label>
+  <label><input type="radio" name="size" value="512"> 512</label>
+  <label><input type="radio" name="size" value="768"> 768</label>
+</fieldset>
+
+<!-- 图片格式 -->
+<fieldset>
+  <legend>图片格式</legend>
+  <label><input type="radio" name="format" value="png" checked> PNG</label>
+  <label><input type="radio" name="format" value="jpeg"> JPEG</label>
+  <label><input type="radio" name="format" value="webp"> WEBP</label>
+</fieldset>
+
+<!-- 纠错等级 -->
+<fieldset>
+  <legend>纠错等级</legend>
+  <label><input type="radio" name="errorCorrection" value="L" checked> L (7%)</label>
+  <label><input type="radio" name="errorCorrection" value="M"> M (15%)</label>
+  <label><input type="radio" name="errorCorrection" value="Q"> Q (25%)</label>
+  <label><input type="radio" name="errorCorrection" value="H"> H (30%)</label>
+</fieldset>
+
+<!-- 圆角 -->
+<fieldset>
+  <legend>圆角</legend>
+  <label><input type="radio" name="cornersSquare" value="none" checked> 无圆角</label>
+  <label><input type="radio" name="cornersSquare" value="rounded"> 方块圆角</label>
+  <label><input type="radio" name="cornersSquare" value="extra-rounded"> 圆形</label>
+</fieldset>
+
+<!-- 边框 -->
+<fieldset>
+  <legend>边框</legend>
+  <label>宽度 (像素): <input type="number" id="border-width" min="0" max="50" value="0" style="width:70px;"></label>
+  <label>颜色: <input type="color" id="border-color" value="#000000"></label>
+</fieldset>
+
+<!-- 风格 -->
+<fieldset>
+  <legend>风格</legend>
+  <label><input type="radio" name="qrStyle" value="dots" checked> 点状</label>
+  <label><input type="radio" name="qrStyle" value="squares"> 方块</label>
+  <label><input type="radio" name="qrStyle" value="classy"> 圆形</label>
+</fieldset>
+
+<!-- Logo 上传 -->
+<fieldset>
+  <label class="file-upload">
+  选择 Logo 文件
+  <input type="file" id="logoFile" accept="image/*" onchange="handleLogoFile(this)">
+	</label>
+	<div id="logoStatus">默认无 Logo，可上传 PNG/JPG 等图片</div>
+</fieldset>
+
+<!-- 显示文字 -->
+<label><input type="checkbox" id="show-text" checked> 显示内容文字</label>
+
+<!-- 生成按钮 -->
+<div style="text-align:center;">
+  <button id="generate-btn" class="button">生成二维码</button>
+</div>
+
+<!-- 二维码展示 -->
+<div id="qr-section">
+  <div id="qr-container"></div>
+  <div id="text-output"></div>
+  <button id="save-btn" class="button hidden">保存二维码图片</button>
+</div>
+
+<script>
+(() => {
+  const qrContainer = document.getElementById('qr-container');
+  const textOutput = document.getElementById('text-output');
+  const saveBtn = document.getElementById('save-btn');
+  const qrSection = document.getElementById('qr-section');
+  const generateBtn = document.getElementById('generate-btn');
+  const logoUpload = document.getElementById('logo-upload');
+
+  const contentInput = document.getElementById('content');
+  const wifiPasswordWrapper = document.getElementById('wifi-password-wrapper');
+  const wifiPasswordInput = document.getElementById('wifi-password');
+  const wifiEncryptionWrapper = document.getElementById('wifi-encryption-wrapper');
+  const wifiEncryptionRadios = document.getElementsByName('wifi-encryption');
+
+  const vcardInputs = document.getElementById('vcard-inputs');
+
+  // 状态
+  let logoImage = null;
+  let qrCode = null;
+  let currentQRContent = null;
+  let isQRGenerated = false;
+  const logoSizeRatio = 0.15;
+
+  // 颜色工具：生成多个随机颜色 (5-7色)，返回 CSS 线性渐变字符串和颜色数组
+  function generateRandomGradientColors() {
+    const colorCount = Math.floor(Math.random() * 3) + 5; // 5~7色
+    const colors = [];
+    for(let i=0; i<colorCount; i++) {
+      colors.push(randomColor());
+    }
+    const angle = Math.floor(Math.random() * 360);
+    return {
+      gradient: `linear-gradient(${angle}deg, ${colors.join(',')})`,
+      colors: colors
+    };
+  }
+
+  // 随机颜色生成器，生成明亮饱和颜色
+  function randomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = Math.floor(Math.random() * 40) + 60; // 60%~100%
+    const lightness = Math.floor(Math.random() * 30) + 40;  // 40%~70%
+    return `hsl(${hue},${saturation}%,${lightness}%)`;
+  }
+
+  // 获取选中的单选值
+  function getRadioValue(name) {
+    const rads = document.getElementsByName(name);
+    for(let r of rads) {
+      if(r.checked) return r.value;
+    }
+    return null;
+  }
+
+  // 更新输入区域根据内容类型
+  function updateInputsByType(type) {
+    wifiPasswordWrapper.classList.add('hidden');
+    wifiEncryptionWrapper.classList.add('hidden');
+    vcardInputs.classList.add('hidden');
+    contentInput.parentElement.style.display = 'block';
+
+    if(type === 'wifi') {
+      contentInput.parentElement.style.display = 'none';
+      wifiEncryptionWrapper.classList.remove('hidden');
+      updateWiFiPasswordDisplay();
+    } else if(type === 'vcard') {
+      contentInput.parentElement.style.display = 'none';
+      vcardInputs.classList.remove('hidden');
+    }
+  }
+
+  // WiFi密码显示控制
+  function updateWiFiPasswordDisplay() {
+    const enc = getWiFiEncryption();
+    if(enc === 'nopass') {
+      wifiPasswordWrapper.classList.add('hidden');
+    } else {
+      wifiPasswordWrapper.classList.remove('hidden');
+    }
+  }
+
+  // 获取 WiFi 加密类型
+  function getWiFiEncryption() {
+    for(let r of wifiEncryptionRadios) {
+      if(r.checked) return r.value;
+    }
+    return 'WPA';
+  }
+
+  // 生成 WiFi 格式文本（按照要求格式化）
+  function generateWiFiText() {
+    const enc = getWiFiEncryption();
+    const ssid = contentInput.value.trim();
+    const password = wifiPasswordInput.value.trim();
+    let lines = [];
+    lines.push(`WiFi: ${ssid}`);
+    if(enc !== 'nopass') lines.push(`密码: ${password}`);
+    lines.push(`加密: ${enc === 'nopass' ? '未加密' : enc}`);
+    return lines.join('\n');
+  }
+
+  // 生成 vCard 文本，v3.0 格式
+  function generateVCardText() {
+    const fn = document.getElementById('vcard-fn').value.trim();
+    if(!fn) {
+      alert('姓名 (FN) 是必填项！');
+      return null;
+    }
+    const nickname = document.getElementById('vcard-nickname').value.trim();
+    const org = document.getElementById('vcard-org').value.trim();
+    const title = document.getElementById('vcard-title').value.trim();
+    const tel = document.getElementById('vcard-tel').value.trim();
+    const cell = document.getElementById('vcard-cell').value.trim();
+    const fax = document.getElementById('vcard-fax').value.trim();
+    const email = document.getElementById('vcard-email').value.trim();
+    const url = document.getElementById('vcard-url').value.trim();
+    const adr = document.getElementById('vcard-adr').value.trim();
+    const bday = document.getElementById('vcard-bday').value.trim();
+    const note = document.getElementById('vcard-note').value.trim();
+
+    let lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      `FN:${fn}`
+    ];
+    if(nickname) lines.push(`NICKNAME:${nickname}`);
+    if(org) lines.push(`ORG:${org}`);
+    if(title) lines.push(`TITLE:${title}`);
+    if(tel) lines.push(`TEL;TYPE=WORK,VOICE:${tel}`);
+    if(cell) lines.push(`TEL;TYPE=CELL,VOICE:${cell}`);
+    if(fax) lines.push(`TEL;TYPE=FAX:${fax}`);
+    if(email) lines.push(`EMAIL;TYPE=PREF,INTERNET:${email}`);
+    if(url) lines.push(`URL:${url}`);
+
+    if(adr) {
+      const parts = adr.split(';').map(s => s.trim());
+      while(parts.length < 5) parts.push('');
+      const adrLine = `ADR;TYPE=HOME:;;${parts[3] || ''};${parts[2] || ''};${parts[1] || ''};${parts[4] || ''};${parts[0] || ''}`;
+      lines.push(adrLine);
+    }
+    if(bday) lines.push(`BDAY:${bday}`);
+    if(note) lines.push(`NOTE:${note}`);
+
+    lines.push('END:VCARD');
+    return lines.join('\n');
+  }
+
+  // 构造二维码内容字符串
+  function getContentText() {
+    const type = getRadioValue('type');
+    if(type === 'text') {
+      return contentInput.value.trim();
+    } else if(type === 'url') {
+      let url = contentInput.value.trim();
+      if(url && !url.match(/^https?:\/\//)) {
+        url = 'http://' + url;
+      }
+      return url;
+    } else if(type === 'tel') {
+      let telRaw = contentInput.value.trim();
+      if(!telRaw) return '';
+      return `TEL:${telRaw}`;
+    } else if(type === 'wifi') {
+      return generateWiFiText();
+    } else if(type === 'vcard') {
+      return generateVCardText();
+    }
+    return '';
+  }
+
+  // 渲染二维码
+  function renderQRCode(forceUpdate = false) {
+    const textShow = document.getElementById('show-text').checked;
+    const contentText = getContentText();
+    
+    if(!contentText && !forceUpdate) {
+      alert('请输入有效内容');
+      return false;
+    }
+
+    if(contentText) {
+      currentQRContent = contentText;
+    }
+
+    qrSection.style.display = 'block';
+
+    const colorMode = getRadioValue('colorMode');
+    const size = parseInt(getRadioValue('size'), 10);
+    const format = getRadioValue('format');
+    const errorCorrection = getRadioValue('errorCorrection');
+    const cornersSquare = getRadioValue('cornersSquare');
+    const qrStyle = getRadioValue('qrStyle');
+    const borderWidth = parseInt(document.getElementById('border-width').value, 10);
+    const borderColor = document.getElementById('border-color').value;
+
+    qrContainer.innerHTML = '';
+    qrContainer.style.border = borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : 'none';
+
+    let dotColor = '#000000';
+    let gradient = null;
+    if(colorMode === 'gradient') {
+      const grad = generateRandomGradientColors();
+      dotColor = grad.colors[0];
+      gradient = {
+        type: "linear",
+        rotation: Math.floor(Math.random() * 360),
+        colorStops: grad.colors.map((c, i) => ({
+          offset: i / (grad.colors.length - 1),
+          color: c
+        }))
+      };
+    }
+
+    qrCode = new QRCodeStyling({
+      width: size,
+      height: size,
+      data: currentQRContent || contentText,
+      image: logoImage,
+      dotsOptions: {
+        color: dotColor,
+        type: qrStyle,
+        gradient: gradient
+      },
+      cornersSquareOptions: {
+        type: cornersSquare === 'none' ? 'square' : cornersSquare
+      },
+      backgroundOptions: {
+        color: "#ffffff"
+      },
+      imageOptions: {
+        crossOrigin: "anonymous",
+        margin: 5,
+        imageSize: logoSizeRatio
+      },
+      qrOptions: {
+        errorCorrectionLevel: errorCorrection
+      },
+      type: format
+    });
+    
+    qrCode.append(qrContainer);
+
+    if(textShow) {
+      textOutput.textContent = currentQRContent || contentText;
+      textOutput.style.display = 'block';
+    } else {
+      textOutput.style.display = 'none';
+    }
+
+    saveBtn.classList.remove('hidden');
+    isQRGenerated = true;
+  }
+
+  // 设置自动刷新
+  function setupAutoRefresh() {
+    const refreshElements = [
+      ...document.getElementsByName('colorMode'),
+      ...document.getElementsByName('size'),
+      ...document.getElementsByName('format'),
+      ...document.getElementsByName('errorCorrection'),
+      ...document.getElementsByName('cornersSquare'),
+      ...document.getElementsByName('qrStyle'),
+      document.getElementById('border-width'),
+      document.getElementById('border-color'),
+      document.getElementById('show-text')
+    ];
+
+    refreshElements.forEach(el => {
+      el.addEventListener('change', () => {
+        if(isQRGenerated) {
+          renderQRCode(true);
+        }
+      });
+    });
+  }
+
+  // 处理文件上传
+  logoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      logoImage = evt.target.result;
+      if(isQRGenerated) {
+        renderQRCode(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // 监听类型变化，切换输入区
+  const typeRadios = document.getElementsByName('type');
+  for(let r of typeRadios) {
+    r.addEventListener('change', (e) => {
+      updateInputsByType(e.target.value);
+    });
+  }
+
+  // 监听 WiFi 加密类型变化
+  for(let r of wifiEncryptionRadios) {
+    r.addEventListener('change', updateWiFiPasswordDisplay);
+  }
+
+  // 生成按钮点击事件
+  generateBtn.addEventListener('click', () => {
+    renderQRCode();
+  });
+
+  // 保存按钮点击事件
+  saveBtn.addEventListener('click', () => {
+    if(!qrCode) return;
+    const format = getRadioValue('format') || 'png';
+    qrCode.getRawData(format).then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `qr-code.${format}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  });
+
+  // 初始化默认状态
+  updateInputsByType(getRadioValue('type'));
+  setupAutoRefresh();
+})();
+</script>
+
+<!-- 声明信息 -->
+<hr style="margin-top:40px; border:none; border-top:1px solid #ccc;" />
+<footer style="text-align:center; margin-top:20px; font-size:13px; color:#666;">
+  本工具仅供学习与个人使用，二维码内容生成后请自行核对准确性。<br>
+  © 2025 彩色二维码生成器
+</footer>
+</body>
+</html>
