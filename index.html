@@ -33,7 +33,7 @@
     </div>
     <div id="header-controls">
       <input type="text" id="searchInput" placeholder="搜索工具..." />
-      <button id="toggleDark">🌙</button>
+      <button id="toggleDark">🌓 暗色模式</button>
     </div>
   </header>
 
@@ -69,6 +69,24 @@
         });
     });
   </script>
+  
+  <!-- 🌓 暗色模式 -->
+  <script>
+  const toggleBtn = document.getElementById('toggleDark');
+  toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+
+    // 通知 iframe 更新主题
+    const iframe = document.getElementById('mainFrame');
+    if (iframe?.contentWindow) {
+      try {
+        iframe.contentWindow.location.reload(); // 让 iframe 页面重新加载 theme.js
+      } catch (e) {
+        // ignore cross-origin error
+      }
+    }
+  });
+</script>
   
   <!-- 声明信息 -->
   <hr class="divider" />
