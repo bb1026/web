@@ -2,7 +2,7 @@
   "开发工具": [
     ["VBA 代码混淆器 / 还原器", "https://bb1026.github.io/bing/vba.html"],
     ["时间戳", "https://bb1026.github.io/bing/timestamp.html"],
-    ["编解码", "https://bb1026.github.io/bing/encoder.html"]
+    ["64位编码解码", "https://bb1026.github.io/bing/encoder.html"]
   ],
   "图像工具": [
     ["二维码生成", "pages/qrcode.html"],
