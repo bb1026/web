@@ -266,12 +266,12 @@ header {
   text-decoration: underline;
 }
 
-#footerAboutLink {
+#footer-link {
   color: #0000EE;           /* 默认蓝色 */
   text-decoration: underline;
   cursor: pointer;
 }
 
-#footerAboutLink:hover {
+#footer-link:hover {
   color: #551A8B;           /* 访问过的链接默认紫色，可选 */
 }
