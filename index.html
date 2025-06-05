@@ -38,15 +38,9 @@
     </div>
   </header>
 
-  <!-- banner 区域 -->
+  <!-- banner 图片区域 -->
   <section id="banner" class="container">
-    <div class="scroll-container">
-      <img src="imgs/bgimage0.jpg" />
-      <img src="imgs/bgimage14.jpg" />
-      <img src="imgs/bgimage15.jpg" />
-      <img src="imgs/bgimage17.jpg" />
-      <img src="imgs/bgimage18.jpg" />
-    </div>
+    <div class="scroll-container" id="bannerImages"></div>
   </section>
 
   <!-- 分类菜单自动生成 -->
@@ -58,7 +52,10 @@
   <!-- 主脚本 -->
   <script src="js/main.js"></script>
   
-  <!-- 滚动公告加载 -->
+  <!-- 图片 -->
+  <script src="js/banner.js"></script>
+  
+  <!-- 公告 -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       fetch('./notice.html')
