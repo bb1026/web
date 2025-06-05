@@ -87,3 +87,19 @@ fetch('menu.json')
     aboutLi.appendChild(aboutLink);
     navList.appendChild(aboutLi);
   });
+
+  // 绑定页脚链接
+const footerAbout = document.getElementById('footerAboutLink');
+if (footerAbout) {
+  footerAbout.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('mainFrame').src = "pages/about.html";
+    document.getElementById('mainFrame').style.display = 'block';
+    document.getElementById('banner').style.display = 'none';
+    document.getElementById('menuContainer').style.display = 'none';
+    document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+      menu.classList.remove('visible');
+    });
+    window.scrollTo(0, 0);
+  });
+}
