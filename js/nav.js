@@ -70,7 +70,7 @@ fetch('menu.json')
   // 添加“关于”链接
     const aboutLi = document.createElement('li');
     const aboutLink = document.createElement('a');
-    aboutLink.href = "page/about.html";
+    aboutLink.href = "pages/about.html";
     aboutLink.target = "mainFrame";
     aboutLink.textContent = "关于";
 
