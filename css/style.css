@@ -1,24 +1,19 @@
-/* 🌗 主题支持 */
+/* 🌐 页面整体样式 */
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: var(--bg, #fff);
-  color: var(--fg, #000);
-  transition: background 0.3s, color 0.3s;
+  background: #fff;
+  color: #000;
 }
 
-body.dark {
-  --bg: #121212;
-  --fg: #f0f0f0;
-}
-
-/* 🔝 顶部导航栏 */
+/* 🔝 顶部导航栏整体样式 */
 #topNav {
   background: #444;
   color: #fff;
   padding: 10px 20px;
 }
 
+/* 🔝 顶部导航栏列表样式 */
 #topNav ul {
   list-style: none;
   display: flex;
@@ -28,19 +23,23 @@ body.dark {
   flex-wrap: wrap;
 }
 
+/* 🔝 顶部导航栏链接样式 */
 #topNav li a {
   color: #fff;
   text-decoration: none;
 }
 
+/* 🔝 下拉菜单容器 */
 #topNav li.dropdown {
   position: relative;
 }
 
+/* 🔝 下拉菜单点击区域 */
 #topNav .dropdown-toggle {
   cursor: pointer;
 }
 
+/* 🔝 下拉子菜单样式（默认隐藏） */
 #topNav .submenu {
   display: none;
   position: absolute;
@@ -52,10 +51,12 @@ body.dark {
   z-index: 1000;
 }
 
+/* 🔝 下拉菜单可见状态 */
 #topNav .submenu.visible {
   display: block;
 }
 
+/* 🔝 子菜单项样式 */
 #topNav .submenu li {
   margin-bottom: 5px;
 }
@@ -64,12 +65,13 @@ body.dark {
   margin-bottom: 0;
 }
 
+/* 🔝 子菜单链接样式 */
 #topNav .submenu a {
   color: #fff;
   white-space: nowrap;
 }
 
-/* 📣滚动公告 */
+/* 📣 滚动公告栏容器 */
 .marquee {
   width: 90%;
   margin: 0 auto;
@@ -82,54 +84,57 @@ body.dark {
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
 }
+
+/* 📣 滚动文字区域 */
 .marquee-inner {
   display: inline-block;
   animation: scroll 12s linear infinite;
 }
+
+/* 📣 滚动动画 */
 @keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
 
-/* 🧠 页面标题与控制条 */
+/* 🧠 页面头部（标题 + 控件） */
 header {
   display: flex;
-  flex-direction: column;  /* ⬅️ 垂直排列 */
-  align-items: flex-start; /* 左对齐内容 */
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
   padding: 10px 20px;
-  background: var(--bg);
+  background: #fff;
   border-bottom: 1px solid #ccc;
 }
 
+/* 🧠 头部控制按钮区域 */
 #header-controls {
   display: flex;
   gap: 10px;
 }
 
+/* 🔍 搜索框样式 */
 #searchInput {
   padding: 5px 10px;
   font-size: 1em;
 }
 
-#toggleDark {
-  font-size: 1.2em;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* 🎞️ Banner 滚动图片 */
+/* 🎞️ Banner 容器 */
 #banner {
   padding: 10px;
-  background: var(--bg);
+  background: #fff;
   overflow: hidden;
 }
+
+/* 🎞️ 页面主内容容器 */
 .container {
   width: 90%;
   max-width: 1200px;
   margin: 0 auto;
 }
+
+/* 🎞️ 横向滚动图片容器 */
 .scroll-container {
   display: flex;
   overflow-x: auto;
@@ -140,9 +145,13 @@ header {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* 🎞️ 隐藏滚动条（兼容 Chrome） */
 .scroll-container::-webkit-scrollbar {
   display: none;
 }
+
+/* 🎞️ 每张图片样式 */
 .scroll-container img {
   height: 100%;
   flex-shrink: 0;
@@ -151,20 +160,21 @@ header {
   min-width: 300px;
 }
 
-/* 📋 分类菜单 */
+/* 📋 分类模块容器 */
 .category {
-  /*margin: 20px;*/
   margin-bottom: 20px;
   padding: 10px;
   border: 1px solid #aaa;
   border-radius: 6px;
-  background: var(--bg);
+  background: #fff;
 }
 
+/* 📋 分类标题 */
 .category h2 {
   margin-top: 0;
 }
 
+/* 📋 工具列表整体布局 */
 .tool-list {
   display: flex;
   flex-wrap: wrap;
@@ -172,6 +182,7 @@ header {
   margin-top: 10px;
 }
 
+/* 📋 单个工具按钮样式 */
 .tool-item {
   padding: 6px 12px;
   border: 1px solid #ccc;
@@ -182,10 +193,12 @@ header {
   transition: background 0.3s;
 }
 
+/* 📋 工具按钮悬停效果 */
 .tool-item:hover {
   background: #ddd;
 }
 
+/* 📋 “查看更多”链接样式 */
 .more-link {
   display: inline-block;
   margin-top: 10px;
@@ -194,7 +207,7 @@ header {
   text-decoration: underline;
 }
 
-/* 📦 内嵌 iframe */
+/* 📦 主 iframe 样式 */
 #mainFrame {
   width: 100%;
   height: 600px;
@@ -203,13 +216,14 @@ header {
   background: #fff;
 }
 
-/* 📖页脚 */
+/* 📖 页脚分割线 */
 .divider {
   margin-top: 40px;
   border: none;
   border-top: 1px solid #ccc;
 }
 
+/* 📖 网站页脚文字 */
 .site-footer {
   text-align: center;
   margin-top: 20px;
@@ -217,6 +231,7 @@ header {
   color: #666;
 }
 
+/* 📖 页脚链接样式 */
 .site-footer a {
   color: #666;
   text-decoration: underline;
