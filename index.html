@@ -63,8 +63,8 @@
   document.addEventListener('DOMContentLoaded', () => {
     fetch('./notice.html')
       .then(res => res.text())
-      .then(html => {
-        document.getElementById('noticeContainer').innerHTML = html;
+      .then(text => {
+        document.getElementById('noticeContainer').innerText = text;
       })
       .catch(err => {
         document.getElementById('noticeContainer').innerText = '公告加载失败';
