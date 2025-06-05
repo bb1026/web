@@ -34,6 +34,7 @@
     a {
       color: #007acc;
       text-decoration: none;
+      cursor: pointer;
     }
 
     a:hover {
@@ -45,6 +46,37 @@
       margin-top: 50px;
       font-size: 13px;
       color: #777;
+    }
+
+    .qr-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    .qr-popup img {
+      width: 80vw;
+      max-width: 300px;
+      height: auto;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.4);
+      z-index: 999;
     }
   </style>
 </head>
@@ -59,7 +91,11 @@
   <ul>
     <li>邮箱：<a href="mailto:540154897@qq.com">540154897@qq.com</a></li>
     <li>GitHub：<a href="https://github.com/bb1026" target="_blank">bb1026</a></li>
-    <li>QQ：<a>540154897</a></li>
+    <li>
+      QQ：<a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">540154897</a>
+      <a onclick="showQr('qq')" style="margin-left: 10px; font-size: 90%;">[显示二维码]</a>
+    </li>
+    <li>微信：<a onclick="showQr('wechat')">点击显示二维码</a></li>
   </ul>
 
   <h2>使用声明</h2>
@@ -73,6 +109,40 @@
   <footer>
     版权所有 © 2025 bb1026 | 页面由 ChatGPT 和 DeepSeek 生成并优化
   </footer>
+
+  <!-- 遮罩层 -->
+  <div id="overlay" onclick="hideQr()"></div>
+
+  <!-- QQ 二维码弹窗 -->
+  <div id="qqQr" class="qr-popup">
+    <p>扫码添加 QQ 好友</p>
+    <img src="https://bb1026.github.io/bing/imgs/QQqrcode.jpeg" alt="QQ二维码">
+    <p><a onclick="hideQr()">关闭</a></p>
+  </div>
+
+  <!-- 微信 二维码弹窗 -->
+  <div id="wechatQr" class="qr-popup">
+    <p>扫码添加微信好友</p>
+    <img src="https://bb1026.github.io/bing/imgs/WeChatQR.jpg" alt="微信二维码">
+    <p><a onclick="hideQr()">关闭</a></p>
+  </div>
+
+  <script>
+    function showQr(type) {
+      document.getElementById('overlay').style.display = 'block';
+      if (type === 'qq') {
+        document.getElementById('qqQr').style.display = 'block';
+      } else if (type === 'wechat') {
+        document.getElementById('wechatQr').style.display = 'block';
+      }
+    }
+
+    function hideQr() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('qqQr').style.display = 'none';
+      document.getElementById('wechatQr').style.display = 'none';
+    }
+  </script>
 
 </body>
 </html>
