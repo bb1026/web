@@ -1,10 +1,13 @@
+/* iframe暗黑主题 */
 body {
-  background: var(--bg, #fff);
-  color: var(--fg, #000);
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #fff;
+  color: #000;
   transition: background 0.3s, color 0.3s;
 }
 
 body.dark {
-  --bg: #121212;
-  --fg: #f0f0f0;
+  background: #121212;
+  color: #f0f0f0;
 }
