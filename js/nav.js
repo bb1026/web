@@ -66,3 +66,24 @@ fetch('menu.json')
       });
     }
   });
+  
+  // 添加“关于”链接
+    const aboutLi = document.createElement('li');
+    const aboutLink = document.createElement('a');
+    aboutLink.href = "page/about.html";
+    aboutLink.target = "mainFrame";
+    aboutLink.textContent = "关于";
+
+    aboutLink.onclick = (e) => {
+      // 显示 iframe，隐藏 banner 和菜单，关闭所有菜单
+      document.getElementById('mainFrame').style.display = 'block';
+      document.getElementById('banner').style.display = 'none';
+      document.getElementById('menuContainer').style.display = 'none';
+      document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+        menu.classList.remove('visible');
+      });
+      window.scrollTo(0, 0);
+    };
+
+    aboutLi.appendChild(aboutLink);
+    navList.appendChild(aboutLi);
