@@ -8,5 +8,12 @@
     ["二维码生成", "pages/qrcode.html"],
     ["条形码生成", "pages/barcode.html"],
     ["图像转Base64", "pages/img2base64.html"]
-  ]
+  ],
+  "小游戏": [
+    ["单词消消乐", "https://bb1026.github.io/bing/game1.html"],
+    ["单词拼写", "https://bb1026.github.io/bing/game2.html"],
+    ["单词拼写2", "https://bb1026.github.io/bing/game3.html"],
+    ["单词拼写3", "https://bb1026.github.io/bing/game4.html"],
+    ["华容道", "https://bb1026.github.io/bing/game5.html"]
+  ],
 }
