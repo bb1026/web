@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>条形码生成器</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f7f7f7;
+      color: #333;
+    }
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    fieldset {
+      border: none;
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      flex: 1;
+      min-width: 100px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 0.8rem 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .controls button:hover {
+      background-color: #45a049;
+    }
+
+    #barcode-container {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    #barcode {
+      max-width: 100%;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+<header>条形码生成器</header>
+
+<main>
+  <fieldset>
+    <label for="barcodeText">条码内容</label>
+    <input type="text" id="barcodeText" placeholder="请输入条码数据" />
+  </fieldset>
+
+  <fieldset>
+    <label for="barcodeFormat">条码格式</label>
+    <select id="barcodeFormat">
+      <option value="CODE128">CODE128（推荐）</option>
+      <option value="CODE39">CODE39</option>
+    </select>
+  </fieldset>
+
+  <div class="controls">
+    <button onclick="generateBarcode()">生成条码</button>
+    <button onclick="downloadBarcode()">保存图片</button>
+  </div>
+
+  <div id="barcode-container">
+    <svg id="barcode"></svg>
+  </div>
+</main>
+
+<!-- 声明信息 -->
+<hr style="margin-top:40px; border:none; border-top:1px solid #ccc;" />
+<footer style="text-align:center; margin-top:20px; font-size:13px; color:#666;">
+  本工具仅供学习与个人使用，条形码内容生成后请自行核对准确性。<br>
+  © 2025 条形码生成器
+</footer>
+
+<script>
+  function generateBarcode() {
+    const value = document.getElementById("barcodeText").value.trim();
+    const format = document.getElementById("barcodeFormat").value;
+    if (!value) {
+      alert("请输入条码内容");
+      return;
+    }
+
+    try {
+      JsBarcode("#barcode", value, {
+        format: format,
+        lineColor: "#000",
+        width: 2,
+        height: 100,
+        displayValue: true,
+        fontSize: 16,
+        margin: 10,
+      });
+    } catch (e) {
+      alert("生成失败，检查内容与格式是否匹配！");
+      console.error(e);
+    }
+  }
+
+  function downloadBarcode() {
+    const svg = document.querySelector("#barcode");
+    if (!svg || svg.children.length === 0) {
+      alert("请先生成条码");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = svg.clientWidth;
+    canvas.height = svg.clientHeight;
+    const ctx = canvas.getContext("2d");
+
+    const svgString = new XMLSerializer().serializeToString(svg);
+    const v = canvg.Canvg.fromString(ctx, svgString);
+    v.start().then(() => {
+      const link = document.createElement("a");
+      link.download = "barcode.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+</script>
+
+</body>
+</html>
