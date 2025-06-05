@@ -6,7 +6,7 @@
   ],
   "图像工具": [
     ["二维码生成", "pages/qrcode.html"],
-    ["图像占位", "pages/imgplaceholder.html"],
+    ["条形码生成", "pages/barcode.html"],
     ["图像转Base64", "pages/img2base64.html"]
   ]
 }
