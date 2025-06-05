@@ -1,10 +1,7 @@
-(function() {
-  try {
-    const isDark = window.parent?.document?.body?.classList.contains('dark');
-    if (isDark) {
-      document.body.classList.add('dark');
-    }
-  } catch (e) {
-    // ignore if not in iframe or cross-origin
+/* 暗黑主题 */
+document.addEventListener('DOMContentLoaded', () => {
+  const isDark = localStorage.getItem('darkMode') === 'true';
+  if (isDark) {
+    document.body.classList.add('dark');
   }
-})();
+});
