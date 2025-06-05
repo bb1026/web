@@ -92,7 +92,7 @@ body {
 }
 
 /* 📣 滚动动画 */
-@keyframes scroll-text {
+@keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
