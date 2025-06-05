@@ -120,11 +120,37 @@ header {
   font-size: 1em;
 }
 
-/* 🎞️ Banner 容器 */
+/* banner 容器 */
 #banner {
   padding: 10px;
-  background: #fff;
+  background: #f5f5f5;
   overflow: hidden;
+}
+
+/* 图片滚动容器 - 横向滚动 */
+.scroll-container {
+  display: flex;
+  overflow-x: auto;      /* 横向滚动 */
+  white-space: nowrap;   /* 不换行 */
+  height: 200px;         /* 固定高度 */
+  gap: 10px;             /* 图片间距 */
+  scroll-behavior: smooth; /* 平滑滚动 */
+  -ms-overflow-style: none;  /* IE/Edge 隐藏滚动条 */
+  scrollbar-width: none;     /* Firefox 隐藏滚动条 */
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari 隐藏滚动条 */
+}
+
+.scroll-container img {
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+  min-width: 300px;
+  user-select: none; /* 防止图片被选中 */
+  pointer-events: auto;
 }
 
 /* 🎞️ 页面主内容容器 */
