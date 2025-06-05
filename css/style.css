@@ -125,6 +125,11 @@ header {
   background: var(--bg);
   overflow: hidden;
 }
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 .scroll-container {
   display: flex;
   overflow-x: auto;
@@ -132,15 +137,12 @@ header {
   height: 200px;
   gap: 10px;
   scroll-behavior: smooth;
-
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .scroll-container::-webkit-scrollbar {
   display: none;
 }
-
 .scroll-container img {
   height: 100%;
   flex-shrink: 0;
@@ -151,7 +153,8 @@ header {
 
 /* 📋 分类菜单 */
 .category {
-  margin: 20px;
+  /*margin: 20px;*/
+  margin-bottom: 20px;
   padding: 10px;
   border: 1px solid #aaa;
   border-radius: 6px;
