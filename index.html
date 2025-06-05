@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>在线工具箱</title>
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/theme.css">
-  <script src="js/theme.js" defer></script>
 </head>
 <body>
   <!-- 顶部导航容器 -->
@@ -71,21 +69,6 @@
         });
     });
   </script>
-  
-  <!-- 🌓 暗色模式 -->
-  <script>
-  const toggleBtn = document.getElementById('toggleDark');
-  toggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-    const isDark = document.body.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark); // 保存设置
-  });
-
-  // 页面加载时自动恢复模式
-  if (localStorage.getItem('darkMode') === 'true') {
-    document.body.classList.add('dark');
-  }
-</script>
   
   <!-- 声明信息 -->
   <hr class="divider" />
