@@ -1,1 +1,213 @@
-<!DOCTYPE html><html><body><h2>图片转Base64</h2><input type='file' onchange="let r=new FileReader();r.onload=e=>document.getElementById('imgOut').value=r.result;r.readAsDataURL(this.files[0]);"><textarea id='imgOut'></textarea></body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图片 ↔ Base64 转换工具</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+      background: #f4f6f8;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+
+    .section {
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .upload-area {
+      border: 2px dashed #007bff;
+      border-radius: 10px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #007bff;
+      background: #f9f9ff;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .upload-area.dragover {
+      background: #e0f0ff;
+      border-color: #0056b3;
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    img {
+      max-width: 100%;
+      margin-top: 15px;
+      border-radius: 6px;
+    }
+
+    .info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .download-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: #007bff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      button {
+        width: 100%;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>图片 ↔ Base64 转换工具</h1>
+
+  <div class="section">
+    <h2>图片转 Base64</h2>
+    <label class="upload-area" id="uploadArea">
+      点击或拖拽图片到此处上传
+      <input type="file" id="fileInput" accept="image/*">
+    </label>
+    <div id="fileInfo" class="info"></div>
+    <textarea id="base64Output" placeholder="生成的 Base64 会显示在这里"></textarea>
+    <button onclick="copyBase64()">复制 Base64</button>
+    <img id="previewImage" />
+  </div>
+
+  <div class="section">
+    <h2>Base64 转图片</h2>
+    <textarea id="base64Input" placeholder="粘贴 Base64 图片字符串..."></textarea>
+    <button onclick="base64ToImage()">生成图片</button>
+    <img id="outputImage" />
+    <div id="downloadLink" class="download-link" style="display:none;">下载图片</div>
+  </div>
+
+  <footer>
+    本工具开源发布，遵循 MIT 协议，界面与功能可自由修改与扩展。<br>
+    版权所有 © 2025 图片转Base64
+  </footer>
+
+  <script>
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("fileInput");
+
+    uploadArea.addEventListener("click", () => fileInput.click());
+
+    uploadArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", () => {
+      uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      handleImageFile(file);
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      handleImageFile(file);
+    });
+
+    function handleImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        alert("请选择图片文件！");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('base64Output').value = e.target.result;
+        document.getElementById('previewImage').src = e.target.result;
+        document.getElementById('fileInfo').innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function copyBase64() {
+      const textArea = document.getElementById('base64Output');
+      textArea.select();
+      document.execCommand('copy');
+      alert("Base64 已复制到剪贴板！");
+    }
+
+    function base64ToImage() {
+      const data = document.getElementById('base64Input').value.trim();
+      if (!data.startsWith("data:image/")) {
+        alert("请输入完整的 Base64 图片数据（必须包含 data:image/... 头部）");
+        return;
+      }
+      const output = document.getElementById('outputImage');
+      output.src = data;
+
+      const link = document.getElementById('downloadLink');
+      link.href = data;
+      link.download = "image.png";
+      link.style.display = 'inline-block';
+    }
+  </script>
+
+</body>
+</html>
