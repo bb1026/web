@@ -10,7 +10,8 @@
     ["图像转Base64", "pages/img2base64.html"]
   ],
   "查询工具": [
-    ["IP查询", "pages/ip.html"]
+    ["IP查询", "pages/ip.html"],
+    ["正则表达式", "pages/regex.html"]
   ],
   "小游戏": [
     ["单词消消乐", "https://bb1026.github.io/bing/game1.html"],
