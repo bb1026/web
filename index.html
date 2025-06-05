@@ -64,10 +64,10 @@
     fetch('./notice.html')
       .then(res => res.text())
       .then(text => {
-        document.getElementById('noticeContainer').innerText = text;
+        document.getElementById('noticeContainer').textContent = text;
       })
       .catch(err => {
-        document.getElementById('noticeContainer').innerText = '公告加载失败';
+        document.getElementById('noticeContainer').textContent = '公告加载失败';
       });
   });
   </script>
