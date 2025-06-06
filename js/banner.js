@@ -16,38 +16,26 @@
 <script>
 (function () {
   const imageContainer = document.getElementById('bannerImages');
-  const imageModal = document.getElementById('imageModal');
-  const modalImage = document.getElementById('modalImage');
-  const maxImageCount = 50;
+  const maxImageCount = 20; // 尝试最多加载 20 张图
   const imageBasePath = 'imgs/';
-  const extensions = ['jpg', 'jpeg', 'png', 'webp'];
-
-  function padNum(num) {
-    return num.toString().padStart(4, '0');
-  }
-
-  // 点击遮罩层关闭大图
-  imageModal.onclick = () => {
-    imageModal.style.display = 'none';
-    modalImage.src = '';
-  };
-
+  const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
+  
   for (let i = 0; i < maxImageCount; i++) {
     (function(index) {
       let found = false;
 
       extensions.forEach(ext => {
-        if (found) return;
-
-        const filenameBase = `IMG_${padNum(index)}`;
-
-        tryLoadImage(`${imageBasePath}${filenameBase}.${ext}`, () => {
+        if (found) return; // 找到了图片就跳过后续尝试
+        
+        // 先尝试小写
+        tryLoadImage(`${imageBasePath}image${index}.${ext}`, () => {
           if (!found) {
             found = true;
           }
         });
 
-        tryLoadImage(`${imageBasePath}${filenameBase}.${ext.toUpperCase()}`, () => {
+        // 再尝试大写
+        tryLoadImage(`${imageBasePath}image${index}.${ext.toUpperCase()}`, () => {
           if (!found) {
             found = true;
           }
