@@ -77,12 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // 关于
       const aboutLi = document.createElement('li');
       const aboutLink = document.createElement('a');
-      aboutLink.href = "pages/about.html";
-      aboutLink.target = "mainFrame";
       aboutLink.textContent = "关于";
-
       aboutLink.onclick = (e) => {
         e.preventDefault();
+        
+        document.getElementById('mainFrame').src = "pages/about.html";
         document.getElementById('mainFrame').style.display = 'block';
         document.getElementById('banner').style.display = 'none';
         document.getElementById('menuContainer').style.display = 'none';
@@ -91,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         window.scrollTo(0, 0);
       };
-
       aboutLi.appendChild(aboutLink);
       navList.appendChild(aboutLi);
     })
