@@ -103,27 +103,25 @@ header {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 0 12px; /* 去除上下内边距 */
+  padding: 0 12px;
   background: #fff;
   border-bottom: 1px solid #ccc;
   font-size: 20px;
-  line-height: 1.2; /* 控制高度压缩 */
+  line-height: 1.2;
 }
 
 header h1 {
-  margin: 0;         /* 去掉 h1 默认上下外边距 */
-  padding: 4px 0;     /* 轻微上下内边距 */
+  margin: 0;              /* 去掉默认上下间距 */
+  font-size: 24px;        /* 调整大小 */
+  font-weight: bold;
+  line-height: 1.2;
 }
 
-header h1 a {
-  color: #000;        /* 黑色字体 */
-  text-decoration: none;  /* 去掉下划线 */
-}
-
-/* 🧠 头部控制按钮区域 */
 #header-controls {
   display: flex;
   width: 100%;
+  margin: 0;              /* 避免多余外边距 */
+  padding: 0;
 }
 
 /* 🔍 搜索框样式 */
