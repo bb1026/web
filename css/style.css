@@ -88,6 +88,8 @@ header {
 #header-controls {
   display: flex;
   gap: 10px;
+  width: 95%;
+  max-width: 400px;
 }
 
 /* 📣 滚动公告栏容器 */
@@ -118,8 +120,6 @@ header {
 
 /* 🔍 搜索框样式 */
 #searchInput {
-  width: 95%;
-  max-width: 400px;
   flex: 1;
   max-width: none;
   padding: 5px 10px;
