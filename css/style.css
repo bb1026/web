@@ -71,6 +71,19 @@ body {
   white-space: nowrap;
 }
 
+/* 🧠 页面头部（标题 + 控件） */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0 12px;
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
 /* 📣 滚动公告栏容器 */
 .marquee {
   width: 95%;
