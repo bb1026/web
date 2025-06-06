@@ -73,7 +73,7 @@ body {
 
 /* 📣 滚动公告栏容器 */
 .marquee {
-  width: 90%;
+  width: 95%;
   margin: 0 auto;
   overflow: hidden;
   white-space: nowrap;
@@ -117,7 +117,7 @@ header {
 /* 🔍 搜索框样式 */
 #searchInput {
   width: 100%;
-  max-width: 200px;
+  max-width: 400px;
   padding: 5px 10px;
   font-size: 1em;
   box-sizing: border-box;
