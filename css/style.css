@@ -97,11 +97,6 @@ body {
   100% { transform: translateX(-100%); }
 }
 
-/* 🧠 页面头部（标题 + 控件） */
-header {
-  background: #fff;
-}
-
 /* 🔍 搜索框样式 */
 #searchInput {
   flex: 1;
