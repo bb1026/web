@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       aboutLink.textContent = "关于";
       aboutLink.onclick = (e) => {
         e.preventDefault();
-        
+
         document.getElementById('mainFrame').src = "pages/about.html";
         document.getElementById('mainFrame').style.display = 'block';
         document.getElementById('banner').style.display = 'none';
@@ -101,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.footer-link').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
+      
       document.getElementById('mainFrame').src = "pages/about.html";
       document.getElementById('mainFrame').style.display = 'block';
       document.getElementById('banner').style.display = 'none';
