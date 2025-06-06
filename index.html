@@ -31,22 +31,10 @@
 
   <!-- banner 图片区域 -->
   <section id="banner" class="container">
-    <div id="bannerImages" class="scroll-container" style="display:flex; gap:10px; height:200px; overflow-x:auto; padding:10px 0;"></div>
+    <div class="scroll-container" id="bannerImages"></div>
   </section>
   
-  <!-- 大图弹窗遮罩 -->
-  <div id="imageModal" style="
-    display:none; 
-    position:fixed; 
-    top:0; left:0; right:0; bottom:0; 
-    background: rgba(0,0,0,0.8); 
-    justify-content:center; 
-    align-items:center; 
-    z-index:9999;
-  ">
-    <img id="modalImage" src="" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 0 10px #000;">
-  </div>
-  
+  <!-- 图片 -->
   <script src="js/banner.js"></script>
 
   <!-- 分类菜单自动生成 -->
