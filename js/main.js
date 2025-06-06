@@ -68,11 +68,6 @@ fetch('menu.json')
     renderMenu();
   });
 
-// 切换暗黑模式
-document.getElementById('toggleDark').onclick = () => {
-  document.body.classList.toggle('dark');
-};
-
 // 搜索功能
 document.getElementById('searchInput').addEventListener('input', function() {
   const keyword = this.value.trim().toLowerCase();
