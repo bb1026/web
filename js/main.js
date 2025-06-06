@@ -1,5 +1,16 @@
 let allData = {};
 
+function goHome() {
+document.getElementById('mainFrame').style.display = 'none';
+document.getElementById('banner').style.display = '';
+document.getElementById('menuContainer').style.display = '';
+  window.scrollTo(0, 0);
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  if (typeof renderMenu === 'function') renderMenu();
+}
+
 function renderMenu(filtered = null) {
   const container = document.getElementById('menuContainer');
   container.innerHTML = '';
