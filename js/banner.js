@@ -1,6 +1,6 @@
 (function () {
   const imageContainer = document.getElementById('bannerImages');
-  const maxImageCount = 50; // 尝试最多加载 50 张图
+  const maxImageCount = 20; // 尝试最多加载 20 张图
   const imageBasePath = 'imgs/';
   const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
   
