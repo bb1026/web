@@ -9,20 +9,7 @@
 <body>
   <!-- 顶部导航容器 -->
   <div id="commonNav"></div>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // 加载 nav.html 到 commonNav 容器
-      fetch('./nav.html')
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById("commonNav").innerHTML = html;
-            const script = document.createElement('script');
-            script.src = 'js/nav.js';
-            document.body.appendChild(script);
-            window.navLoaded = true;
-        })
-    });
-  </script>
+  <script src="js/nav.js" defer></script>
 
   <!-- 页面主结构 -->
   <header>
@@ -47,12 +34,6 @@
   <!-- iframe 工具展示区域 -->
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
 
-  <!-- 主脚本 -->
-  <script src="js/main.js"></script>
-  
-  <!-- 图片 -->
-  <script src="js/banner.js"></script>
-  
   <!-- 公告 -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -78,5 +59,14 @@
     <a href="#" class="footer-link">联系我们</a> | 
     <a href="#" class="footer-link">使用条款</a>
   </footer>
+  
+  <!-- 加载footer -->
+  <script src="js/nav.js" defer></script>
+  
+  <!-- 主脚本 -->
+  <script src="js/main.js"></script>
+  
+  <!-- 图片 -->
+  <script src="js/banner.js"></script>
 </body>
 </html>
