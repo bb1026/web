@@ -240,7 +240,7 @@ header {
 /* 📦 主 iframe 样式 */
 #mainFrame {
   width: 100%;
-  height: 600px;
+  height: 1000px;
   border: none;
   margin-top: 20px;
   background: #fff;
