@@ -84,6 +84,12 @@ header {
   line-height: 1.2;
 }
 
+/* 🧠 头部控制按钮区域 */
+#header-controls {
+  display: flex;
+  gap: 10px;
+}
+
 /* 📣 滚动公告栏容器 */
 .marquee {
   width: 95%;
