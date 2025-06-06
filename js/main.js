@@ -93,11 +93,22 @@ document.getElementById('searchInput').addEventListener('input', function () {
     renderMenu();
     return;
   }
-
+  
+// 回首页
   const result = {};
   for (const [cat, tools] of Object.entries(allData)) {
     const match = tools.filter(([name]) => name.toLowerCase().includes(keyword));
     if (match.length > 0) result[cat] = match;
   }
   renderMenu(result);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const titleLink = document.getElementById('homeTitleLink');
+  if (titleLink) {
+    titleLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      goHome();
+    });
+  }
 });
