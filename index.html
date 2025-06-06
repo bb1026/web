@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+  <!-- 主脚本 -->
+  <script src="js/main.js"></script>
+  
   <!-- 顶部导航 -->
   <nav id="topNav">
     <ul id="navList"></ul>
@@ -14,9 +17,6 @@
   
   <!-- 顶部菜单 -->
   <script src="js/nav.js" defer></script>
-  
-  <!-- 主脚本 -->
-  <script src="js/main.js"></script>
 
   <!-- 页面主结构 -->
   <header>
@@ -25,6 +25,8 @@
     <div class="marquee" id="noticeContainer">
       加载中...
     </div>
+    
+    <!-- 搜索工具 -->
     <div id="header-controls">
       <input type="text" id="searchInput" placeholder="搜索工具..." />
     </div>
@@ -44,7 +46,7 @@
   <!-- iframe 工具展示区域 -->
   <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
 
-  <!-- 公告 -->
+  <!-- 滚动公告 -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       fetch('./notice.html')
