@@ -267,11 +267,11 @@ header {
 }
 
 #footer-link {
-  color: #0000EE;           /* 默认蓝色 */
+  color: #0000EE !important; /* 默认蓝色 */
   text-decoration: underline;
   cursor: pointer;
 }
 
 #footer-link:hover {
-  color: #551A8B;           /* 访问过的链接默认紫色，可选 */
+  color: #551A8B; /* 紫色 */
 }
