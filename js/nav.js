@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('banner').style.display = '';
         document.getElementById('menuContainer').style.display = '';
         window.scrollTo(0, 0);
+      
+        // ✅ 清空搜索框并渲染完整菜单
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.value = '';
+        }
+        if (typeof renderMenu === 'function') {
+          renderMenu();
+        }
       };
       homeLi.appendChild(homeLink);
       navList.appendChild(homeLi);
