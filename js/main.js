@@ -69,9 +69,20 @@ fetch('menu.json')
   });
 
 // 搜索功能
-document.getElementById('searchInput').addEventListener('input', function() {
+document.getElementById('searchInput').addEventListener('input', function () {
   const keyword = this.value.trim().toLowerCase();
-  if (!keyword) return renderMenu();
+
+  // 始终显示菜单，隐藏 iframe
+  document.getElementById('mainFrame').style.display = 'none';
+  document.getElementById('banner').style.display = '';
+  document.getElementById('menuContainer').style.display = '';
+  window.scrollTo(0, 0);
+
+  if (!keyword) {
+    renderMenu();
+    return;
+  }
+
   const result = {};
   for (const [cat, tools] of Object.entries(allData)) {
     const match = tools.filter(([name]) => name.toLowerCase().includes(keyword));
