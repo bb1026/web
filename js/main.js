@@ -1,16 +1,5 @@
 let allData = {};
 
-function goHome() {
-document.getElementById('mainFrame').style.display = 'none';
-document.getElementById('banner').style.display = '';
-document.getElementById('menuContainer').style.display = '';
-  window.scrollTo(0, 0);
-
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) searchInput.value = '';
-  if (typeof renderMenu === 'function') renderMenu();
-}
-
 function renderMenu(filtered = null) {
   const container = document.getElementById('menuContainer');
   container.innerHTML = '';
@@ -93,22 +82,3 @@ document.getElementById('searchInput').addEventListener('input', function () {
     renderMenu();
     return;
   }
-  
-// 回首页
-  const result = {};
-  for (const [cat, tools] of Object.entries(allData)) {
-    const match = tools.filter(([name]) => name.toLowerCase().includes(keyword));
-    if (match.length > 0) result[cat] = match;
-  }
-  renderMenu(result);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const titleLink = document.getElementById('homeTitleLink');
-  if (titleLink) {
-    titleLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      goHome();
-    });
-  }
-});
