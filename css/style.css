@@ -106,28 +106,7 @@ header {
   padding: 0 12px;
   background: #fff;
   border-bottom: 1px solid #ccc;
-  font-size: 28px;
   line-height: 1.2;
-}
-
-header h1 {
-  margin: 0; /* 去掉默认上下间距 */
-  font-weight: bold;
-}
-
-#header-controls {
-  display: flex;
-  width: 100%;
-  margin: 0; /* 避免多余外边距 */
-  padding: 0;
-}
-
-.header-link {
-    color: #000000;       /* 纯黑色 */
-    text-decoration: none; /* 无下划线 */
-}
-.header-link:hover {
-    color: #000000;       /* 保持悬停时也是黑色 */
 }
 
 /* 🔍 搜索框样式 */
