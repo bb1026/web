@@ -88,7 +88,7 @@ body {
 /* 📣 滚动文字区域 */
 .marquee-inner {
   display: inline-block;
-  animation: scroll 12s linear infinite;
+  animation: scroll 15s linear infinite;
 }
 
 /* 📣 滚动动画 */
@@ -102,11 +102,11 @@ header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 2px;
+  padding: 4px 12px;
   background: #fff;
   border-bottom: 1px solid #ccc;
-  font-size: 30px;
+  font-size: 20px;
 }
 
 /* 🧠 头部控制按钮区域 */
