@@ -111,13 +111,13 @@ header {
 /* 🧠 头部控制按钮区域 */
 #header-controls {
   display: flex;
-  gap: 10px;
+  width: 100%;
 }
 
 /* 🔍 搜索框样式 */
 #searchInput {
-  width: 100%;
-  max-width: 800px;
+  flex: 1;
+  max-width: none;
   padding: 5px 10px;
   font-size: 1em;
   box-sizing: border-box;
