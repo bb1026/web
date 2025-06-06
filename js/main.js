@@ -82,3 +82,11 @@ document.getElementById('searchInput').addEventListener('input', function () {
     renderMenu();
     return;
   }
+
+  const result = {};
+  for (const [cat, tools] of Object.entries(allData)) {
+    const match = tools.filter(([name]) => name.toLowerCase().includes(keyword));
+    if (match.length > 0) result[cat] = match;
+  }
+  renderMenu(result);
+});
