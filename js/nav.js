@@ -105,3 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// 页面其他区域点击时收起所有菜单
+  document.addEventListener('click', (e) => {
+    if (
+      e.target.closest('#topNav .dropdown') ||
+      e.target.classList.contains('dropdown-toggle')
+    ) return;
+    document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+      menu.classList.remove('visible');
+    });
+  });
