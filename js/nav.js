@@ -1,30 +1,51 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. 加载菜单 JSON 并构建导航栏
+  const iframe = document.getElementById('mainFrame');
+  const banner = document.getElementById('banner');
+  const menuContainer = document.getElementById('menuContainer');
+
+  // 封装统一加载函数
+  function loadPageIntoFrame(url) {
+    iframe.src = 'about:blank';
+    iframe.style.display = 'none';
+
+    setTimeout(() => {
+      iframe.src = url;
+      iframe.style.display = 'block';
+    }, 50);
+  }
+
+  // 封装导航状态切换
+  function showHome() {
+    iframe.style.display = 'none';
+    banner.style.display = '';
+    menuContainer.style.display = '';
+    window.scrollTo(0, 0);
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    if (typeof renderMenu === 'function') renderMenu();
+  }
+
+  function hideMenus() {
+    document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+      menu.classList.remove('visible');
+    });
+  }
+
+  // 加载菜单 JSON
   fetch('menu.json')
     .then(res => res.json())
     .then(menu => {
       const navList = document.getElementById('navList');
 
-      // 首页
+      // 首页按钮
       const homeLi = document.createElement('li');
       const homeLink = document.createElement('a');
       homeLink.href = "#";
       homeLink.textContent = "首页";
       homeLink.onclick = (e) => {
         e.preventDefault();
-        document.getElementById('mainFrame').style.display = 'none';
-        document.getElementById('banner').style.display = '';
-        document.getElementById('menuContainer').style.display = '';
-        window.scrollTo(0, 0);
-      
-        // ✅ 清空搜索框并渲染完整菜单
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-          searchInput.value = '';
-        }
-        if (typeof renderMenu === 'function') {
-          renderMenu();
-        }
+        showHome();
       };
       homeLi.appendChild(homeLink);
       navList.appendChild(homeLi);
@@ -46,16 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const item = document.createElement('li');
           const link = document.createElement('a');
           link.href = href;
-          link.target = 'mainFrame';
           link.textContent = name;
 
-          link.onclick = () => {
-            document.getElementById('mainFrame').style.display = 'block';
-            document.getElementById('banner').style.display = 'none';
-            document.getElementById('menuContainer').style.display = 'none';
-            document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
-              menu.classList.remove('visible');
-            });
+          link.onclick = (e) => {
+            e.preventDefault();
+            loadPageIntoFrame(href);
+            banner.style.display = 'none';
+            menuContainer.style.display = 'none';
+            hideMenus();
             window.scrollTo(0, 0);
           };
 
@@ -66,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dropdown.appendChild(submenu);
         navList.appendChild(dropdown);
 
+        // 展开子菜单
         toggleSpan.addEventListener('click', () => {
           document.querySelectorAll('#topNav .submenu').forEach(s => {
             if (s !== submenu) s.classList.remove('visible');
@@ -74,20 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // 关于
+      // 关于按钮
       const aboutLi = document.createElement('li');
       const aboutLink = document.createElement('a');
+      aboutLink.href = "#";
       aboutLink.textContent = "关于";
       aboutLink.onclick = (e) => {
         e.preventDefault();
-
-        document.getElementById('mainFrame').src = "pages/about.html";
-        document.getElementById('mainFrame').style.display = 'block';
-        document.getElementById('banner').style.display = 'none';
-        document.getElementById('menuContainer').style.display = 'none';
-        document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
-          menu.classList.remove('visible');
-        });
+        loadPageIntoFrame('pages/about.html');
+        banner.style.display = 'none';
+        menuContainer.style.display = 'none';
+        hideMenus();
         window.scrollTo(0, 0);
       };
       aboutLi.appendChild(aboutLink);
@@ -97,30 +114,24 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('加载菜单失败:', err);
     });
 
-  // 2. 绑定页脚链接事件（关于、联系我们、使用条款）
+  // 页脚链接事件（跳转到 about 页面）
   document.querySelectorAll('.footer-link').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
-      
-      document.getElementById('mainFrame').src = "pages/about.html";
-      document.getElementById('mainFrame').style.display = 'block';
-      document.getElementById('banner').style.display = 'none';
-      document.getElementById('menuContainer').style.display = 'none';
-      document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
-        menu.classList.remove('visible');
-      });
+      loadPageIntoFrame('pages/about.html');
+      banner.style.display = 'none';
+      menuContainer.style.display = 'none';
+      hideMenus();
       window.scrollTo(0, 0);
     });
   });
-});
 
-// 页面其他区域点击时收起所有菜单
+  // 页面其他区域点击时收起所有子菜单
   document.addEventListener('click', (e) => {
     if (
       e.target.closest('#topNav .dropdown') ||
       e.target.classList.contains('dropdown-toggle')
     ) return;
-    document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
-      menu.classList.remove('visible');
-    });
+    hideMenus();
   });
+});
