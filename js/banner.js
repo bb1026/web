@@ -5,6 +5,18 @@
   const imageBasePath = 'imgs/';
   const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
 
+  const placeholderWrappers = [];
+
+  // 插入占位图（5 个）
+  for (let i = 0; i < loadImageCount; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper placeholder';
+    wrapper.innerHTML = `<div class="placeholder-box"></div>`;
+    imageContainer.appendChild(wrapper);
+    placeholderWrappers.push(wrapper);
+  }
+
+  // 随机不重复索引
   const indices = Array.from({ length: maxImageCount }, (_, i) => i);
   const randomIndices = [];
 
@@ -13,52 +25,38 @@
     randomIndices.push(indices.splice(randomIndex, 1)[0]);
   }
 
-  randomIndices.forEach(index => {
+  // 尝试加载真实图并替换占位
+  randomIndices.forEach((index, i) => {
     let found = false;
 
     extensions.forEach(ext => {
       if (found) return;
-
-      tryLoadImage(`${imageBasePath}image${index}.${ext}`, () => {
-        if (!found) found = true;
-      });
-
-      tryLoadImage(`${imageBasePath}image${index}.${ext.toUpperCase()}`, () => {
-        if (!found) found = true;
-      });
+      tryLoadImage(`${imageBasePath}image${index}.${ext}`, i);
+      tryLoadImage(`${imageBasePath}image${index}.${ext.toUpperCase()}`, i);
     });
 
-    function tryLoadImage(src, onLoadCallback) {
+    function tryLoadImage(src, position) {
       if (found) return;
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'image-wrapper';
-
-      // 占位图
-      const placeholder = document.createElement('div');
-      placeholder.className = 'image-placeholder';
-      wrapper.appendChild(placeholder);
-      imageContainer.appendChild(wrapper);
-
       const img = new Image();
       img.src = src;
       img.onload = () => {
-        if (!found) {
-          found = true;
-          img.style.width = '100%';
-          img.style.minWidth = ''; 
-          img.style.height = '100%';
-          img.style.objectFit = 'cover';
-          img.style.borderRadius = '0';
-          img.style.flexShrink = '0';
-      
-          const wrapper = document.createElement('div');
-          wrapper.className = 'image-wrapper';
-          wrapper.appendChild(img);
-          imageContainer.appendChild(wrapper);
-          onLoadCallback();
-        }
+        if (found) return;
+        found = true;
+
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.display = 'block';
+        img.loading = 'lazy';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'image-wrapper';
+        wrapper.appendChild(img);
+
+        // 替换对应的占位 wrapper
+        imageContainer.replaceChild(wrapper, placeholderWrappers[position]);
       };
+      img.onerror = () => {};
     }
   });
 })();
