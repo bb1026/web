@@ -13,7 +13,6 @@ body {
   padding: 10px 20px;
 }
 
-/* 🔝 顶部导航栏列表样式 */
 #topNav ul {
   list-style: none;
   display: flex;
@@ -23,23 +22,19 @@ body {
   flex-wrap: wrap;
 }
 
-/* 🔝 顶部导航栏链接样式 */
 #topNav li a {
   color: #fff;
   text-decoration: none;
 }
 
-/* 🔝 下拉菜单容器 */
 #topNav li.dropdown {
   position: relative;
 }
 
-/* 🔝 下拉菜单点击区域 */
 #topNav .dropdown-toggle {
   cursor: pointer;
 }
 
-/* 🔝 下拉子菜单样式（默认隐藏） */
 #topNav .submenu {
   display: none;
   position: absolute;
@@ -51,12 +46,10 @@ body {
   z-index: 1000;
 }
 
-/* 🔝 下拉菜单可见状态 */
 #topNav .submenu.visible {
   display: block;
 }
 
-/* 🔝 子菜单项样式 */
 #topNav .submenu li {
   margin-bottom: 5px;
 }
@@ -65,7 +58,6 @@ body {
   margin-bottom: 0;
 }
 
-/* 🔝 子菜单链接样式 */
 #topNav .submenu a {
   color: #fff;
   white-space: nowrap;
@@ -84,17 +76,15 @@ header {
   line-height: 1.2;
 }
 
-/* 🧠 头部控制按钮区域 */
 #header-controls {
   display: flex;
   gap: 10px;
   width: 95%;
   max-width: 400px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin: 5px 0;
 }
 
-/* 📣 滚动公告栏容器 */
+/* 📣 滚动公告栏 */
 .marquee {
   width: 95%;
   margin: 0 auto;
@@ -108,28 +98,24 @@ header {
   border-bottom: 1px solid #eee;
 }
 
-/* 📣 滚动文字区域 */
 .marquee-inner {
   display: inline-block;
   animation: scroll 15s linear infinite;
 }
 
-/* 📣 滚动动画 */
 @keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
 }
 
-/* 🔍 渐变色搜索框样式 */
+/* 🔍 搜索框 */
 #searchInput {
   width: 100%;
   height: 40px;
   padding: 5px 12px;
   font-size: 16px;
-  font-family: 'Arial', sans-serif;
   color: #333;
   outline: none;
-  /*margin-bottom: 15px;*/
 
   border: 1px solid transparent;
   background: linear-gradient(white, white) padding-box,
@@ -156,7 +142,7 @@ header {
   font-style: italic;
 }
 
-/* banner 图片容器 */
+/* 🎞️ banner 图片区域 */
 #banner {
   padding: 10px;
   overflow: hidden;
@@ -166,77 +152,48 @@ header {
   display: flex;
   gap: 10px;
   overflow-x: auto;
+  padding: 10px 0;
 }
 
+/* 单个图片容器 */
 .image-wrapper {
   width: 300px;
   height: 180px;
-  position: relative;
-  flex-shrink: 0;
   border-radius: 6px;
   overflow: hidden;
+  flex-shrink: 0;
+  background: #eee;
+  position: relative;
 }
 
-.image-placeholder {
+/* 占位图动画 */
+.placeholder-box {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #eee, #ddd);
-  animation: shimmer 1.5s infinite;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #ddd, #f5f5f5);
+  animation: pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: 200px 0;
-  }
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
+/* 图片淡入动画 */
 .fade-in-image {
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .fade-in-image[src] {
   opacity: 1;
 }
 
-/* 图片滚动容器 - 横向滚动 */
-.scroll-container {
-  display: flex;
-  overflow-x: auto;      /* 横向滚动 */
-  white-space: nowrap;   /* 不换行 */
-  height: 200px;         /* 固定高度 */
-  gap: 10px;             /* 图片间距 */
-  scroll-behavior: smooth; /* 平滑滚动 */
-  -ms-overflow-style: none;  /* IE/Edge 隐藏滚动条 */
-  scrollbar-width: none;     /* Firefox 隐藏滚动条 */
-}
-
-.scroll-container::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari 隐藏滚动条 */
-}
-
-.scroll-container img {
-  height: 100%;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 6px;
-  min-width: 300px;
-  user-select: none; /* 防止图片被选中 */
-  pointer-events: auto;
-}
-
-/* 🎞️ 页面主内容容器 */
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* 🎞️ 横向滚动图片容器 */
+/* 🎞️ 横向滚动设置 */
 .scroll-container {
   display: flex;
   overflow-x: auto;
@@ -248,21 +205,11 @@ header {
   scrollbar-width: none;
 }
 
-/* 🎞️ 隐藏滚动条（兼容 Chrome） */
 .scroll-container::-webkit-scrollbar {
   display: none;
 }
 
-/* 🎞️ 每张图片样式 */
-.scroll-container img {
-  height: 100%;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 6px;
-  min-width: 300px;
-}
-
-/* 📋 分类模块容器 */
+/* 📋 分类模块 */
 .category {
   margin-bottom: 20px;
   padding: 10px;
@@ -271,12 +218,11 @@ header {
   background: #fff;
 }
 
-/* 📋 分类标题 */
 .category h2 {
   margin-top: 0;
 }
 
-/* 📋 工具列表整体布局 */
+/* 📋 工具列表 */
 .tool-list {
   display: flex;
   flex-wrap: wrap;
@@ -284,7 +230,7 @@ header {
   margin-top: 16px;
 }
 
-/* 📋 单个工具按钮样式 */
+/* 📋 工具按钮样式 */
 .tool-item {
   display: inline-block;
   padding: 10px 18px;
@@ -315,7 +261,7 @@ header {
   }
 }
 
-/* 📋 “查看更多”链接样式 */
+/* 📋 查看更多按钮 */
 .more-link {
   display: inline-block;
   margin-top: 10px;
@@ -324,7 +270,7 @@ header {
   text-decoration: underline;
 }
 
-/* 📦 主 iframe 样式 */
+/* 📦 iframe 样式 */
 #mainFrame {
   width: 100%;
   height: 1000px;
@@ -333,14 +279,14 @@ header {
   background: #fff;
 }
 
-/* 📖 页脚分割线 */
+/* 📖 分隔线 */
 .divider {
   margin-top: 40px;
   border: none;
   border-top: 1px solid #ccc;
 }
 
-/* 📖 网站页脚文字 */
+/* 📖 页脚 */
 .site-footer {
   text-align: center;
   margin-top: 20px;
@@ -348,18 +294,17 @@ header {
   color: #666;
 }
 
-/* 📖 页脚链接样式 */
 .site-footer a {
   color: #666;
   text-decoration: underline;
 }
 
 .footer-link {
-  color: #0000EE !important; /* 默认蓝色 */
+  color: #0000EE !important;
   text-decoration: underline;
   cursor: pointer;
 }
 
 .footer-link:hover {
-  color: #551A8B; /* 紫色 */
+  color: #551A8B;
 }
