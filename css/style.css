@@ -156,11 +156,51 @@ header {
   font-style: italic;
 }
 
-/* banner 容器 */
+/* banner 图片容器 */
 #banner {
   padding: 10px;
-  /*background: #f5f5f5;*/
   overflow: hidden;
+}
+
+#bannerImages {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.image-wrapper {
+  width: 300px;
+  height: 180px;
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #eee, #ddd);
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+.fade-in-image {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.fade-in-image[src] {
+  opacity: 1;
 }
 
 /* 图片滚动容器 - 横向滚动 */
