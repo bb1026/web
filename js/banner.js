@@ -45,16 +45,17 @@
       img.onload = () => {
         if (!found) {
           found = true;
-
+          img.style.width = '100%';
+          img.style.minWidth = ''; 
           img.style.height = '100%';
           img.style.objectFit = 'cover';
-          img.style.borderRadius = '6px';
-          img.style.minWidth = '';
+          img.style.borderRadius = '0';
           img.style.flexShrink = '0';
-          img.className = 'fade-in-image';
-
-          wrapper.innerHTML = ''; // 移除占位
+      
+          const wrapper = document.createElement('div');
+          wrapper.className = 'image-wrapper';
           wrapper.appendChild(img);
+          imageContainer.appendChild(wrapper);
           onLoadCallback();
         }
       };
