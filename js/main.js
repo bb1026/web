@@ -35,22 +35,27 @@ function renderMenu(filtered = null) {
       more.href = '#';
       more.textContent = '查看更多...';
       more.onclick = (e) => {
-        e.preventDefault();
-        toolList.innerHTML = '';
-        tools.forEach(([name, href]) => {
-          const a = document.createElement('a');
-          a.className = 'tool-item';
-          a.href = href;
-          a.target = 'mainFrame';
-          a.textContent = name;
-          a.onclick = () => {
-  document.getElementById('mainFrame').style.display = 'block';
-  document.getElementById('banner').style.display = 'none';
-  document.getElementById('menuContainer').style.display = 'none';
-  window.scrollTo(0, 0);
-};
-          toolList.appendChild(a);
+  e.preventDefault();
+
+  const newList = document.createElement('div');
+  newList.className = 'tool-list';
+
+  tools.forEach(([name, href]) => {
+    const a = document.createElement('a');
+    a.className = 'tool-item';
+    a.href = href;
+    a.target = 'mainFrame';
+    a.textContent = name;
+    a.onclick = () => {
+            document.getElementById('mainFrame').style.display = 'block';
+            document.getElementById('banner').style.display = 'none';
+            document.getElementById('menuContainer').style.display = 'none';
+            window.scrollTo(0, 0);
+          };
+          newList.appendChild(a);
         });
+      
+        toolList.replaceWith(newList);
         more.remove();
       };
       section.appendChild(more);
