@@ -152,7 +152,7 @@ header {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 10px 0;
+  padding: 10px 0px;
 }
 
 /* 单个图片容器 */
@@ -198,8 +198,8 @@ header {
   display: flex;
   overflow-x: auto;
   white-space: nowrap;
-  height: 200px;
-  gap: 10px;
+  height: auto;
+  gap: 0px;
   scroll-behavior: smooth;
   -ms-overflow-style: none;
   scrollbar-width: none;
