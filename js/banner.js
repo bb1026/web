@@ -49,7 +49,7 @@
           img.style.height = '100%';
           img.style.objectFit = 'cover';
           img.style.borderRadius = '6px';
-          img.style.minWidth = '300px';
+          img.style.minWidth = '';
           img.style.flexShrink = '0';
           img.className = 'fade-in-image';
 
