@@ -5,58 +5,55 @@
   const imageBasePath = 'imgs/';
   const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
 
-  const placeholderWrappers = [];
-
-  // 插入占位图（5 个）
-  for (let i = 0; i < loadImageCount; i++) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'image-wrapper placeholder';
-    wrapper.innerHTML = `<div class="placeholder-box"></div>`;
-    imageContainer.appendChild(wrapper);
-    placeholderWrappers.push(wrapper);
-  }
-
-  // 随机不重复索引
   const indices = Array.from({ length: maxImageCount }, (_, i) => i);
   const randomIndices = [];
 
+  // 选择随机的不重复索引
   while (randomIndices.length < loadImageCount && indices.length > 0) {
     const randomIndex = Math.floor(Math.random() * indices.length);
     randomIndices.push(indices.splice(randomIndex, 1)[0]);
   }
 
-  // 尝试加载真实图并替换占位
+  // 先创建 5 个 image-wrapper（含占位图）
+  const wrappers = randomIndices.map(() => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'image-wrapper';
+
+    const placeholder = document.createElement('div');
+    placeholder.className = 'placeholder-box';
+
+    wrapper.appendChild(placeholder);
+    imageContainer.appendChild(wrapper);
+    return wrapper;
+  });
+
+  // 尝试为每个 wrapper 加载实际图片
   randomIndices.forEach((index, i) => {
     let found = false;
 
-    extensions.forEach(ext => {
-      if (found) return;
-      tryLoadImage(`${imageBasePath}image${index}.${ext}`, i);
-      tryLoadImage(`${imageBasePath}image${index}.${ext.toUpperCase()}`, i);
-    });
+    for (const ext of extensions) {
+      if (found) break;
 
-    function tryLoadImage(src, position) {
-      if (found) return;
-      const img = new Image();
-      img.src = src;
-      img.onload = () => {
-        if (found) return;
-        found = true;
+      const trySrcs = [`${imageBasePath}image${index}.${ext}`, `${imageBasePath}image${index}.${ext.toUpperCase()}`];
+      for (const src of trySrcs) {
+        if (found) break;
 
+        const img = new Image();
+        img.src = src;
+        img.className = 'fade-in-image';
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
-        img.style.display = 'block';
-        img.loading = 'lazy';
+        img.onload = () => {
+          if (found) return;
+          found = true;
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'image-wrapper';
-        wrapper.appendChild(img);
-
-        // 替换对应的占位 wrapper
-        imageContainer.replaceChild(wrapper, placeholderWrappers[position]);
-      };
-      img.onerror = () => {};
+          const wrapper = wrappers[i];
+          wrapper.innerHTML = ''; // 移除占位图
+          wrapper.appendChild(img);
+        };
+        img.onerror = () => {};
+      }
     }
   });
 })();
