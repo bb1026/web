@@ -2,7 +2,8 @@
   "开发工具": [
     ["VBA 代码混淆器 / 还原器", "https://bb1026.github.io/bing/vba.html"],
     ["时间戳", "https://bb1026.github.io/bing/timestamp.html"],
-    ["64位编码解码", "https://bb1026.github.io/bing/encoder.html"]
+    ["64位编码解码", "https://bb1026.github.io/bing/encoder.html"],
+    ["密码生成", "pages/password.html"]
   ],
   "图像工具": [
     ["二维码生成", "pages/qrcode.html"],
@@ -11,13 +12,15 @@
   ],
   "查询工具": [
     ["IP查询", "pages/ip.html"],
-    ["正则表达式", "pages/regex.html"]
+    ["正则表达式", "pages/regex.html"],
+    ["身份证号码查验", "pages/idcheck.html"]
   ],
   "小游戏": [
     ["单词消消乐", "https://bb1026.github.io/bing/game1.html"],
     ["单词拼写", "https://bb1026.github.io/bing/game2.html"],
     ["单词拼写2", "https://bb1026.github.io/bing/game3.html"],
     ["单词拼写3", "https://bb1026.github.io/bing/game4.html"],
-    ["华容道", "https://bb1026.github.io/bing/game5.html"]
+    ["华容道", "https://bb1026.github.io/bing/game5.html"],
+    ["井字游戏", "pages/xogame.html"]
   ]
 }
