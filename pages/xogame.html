@@ -3,93 +3,354 @@
 <head>
   <meta charset="UTF-8">
   <title>井字游戏</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body { font-family: system-ui; text-align: center; background: #f9f9f9; padding: 20px; }
-    h1 { margin-bottom: 10px; }
-    #board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; justify-content: center; margin: 20px auto; }
-    .cell {
-      width: 100px; height: 100px; font-size: 2em; cursor: pointer;
-      background: #fff; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center;
+    body { 
+      font-family: system-ui; 
+      text-align: center; 
+      background: #f9f9f9; 
+      padding: 20px; 
     }
-    .X { color: red; }
-    .O { color: blue; }
-    #scoreboard { margin-top: 10px; }
+    h1 { 
+      margin-bottom: 10px; 
+      color: #333;
+    }
+    #board { 
+      display: grid; 
+      grid-template-columns: repeat(3, 120px); 
+      gap: 8px; 
+      justify-content: center; 
+      margin: 20px auto; 
+    }
+    .cell {
+      width: 120px; 
+      height: 120px; 
+      font-size: 4em; 
+      cursor: pointer;
+      background: #fff; 
+      border: 2px solid #ddd; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .cell:hover {
+      border-color: #999;
+      transform: scale(1.03);
+    }
+    .cell:active {
+      transform: scale(0.95);
+    }
+    .X { color: #e74c3c; }
+    .O { color: #3498db; }
+    .win-line {
+      animation: winFlash 1.5s ease-in-out infinite;
+    }
+    @keyframes winFlash {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(255, 102, 0, 0.5); }
+    }
+    #status {
+      font-size: 1.2em;
+      margin: 15px 0;
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+    .status-win { 
+      background: rgba(34, 197, 94, 0.1); 
+      color: #22c55e;
+    }
+    .status-draw { 
+      background: rgba(165, 165, 165, 0.1); 
+      color: #6b7280;
+    }
+    #scoreboard { 
+      margin-top: 10px; 
+      font-size: 1.1em;
+      color: #666;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    .score-section {
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(66, 165, 245, 0.1);
+    }
+    .score-value {
+      font-weight: bold;
+      margin-left: 5px;
+    }
     button {
       margin-top: 20px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: #42a5f5;
       color: #fff;
       border: none;
       border-radius: 20px;
       cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #2196f3;
+    }
+    
+    /* 战绩弹窗样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      animation: modalFadeIn 0.3s;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .modal-header h2 {
+      margin: 0;
+      color: #333;
+    }
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #333;
+    }
+    .history-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background: #f8f9fa;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .history-item.win {
+      border-left: 4px solid #e74c3c;
+    }
+    .history-item.win .winner {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .history-item.draw {
+      border-left: 4px solid #6b7280;
+    }
+    .no-history {
+      padding: 20px;
+      color: #666;
+      font-style: italic;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <h1>井字游戏</h1>
   <div id="board"></div>
-  <div id="status"></div>
-  <div id="scoreboard">X 赢: 0 | O 赢: 0</div>
+  <div id="status">当前玩家: X</div>  <!-- 初始状态显示当前玩家 -->
+  <div id="scoreboard" onclick="showAllHistory()">
+    X 赢: <span class="score-value" id="score-x">0</span> | 
+    O 赢: <span class="score-value" id="score-o">0</span> | 
+    平局: <span class="score-value" id="score-draw">0</span>
+  </div>
   <button onclick="resetGame()">重新开始</button>
+
+  <!-- 战绩弹窗 -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>对战历史</h2>
+        <span class="close" onclick="closeHistory()">&times;</span>
+      </div>
+      <div id="history-list"></div>
+    </div>
+  </div>
 
   <script>
     let board = ["", "", "", "", "", "", "", "", ""];
     let currentPlayer = "X";
     let gameActive = true;
-    let score = { X: 0, O: 0 };
+    let score = { X: 0, O: 0, draw: 0 };
+    let gameHistory = [];
+    let winningCells = [];
 
     function drawBoard() {
       const boardDiv = document.getElementById("board");
       boardDiv.innerHTML = "";
       board.forEach((cell, idx) => {
         const div = document.createElement("div");
-        div.className = "cell " + cell;
+        div.className = `cell ${cell}${winningCells.includes(idx) ? " win-line" : ""}`;
         div.textContent = cell;
         div.onclick = () => handleClick(idx);
         boardDiv.appendChild(div);
       });
-      document.getElementById("status").textContent = currentPlayer + " 的回合";
+      updateStatus();
+      updateScoreDisplay();
     }
 
     function handleClick(i) {
       if (!gameActive || board[i]) return;
       board[i] = currentPlayer;
       checkWinner();
-      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      if (gameActive) {  // 只有在游戏未结束时才切换玩家
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        updateStatus();
+      }
       drawBoard();
     }
 
     function checkWinner() {
-      const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-      for (let combo of wins) {
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      winningCells = [];
+      
+      for (const combo of wins) {
         const [a, b, c] = combo;
         if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-          document.getElementById("status").textContent = board[a] + " 赢了！";
+          winningCells = [a, b, c];
           score[board[a]]++;
-          updateScore();
+          saveGameHistory(`${board[a]} 赢`);
           gameActive = false;
+          updateStatus();
           return;
         }
       }
-      if (!board.includes("")) {
-        document.getElementById("status").textContent = "平局";
+      
+      // 只有在没有获胜者且棋盘已满时才判断为平局
+      if (!board.includes("") && gameActive) {
+        score.draw++;
+        saveGameHistory("平局");
         gameActive = false;
+        updateStatus();
       }
     }
 
-    function updateScore() {
-      document.getElementById("scoreboard").textContent = `X 赢: ${score.X} | O 赢: ${score.O}`;
+    function saveGameHistory(result) {
+      gameHistory.unshift({ 
+        result, 
+        timestamp: new Date().toLocaleString() 
+      });
+      updateScoreDisplay();
+    }
+
+    function updateStatus() {
+      const statusDiv = document.getElementById("status");
+      statusDiv.className = "";  // 重置类名
+      
+      if (!gameActive) {
+        if (winningCells.length > 0) {
+          const winner = board[winningCells[0]];
+          statusDiv.className = "status-win";
+          statusDiv.textContent = `${winner} 赢了！`;
+        } else {
+          statusDiv.className = "status-draw";
+          statusDiv.textContent = "平局！";
+        }
+      } else {
+        statusDiv.textContent = `当前玩家: ${currentPlayer}`;
+      }
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById("score-x").textContent = score.X;
+      document.getElementById("score-o").textContent = score.O;
+      document.getElementById("score-draw").textContent = score.draw;
     }
 
     function resetGame() {
       board = ["", "", "", "", "", "", "", "", ""];
       gameActive = true;
       currentPlayer = "X";
+      winningCells = [];
+      updateStatus();
       drawBoard();
     }
 
-    drawBoard();
+    function showAllHistory() {
+      const modal = document.getElementById("historyModal");
+      const historyList = document.getElementById("history-list");
+      historyList.innerHTML = "";
+      
+      if (gameHistory.length === 0) {
+        historyList.innerHTML = `<div class="no-history">暂无对战记录</div>`;
+      } else {
+        // 反转数组，使最早的记录在最下面
+        const reversedHistory = [...gameHistory].reverse();
+        
+          gameHistory.forEach((game, index) => {
+    const item = document.createElement("div");
+    item.className = game.result.includes("赢") ? "history-item win" : "history-item draw";
+    
+    // 计算序号（最新的记录序号最大）
+    const gameNumber = gameHistory.length - index;
+    
+    if (game.result.includes("赢")) {
+      const winner = game.result.charAt(0);
+      item.innerHTML = `
+        <span>第 ${gameNumber} 局: <span class="winner">${winner} 赢</span></span>
+        <span>${game.timestamp}</span>
+      `;
+    } else {
+      item.innerHTML = `
+        <span>第 ${gameNumber} 局: 平局</span>
+        <span>${game.timestamp}</span>
+      `;
+    }
+    
+    historyList.appendChild(item);
+  });
+      }
+      
+      modal.style.display = "block";
+    }
+
+    function closeHistory() {
+      document.getElementById("historyModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target === document.getElementById("historyModal")) {
+        closeHistory();
+      }
+    }
+
+    // 初始化游戏
+    resetGame();
   </script>
 </body>
 </html>
