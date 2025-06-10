@@ -66,7 +66,7 @@ function renderMenu(filtered = null) {
 }
 
 // 加载 menu.json 并渲染菜单
-fetch('menu.json')
+fetch('json/menu.json')
   .then(response => response.json())
   .then(data => {
     allData = data;
