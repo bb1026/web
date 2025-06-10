@@ -156,7 +156,7 @@
 
     let region = "未知地区";
     try {
-      const res = await fetch("json/region.json");
+      const res = await fetch("../json/region.json");
       const data = await res.json();
       region = data[code] || "未知地区";
     } catch (e) {
