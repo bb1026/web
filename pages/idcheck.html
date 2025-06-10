@@ -5,52 +5,186 @@
   <title>身份证号码验证</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: system-ui; padding: 20px; background: #f9f9f9; }
-    h1 { text-align: center; }
-    .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    input { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; }
-    button { margin-top: 15px; padding: 10px 20px; background: #42a5f5; color: white; border: none; border-radius: 20px; cursor: pointer; }
-    .result { margin-top: 20px; line-height: 1.6; }
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 30px 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(135deg, #ff6ec4, #7873f5) border-box;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      box-shadow: 0 0 10px rgba(255, 110, 196, 0.5);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #42a5f5, #478ed1);
+      color: white;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(66, 165, 245, 0.4);
+    }
+
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 15px;
+      color: #333;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+      line-height: 1.8;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      padding: 10px 0;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    canvas {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>身份证验证器</h1>
+    <h1>身份证号码验证</h1>
     <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
     <button onclick="validateID()">验证</button>
     <div class="result" id="result"></div>
+    <div id="qrcode"></div>
   </div>
 
-  <script>
-    async function validateID() {
-      const id = document.getElementById("idInput").value.trim();
-      const resultDiv = document.getElementById("result");
-      if (!/\d{17}[\dXx]/.test(id)) {
-        resultDiv.textContent = "无效的身份证号码格式";
-        return;
-      }
+  <!-- 引入二维码库（qrcode.min.js） -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
-      const birth = id.substring(6, 14);
-      const year = birth.substring(0,4), month = birth.substring(4,6), day = birth.substring(6,8);
-      const now = new Date();
-      const age = now.getFullYear() - parseInt(year);
-      const zodiac = ["猴","鸡","狗","猪","鼠","牛","虎","兔","龙","蛇","马","羊"][parseInt(year)%12];
-      const code = id.substring(0,6);
-
-      let region = "未知地区";
-      try {
-        const res = await fetch("json/region.json");
-        const data = await res.json();
-        region = data[code] || "未知地区";
-      } catch(e) {}
-
-      resultDiv.innerHTML = `
-        出生日期：${year}-${month}-${day}<br>
-        年龄：${age}<br>
-        生肖：${zodiac}<br>
-        地区：${region}
-      `;
+<script>
+  document.getElementById("idInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      validateID();
     }
-  </script>
+  });
+
+  function isValidChecksum(id) {
+    const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+    const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+    let sum = 0;
+    for (let i = 0; i < 17; i++) {
+      sum += parseInt(id[i]) * weights[i];
+    }
+    const code = checkCodes[sum % 11];
+    return code === id[17].toUpperCase();
+  }
+
+  async function validateID() {
+    const id = document.getElementById("idInput").value.trim();
+    const resultDiv = document.getElementById("result");
+    const qrDiv = document.getElementById("qrcode");
+    qrDiv.innerHTML = ''; // 清空二维码
+
+    if (!/^\d{17}[\dXx]$/.test(id)) {
+      resultDiv.innerHTML = `<div class="error">❌ 无效的身份证号码格式</div>`;
+      return;
+    }
+
+    if (!isValidChecksum(id)) {
+      resultDiv.innerHTML = `<div class="error">❌ 校验码错误：身份证号码不合法</div>`;
+      return;
+    }
+
+    const birth = id.substring(6, 14);
+    const year = birth.substring(0, 4);
+    const month = birth.substring(4, 6);
+    const day = birth.substring(6, 8);
+
+    const now = new Date();
+    let age = now.getFullYear() - parseInt(year);
+    if (parseInt(month) > now.getMonth() + 1 ||
+        (parseInt(month) === now.getMonth() + 1 && parseInt(day) > now.getDate())) {
+      age--;
+    }
+
+    const zodiac = ["猴", "鸡", "狗", "猪", "鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊"][parseInt(year) % 12];
+    const gender = parseInt(id.charAt(16)) % 2 === 1 ? "男" : "女";
+    const code = id.substring(0, 6);
+
+    let region = "未知地区";
+    try {
+      const res = await fetch("json/region.json");
+      const data = await res.json();
+      region = data[code] || "未知地区";
+    } catch (e) {
+      region = "（地区信息获取失败）";
+    }
+
+    const summary = 
+      `身份证号码：${id}\n` +
+      `出生日期：${year}年${month}月${day}日\n` +
+      `年龄：${age}岁\n` +
+      `性别：${gender}\n` +
+      `生肖：${zodiac}\n` +
+      `地区：${region}`;
+
+    resultDiv.innerHTML = `
+      <div class="success">✅ 身份证号码验证成功</div>
+      <strong>出生日期：</strong>${year}年${month}月${day}日<br>
+      <strong>年龄：</strong>${age} 岁<br>
+      <strong>性别：</strong>${gender}<br>
+      <strong>生肖：</strong>${zodiac}<br>
+      <strong>地区：</strong>${region}
+    `;
+
+    // 生成二维码
+    QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
+      if (!err) qrDiv.appendChild(canvas);
+    });
+  }
+</script>
 </body>
 </html>
