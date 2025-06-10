@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 加载菜单 JSON
-  fetch('menu.json')
+  fetch('json/menu.json')
     .then(res => res.json())
     .then(menu => {
       const navList = document.getElementById('navList');
