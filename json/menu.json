@@ -13,7 +13,8 @@
   "查询工具": [
     ["IP查询", "pages/ip.html"],
     ["正则表达式", "pages/regex.html"],
-    ["身份证号码查验", "pages/idcheck.html"]
+    ["身份证号码查验", "pages/idcheck.html"],
+    ["单位换算", "pages/unit-conversion.html"]
   ],
   "小游戏": [
     ["单词消消乐", "https://bb1026.github.io/bing/game1.html"],
