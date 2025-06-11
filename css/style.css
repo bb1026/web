@@ -5,7 +5,17 @@ body {
   background: #fff;
   color: #000;
   width: 100%;
-  
+}
+
+body, html {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 /* 🔝 顶部导航栏整体样式 */
@@ -67,6 +77,29 @@ body {
   white-space: nowrap;
 }
 
+/* ✅ 移动端导航支持 */
+@media screen and (max-width: 768px) {
+  #topNav ul {
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 10px;
+  }
+
+  #topNav .submenu {
+    position: relative;
+    top: auto;
+    left: auto;
+    border-radius: 0;
+    padding: 6px 10px;
+    background: #555;
+  }
+
+  #topNav .submenu a {
+    padding-left: 10px;
+    display: block;
+  }
+}
+
 /* 🧠 页面头部（标题 + 控件） */
 header {
   display: flex;
@@ -120,7 +153,6 @@ header {
   font-size: 16px;
   color: #333;
   outline: none;
-
   border: 1px solid transparent;
   background: linear-gradient(white, white) padding-box,
               linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
@@ -304,7 +336,7 @@ header {
   color: #551A8B;
 }
 
-/* 📢 原有广告样式 */
+/* 📢 广告样式 */
 #adWrapper {
   position: fixed;
   top: 100px;
@@ -361,14 +393,14 @@ header {
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* 桌面端：显示左右广告，占用宽度 120px，主体内容居中 */
+/* 广告间距容器默认设置：桌面端 */
 #leftPlaceholder,
 #rightPlaceholder {
   position: fixed;
   top: 0;
   width: 120px;
   height: 100%;
-  background-color: transparent; /* 可替换为广告背景 */
+  background-color: transparent;
   z-index: 1;
 }
 
@@ -414,17 +446,9 @@ header {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
-/* 广告间距容器默认设置：桌面端 */
-#mainContent {
-  margin-left: 140px;
-  margin-right: 140px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
 /* ✅ 手机端适配：隐藏广告、内容全宽、导航贴边 */
 @media screen and (max-width: 768px) {
-  #adWrappler,
+  #adWrapper,
   #leftPlaceholder,
   #rightPlaceholder {
     display: none !important;
@@ -437,14 +461,4 @@ header {
     max-width: 100% !important;
     box-sizing: border-box;
   }
-}
-
-body, html {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-*, *::before, *::after {
-  box-sizing: inherit;
 }
