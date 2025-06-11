@@ -411,7 +411,7 @@ header {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
-/* 📄 主内容区域留出广告间距（可用于外层容器） */
+/* 默认桌面端广告间距 */
 #mainContent {
   margin-left: 140px;
   margin-right: 140px;
@@ -419,15 +419,23 @@ header {
   box-sizing: border-box;
 }
 
-/* 📱 小屏幕隐藏广告及移除左右间距 */
+/* 移动端优化 */
 @media (max-width: 768px) {
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   #adWrapper,
   #leftPlaceholder,
   #rightPlaceholder {
-    display: none;
+    display: none !important;
   }
 
   #mainContent {
-    margin: 0 10px;
+    margin: 0 10px !important;
+    padding: 10px !important;
   }
 }
