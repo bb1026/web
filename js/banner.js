@@ -1,7 +1,7 @@
 (function () {
   const imageContainer = document.getElementById('bannerImages');
   const maxImageCount = 20;
-  const loadImageCount = 5;
+  const loadImageCount = 8;
   const imageBasePath = 'imgs/';
   const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
 
