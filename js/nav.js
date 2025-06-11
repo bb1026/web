@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const topNav = document.getElementById('topNav');
   const iframe = document.getElementById('mainFrame');
   const banner = document.getElementById('banner');
   const menuContainer = document.getElementById('menuContainer');
   const navList = document.getElementById('navList');
-  const menuToggle = document.getElementById('menuToggle');
-  const siteLogo = document.getElementById('siteLogo');
+  const body = document.body;
 
   function loadPageIntoFrame(url) {
     iframe.src = 'about:blank';
@@ -20,22 +21,40 @@ document.addEventListener('DOMContentLoaded', () => {
     banner.style.display = '';
     menuContainer.style.display = '';
     window.scrollTo(0, 0);
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.value = '';
-    if (typeof renderMenu === 'function') renderMenu();
+    body.classList.remove('menu-open');
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+    topNav.classList.remove('visible');
   }
 
-  function hideMenus() {
-    document.querySelectorAll('#navList .submenu.visible').forEach(menu => {
+  function hideSubmenus() {
+    topNav.querySelectorAll('ul.submenu.visible').forEach(menu => {
       menu.classList.remove('visible');
     });
   }
 
-  // 加载菜单 JSON
+  hamburgerBtn.addEventListener('click', () => {
+    const isVisible = topNav.classList.toggle('visible');
+    hamburgerBtn.setAttribute('aria-expanded', isVisible ? 'true' : 'false');
+    body.classList.toggle('menu-open', isVisible);
+    if (!isVisible) {
+      hideSubmenus();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#topNav') && e.target !== hamburgerBtn) {
+      topNav.classList.remove('visible');
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+      body.classList.remove('menu-open');
+      hideSubmenus();
+    }
+  });
+
   fetch('json/menu.json')
     .then(res => res.json())
     .then(menu => {
-      // 首页按钮
+      navList.innerHTML = '';
+
       const homeLi = document.createElement('li');
       const homeLink = document.createElement('a');
       homeLink.href = "#";
@@ -43,19 +62,17 @@ document.addEventListener('DOMContentLoaded', () => {
       homeLink.onclick = (e) => {
         e.preventDefault();
         showHome();
-        navList.classList.add('nav-hidden');
       };
       homeLi.appendChild(homeLink);
       navList.appendChild(homeLi);
 
-      // 分类
       for (const category in menu) {
         const dropdown = document.createElement('li');
+        dropdown.className = 'dropdown';
+
         const toggleSpan = document.createElement('span');
         toggleSpan.textContent = category;
         toggleSpan.className = 'dropdown-toggle';
-        toggleSpan.style.display = 'block';
-        toggleSpan.style.cursor = 'pointer';
         dropdown.appendChild(toggleSpan);
 
         const submenu = document.createElement('ul');
@@ -66,15 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
           const link = document.createElement('a');
           link.href = href;
           link.textContent = name;
+
           link.onclick = (e) => {
             e.preventDefault();
             loadPageIntoFrame(href);
             banner.style.display = 'none';
             menuContainer.style.display = 'none';
-            hideMenus();
-            navList.classList.add('nav-hidden');
+            topNav.classList.remove('visible');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            body.classList.remove('menu-open');
+            hideSubmenus();
             window.scrollTo(0, 0);
           };
+
           item.appendChild(link);
           submenu.appendChild(item);
         }
@@ -83,14 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
         navList.appendChild(dropdown);
 
         toggleSpan.addEventListener('click', () => {
-          document.querySelectorAll('#navList .submenu').forEach(s => {
+          submenu.classList.toggle('visible');
+          topNav.querySelectorAll('ul.submenu').forEach(s => {
             if (s !== submenu) s.classList.remove('visible');
           });
-          submenu.classList.toggle('visible');
         });
       }
 
-      // 关于按钮
       const aboutLi = document.createElement('li');
       const aboutLink = document.createElement('a');
       aboutLink.href = "#";
@@ -100,8 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPageIntoFrame('pages/about.html');
         banner.style.display = 'none';
         menuContainer.style.display = 'none';
-        hideMenus();
-        navList.classList.add('nav-hidden');
+        topNav.classList.remove('visible');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        body.classList.remove('menu-open');
+        hideSubmenus();
         window.scrollTo(0, 0);
       };
       aboutLi.appendChild(aboutLink);
@@ -111,37 +133,18 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('加载菜单失败:', err);
     });
 
-  // Footer 链接跳转
+  // 页脚关于链接事件（根据你页面实际情况调整）
   document.querySelectorAll('.footer-link').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
       loadPageIntoFrame('pages/about.html');
       banner.style.display = 'none';
       menuContainer.style.display = 'none';
-      hideMenus();
-      navList.classList.add('nav-hidden');
+      topNav.classList.remove('visible');
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+      body.classList.remove('menu-open');
+      hideSubmenus();
       window.scrollTo(0, 0);
     });
-  });
-
-  // 点击 logo 回首页
-  siteLogo.addEventListener('click', () => {
-    showHome();
-    navList.classList.add('nav-hidden');
-  });
-
-  // 点击汉堡菜单切换显示
-  menuToggle.addEventListener('click', () => {
-    navList.classList.toggle('nav-hidden');
-  });
-
-  // 点击其他区域关闭菜单
-  document.addEventListener('click', (e) => {
-    if (
-      e.target.closest('#topNav') ||
-      e.target.id === 'menuToggle'
-    ) return;
-    navList.classList.add('nav-hidden');
-    hideMenus();
   });
 });
