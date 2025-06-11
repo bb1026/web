@@ -362,23 +362,22 @@ header {
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* 📢 广告左右占位容器 */
+/* 桌面端：显示左右广告，占用宽度 120px，主体内容居中 */
 #leftPlaceholder,
 #rightPlaceholder {
-  width: 120px;
   position: fixed;
-  top: 100px;
-  z-index: 9999;
-  height: auto;
-  pointer-events: none;
+  top: 0;
+  width: 120px;
+  height: 100%;
+  background-color: transparent; /* 可替换为广告背景 */
+  z-index: 1;
 }
 
 #leftPlaceholder {
-  left: 10px;
+  left: 0;
 }
-
 #rightPlaceholder {
-  right: 10px;
+  right: 0;
 }
 
 .ad-box {
@@ -424,13 +423,12 @@ header {
   box-sizing: border-box;
 }
 
-/* 手机端优化（宽度 <= 768px） */
-@media (max-width: 768px) {
-  #adWrapper,
+/* ✅ 手机端适配：隐藏广告、内容全宽、导航贴边 */
+@media screen and (max-width: 768px) {
   #leftPlaceholder,
   #rightPlaceholder {
-    display: none !important;
-  }
+    display: none;
+  }}
 
   #mainContent {
     margin: 0 !important;
