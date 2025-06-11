@@ -152,7 +152,6 @@ header {
   display: flex;
   gap: 10px;
   overflow-x: auto;
- /* padding: 10px 0px;*/
 }
 
 /* 单个图片容器 */
@@ -307,4 +306,68 @@ header {
 
 .footer-link:hover {
   color: #551A8B;
+}
+
+/* 📢 侧边广告样式，仅桌面端显示 */
+#adWrapper {
+  position: fixed;
+  top: 100px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.side-ad {
+  position: absolute;
+  top: 0;
+  width: 120px;
+  pointer-events: auto;
+}
+
+.left-ad {
+  left: 10px;
+}
+
+.right-ad {
+  right: 10px;
+}
+
+.ad-content {
+  position: relative;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.ad-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.ad-close {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #000;
+  color: #fff;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+/* 📱 小屏幕不显示广告 */
+@media (max-width: 767px) {
+  #adWrapper {
+    display: none;
+  }
 }
