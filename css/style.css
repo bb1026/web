@@ -4,6 +4,7 @@ body {
   font-family: system-ui, sans-serif;
   background: #fff;
   color: #000;
+  width: 100%;
 }
 
 /* 🔝 顶部导航栏整体样式 */
