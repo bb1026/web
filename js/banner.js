@@ -14,7 +14,7 @@
     randomIndices.push(indices.splice(randomIndex, 1)[0]);
   }
 
-  // 先创建 5 个 image-wrapper（含占位图）
+  // 先创建 image-wrapper（含占位图）
   const wrappers = randomIndices.map(() => {
     const wrapper = document.createElement('div');
     wrapper.className = 'image-wrapper';
