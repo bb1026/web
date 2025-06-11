@@ -424,10 +424,11 @@ header {
 
 /* ✅ 手机端适配：隐藏广告、内容全宽、导航贴边 */
 @media screen and (max-width: 768px) {
+  #adWrappler,
   #leftPlaceholder,
   #rightPlaceholder {
-    display: none;
-  }}
+    display: none !important;
+  }
 
   #mainContent {
     margin: 0 !important;
