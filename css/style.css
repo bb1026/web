@@ -411,7 +411,7 @@ header {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
-/* 默认桌面端广告间距 */
+/* 广告间距容器默认设置：桌面端 */
 #mainContent {
   margin-left: 140px;
   margin-right: 140px;
@@ -419,15 +419,8 @@ header {
   box-sizing: border-box;
 }
 
-/* 移动端优化 */
+/* 手机端优化（宽度 <= 768px） */
 @media (max-width: 768px) {
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-  }
-
   #adWrapper,
   #leftPlaceholder,
   #rightPlaceholder {
@@ -435,7 +428,10 @@ header {
   }
 
   #mainContent {
-    margin: 0 10px !important;
+    margin: 0 !important;
     padding: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
   }
 }
