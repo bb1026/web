@@ -2,66 +2,179 @@
   "长度": {
     "base": "m",
     "units": {
-      "m": {
-        "name": "米 (m)",
-        "toBase": "v",
-        "fromBase": "v"
-      },
-      "km": {
-        "name": "千米 (km)",
-        "toBase": "v * 1000",
-        "fromBase": "v / 1000"
-      },
-      "cm": {
-        "name": "厘米 (cm)",
-        "toBase": "v * 0.01",
-        "fromBase": "v / 0.01"
-      },
-      "mm": {
-        "name": "毫米 (mm)",
-        "toBase": "v * 0.001",
-        "fromBase": "v / 0.001"
-      },
-      "μm": {
-        "name": "微米 (μm)",
-        "toBase": "v * 1e-6",
-        "fromBase": "v / 1e-6"
-      },
-      "nm": {
-        "name": "纳米 (nm)",
-        "toBase": "v * 1e-9",
-        "fromBase": "v / 1e-9"
-      },
-      "pm": {
-        "name": "皮米 (pm)",
-        "toBase": "v * 1e-12",
-        "fromBase": "v / 1e-12"
-      },
-      "inch": {
-        "name": "英寸 (inch)",
-        "toBase": "v * 0.0254",
-        "fromBase": "v / 0.0254"
-      },
-      "ft": {
-        "name": "英尺 (ft)",
-        "toBase": "v * 0.3048",
-        "fromBase": "v / 0.3048"
-      },
-      "yd": {
-        "name": "码 (yd)",
-        "toBase": "v * 0.9144",
-        "fromBase": "v / 0.9144"
-      },
-      "mile": {
-        "name": "英里 (mile)",
-        "toBase": "v * 1609.344",
-        "fromBase": "v / 1609.344"
-      },
-      "nmi": {
-        "name": "海里 (nmi)",
-        "toBase": "v * 1852",
-        "fromBase": "v / 1852"
-      }
+      "m": {"name":"米 (m)","toBase":"v","fromBase":"v"},
+      "km": {"name":"千米 (km)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "cm": {"name":"厘米 (cm)","toBase":"v * 0.01","fromBase":"v / 0.01"},
+      "mm": {"name":"毫米 (mm)","toBase":"v * 0.001","fromBase":"v / 0.001"},
+      "μm": {"name":"微米 (μm)","toBase":"v * 1e-6","fromBase":"v / 1e-6"},
+      "nm": {"name":"纳米 (nm)","toBase":"v * 1e-9","fromBase":"v / 1e-9"},
+      "pm": {"name":"皮米 (pm)","toBase":"v * 1e-12","fromBase":"v / 1e-12"},
+      "inch": {"name":"英寸 (inch)","toBase":"v * 0.0254","fromBase":"v / 0.0254"},
+      "ft": {"name":"英尺 (ft)","toBase":"v * 0.3048","fromBase":"v / 0.3048"},
+      "yd": {"name":"码 (yd)","toBase":"v * 0.9144","fromBase":"v / 0.9144"},
+      "mile": {"name":"英里 (mile)","toBase":"v * 1609.344","fromBase":"v / 1609.344"},
+      "nmi": {"name":"海里 (nmi)","toBase":"v * 1852","fromBase":"v / 1852"}
+    }
+  },
+  "面积": {
+    "base":"m2",
+    "units": {
+      "m2": {"name":"平方米 (m²)","toBase":"v","fromBase":"v"},
+      "km2": {"name":"平方千米 (km²)","toBase":"v * 1e6","fromBase":"v / 1e6"},
+      "cm2": {"name":"平方厘米 (cm²)","toBase":"v * 0.0001","fromBase":"v / 0.0001"},
+      "mm2": {"name":"平方毫米 (mm²)","toBase":"v * 1e-6","fromBase":"v / 1e-6"},
+      "ha": {"name":"公顷 (ha)","toBase":"v * 10000","fromBase":"v / 10000"},
+      "ac": {"name":"英亩 (ac)","toBase":"v * 4046.8564224","fromBase":"v / 4046.8564224"},
+      "ft2": {"name":"平方英尺 (ft²)","toBase":"v * 0.09290304","fromBase":"v / 0.09290304"},
+      "yd2": {"name":"平方码 (yd²)","toBase":"v * 0.83612736","fromBase":"v / 0.83612736"}
+    }
+  },
+  "体积": {
+    "base":"m3",
+    "units": {
+      "m3": {"name":"立方米 (m³)","toBase":"v","fromBase":"v"},
+      "l": {"name":"升 (L)","toBase":"v * 0.001","fromBase":"v / 0.001"},
+      "ml": {"name":"毫升 (mL)","toBase":"v * 1e-6","fromBase":"v / 1e-6"},
+      "cm3": {"name":"立方厘米 (cm³)","toBase":"v * 1e-6","fromBase":"v / 1e-6"},
+      "ft3": {"name":"立方英尺 (ft³)","toBase":"v * 0.0283168466","fromBase":"v / 0.0283168466"},
+      "yd3": {"name":"立方码 (yd³)","toBase":"v * 0.764554857984","fromBase":"v / 0.764554857984"},
+      "gal_us": {"name":"加仑（美国液量）","toBase":"v * 0.00378541178","fromBase":"v / 0.00378541178"},
+      "gal_uk": {"name":"加仑（英制）","toBase":"v * 0.00454609","fromBase":"v / 0.00454609"}
+    }
+  },
+  "质量": {
+    "base":"kg",
+    "units": {
+      "kg": {"name":"千克 (kg)","toBase":"v","fromBase":"v"},
+      "g": {"name":"克 (g)","toBase":"v * 0.001","fromBase":"v / 0.001"},
+      "mg": {"name":"毫克 (mg)","toBase":"v * 1e-6","fromBase":"v / 1e-6"},
+      "μg": {"name":"微克 (μg)","toBase":"v * 1e-9","fromBase":"v / 1e-9"},
+      "t": {"name":"吨 (t)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "lb": {"name":"磅 (lb)","toBase":"v * 0.45359237","fromBase":"v / 0.45359237"},
+      "oz": {"name":"盎司 (oz)","toBase":"v * 0.0283495231","fromBase":"v / 0.0283495231"}
+    }
+  },
+  "温度": {
+    "base":"C",
+    "units": {
+      "C": {"name":"摄氏度 (℃)","toBase":"v","fromBase":"v"},
+      "F": {"name":"华氏度 (℉)","toBase":"(v - 32) * 5/9","fromBase":"v * 9/5 + 32"},
+      "K": {"name":"开尔文 (K)","toBase":"v - 273.15","fromBase":"v + 273.15"}
+    }
+  },
+  "时间": {
+    "base":"s",
+    "units": {
+      "s": {"name":"秒 (s)","toBase":"v","fromBase":"v"},
+      "ms": {"name":"毫秒 (ms)","toBase":"v * 0.001","fromBase":"v / 0.001"},
+      "min": {"name":"分钟 (min)","toBase":"v * 60","fromBase":"v / 60"},
+      "h": {"name":"小时 (h)","toBase":"v * 3600","fromBase":"v / 3600"},
+      "d": {"name":"天 (d)","toBase":"v * 86400","fromBase":"v / 86400"},
+      "wk": {"name":"周 (wk)","toBase":"v * 604800","fromBase":"v / 604800"},
+      "mo": {"name":"月 (mo)","toBase":"v * 2592000","fromBase":"v / 2592000"},
+      "yr": {"name":"年 (yr)","toBase":"v * 31536000","fromBase":"v / 31536000"}
+    }
+  },
+  "速度": {
+    "base":"m/s",
+    "units": {
+      "m/s": {"name":"米每秒 (m/s)","toBase":"v","fromBase":"v"},
+      "km/h": {"name":"千米每小时 (km/h)","toBase":"v / 3.6","fromBase":"v * 3.6"},
+      "mph": {"name":"英里每小时 (mph)","toBase":"v * 0.44704","fromBase":"v / 0.44704"},
+      "ft/s": {"name":"英尺每秒 (ft/s)","toBase":"v * 0.3048","fromBase":"v / 0.3048"},
+      "knot": {"name":"节 (knots)","toBase":"v * 0.514444","fromBase":"v / 0.514444"}
+    }
+  },
+  "压力": {
+    "base":"Pa",
+    "units": {
+      "Pa": {"name":"帕斯卡 (Pa)","toBase":"v","fromBase":"v"},
+      "kPa": {"name":"千帕 (kPa)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "MPa": {"name":"兆帕 (MPa)","toBase":"v * 1e6","fromBase":"v / 1e6"},
+      "bar": {"name":"巴 (bar)","toBase":"v * 100000","fromBase":"v / 100000"},
+      "atm": {"name":"标准大气压 (atm)","toBase":"v * 101325","fromBase":"v / 101325"},
+      "psi": {"name":"磅力每平方英寸 (psi)","toBase":"v * 6894.76","fromBase":"v / 6894.76"},
+      "torr": {"name":"托 (Torr)","toBase":"v * 133.322","fromBase":"v / 133.322"}
+    }
+  },
+  "能量": {
+    "base":"J",
+    "units": {
+      "J": {"name":"焦耳 (J)","toBase":"v","fromBase":"v"},
+      "kJ": {"name":"千焦耳 (kJ)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "cal": {"name":"卡路里 (cal)","toBase":"v * 4.184","fromBase":"v / 4.184"},
+      "kcal": {"name":"千卡路里 (kcal)","toBase":"v * 4184","fromBase":"v / 4184"},
+      "Wh": {"name":"瓦时 (Wh)","toBase":"v * 3600","fromBase":"v / 3600"},
+      "kWh": {"name":"千瓦时 (kWh)","toBase":"v * 3.6e6","fromBase":"v / 3.6e6"},
+      "eV": {"name":"电子伏特 (eV)","toBase":"v * 1.60218e-19","fromBase":"v / 1.60218e-19"}
+    }
+  },
+  "功率": {
+    "base":"W",
+    "units": {
+      "W": {"name":"瓦特 (W)","toBase":"v","fromBase":"v"},
+      "kW": {"name":"千瓦 (kW)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "MW": {"name":"兆瓦 (MW)","toBase":"v * 1e6","fromBase":"v / 1e6"},
+      "hp": {"name":"马力 (hp)","toBase":"v * 745.7","fromBase":"v / 745.7"}
+    }
+  },
+  "角度": {
+    "base":"deg",
+    "units": {
+      "deg": {"name":"度 (deg)","toBase":"v","fromBase":"v"},
+      "rad": {"name":"弧度 (rad)","toBase":"v * 180 / Math.PI","fromBase":"v * Math.PI / 180"},
+      "grad": {"name":"梯度 (grad)","toBase":"v * 0.9","fromBase":"v / 0.9"},
+      "arcmin": {"name":"分 (arcmin)","toBase":"v / 60","fromBase":"v * 60"},
+      "arcsec": {"name":"秒 (arcsec)","toBase":"v / 3600","fromBase":"v * 3600"}
+    }
+  },
+  "数据存储": {
+    "base":"B",
+    "units": {
+      "B": {"name":"字节 (B)","toBase":"v","fromBase":"v"},
+      "KB": {"name":"千字节 (KB)","toBase":"v * 1024","fromBase":"v / 1024"},
+      "MB": {"name":"兆字节 (MB)","toBase":"v * 1048576","fromBase":"v / 1048576"},
+      "GB": {"name":"吉字节 (GB)","toBase":"v * 1073741824","fromBase":"v / 1073741824"},
+      "TB": {"name":"太字节 (TB)","toBase":"v * 1099511627776","fromBase":"v / 1099511627776"}
+    }
+  },
+  "力": {
+    "base":"N",
+    "units": {
+      "N": {"name":"牛顿 (N)","toBase":"v","fromBase":"v"},
+      "kN": {"name":"千牛 (kN)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "lbf": {"name":"磅力 (lbf)","toBase":"v * 4.44822","fromBase":"v / 4.44822"}
+    }
+  },
+  "电流": {
+    "base":"A",
+    "units": {
+      "A": {"name":"安培 (A)","toBase":"v","fromBase":"v"},
+      "mA": {"name":"毫安 (mA)","toBase":"v * 0.001","fromBase":"v / 0.001"}
+    }
+  },
+  "电压": {
+    "base":"V",
+    "units": {
+      "V": {"name":"伏特 (V)","toBase":"v","fromBase":"v"},
+      "mV": {"name":"毫伏 (mV)","toBase":"v * 0.001","fromBase":"v / 0.001"}
+    }
+  },
+  "频率": {
+    "base":"Hz",
+    "units": {
+      "Hz": {"name":"赫兹 (Hz)","toBase":"v","fromBase":"v"},
+      "kHz": {"name":"千赫兹 (kHz)","toBase":"v * 1000","fromBase":"v / 1000"},
+      "MHz": {"name":"兆赫兹 (MHz)","toBase":"v * 1e6","fromBase":"v / 1e6"},
+      "GHz": {"name":"吉赫兹 (GHz)","toBase":"v * 1e9","fromBase":"v / 1e9"}
+    }
+  },
+  "燃料消耗": {
+    "base":"L/100km",
+    "units": {
+      "L/100km": {"name":"升/百公里 (L/100km)","toBase":"v","fromBase":"v"},
+      "mpg_us": {"name":"英里每加仑（美国）","toBase":"235.214583 / v","fromBase":"235.214583 / v"},
+      "mpg_uk": {"name":"英里每加仑（英国）","toBase":"282.480936 / v","fromBase":"282.480936 / v"}
     }
   }
 }
