@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>超全单位换算器</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+    #app {
+      max-width: 700px;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px 15px;
+    }
+    header h1 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: #333;
+      margin: 0;
+    }
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px 15px 15px;
+    }
+
+    .category {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+    }
+    .category-header {
+      background: #3a86ff;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.15rem;
+      padding: 14px 20px;
+      cursor: pointer;
+    }
+    .category-header:hover {
+      background: #2e6fdb;
+    }
+    .units {
+      display: none;
+      padding: 15px 20px 20px;
+    }
+
+    .unit-row {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      flex-wrap: nowrap;
+    }
+    .unit-row input {
+      width: 140px;
+      padding: 10px 14px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+    .unit-label {
+      margin-left: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    @media (max-width: 480px) {
+      .unit-row {
+        flex-wrap: wrap;
+      }
+      .unit-row input {
+        width: 100%;
+      }
+      .unit-label {
+        margin-top: 6px;
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>📏 超全单位换算器</h1>
+    </header>
+    <main id="converter"></main>
+  </div>
+
+  <script>
+    async function loadUnits() {
+      const response = await fetch('../json/units.json');
+      const unitData = await response.json();
+      const main = document.getElementById('converter');
+
+      for (const cat of Object.values(unitData)) {
+        for (const unit of Object.values(cat.units)) {
+          unit.toBase = new Function("v", `return ${unit.toBase}`);
+          unit.fromBase = new Function("v", `return ${unit.fromBase}`);
+        }
+      }
+
+      for (const [name, data] of Object.entries(unitData)) {
+        const section = document.createElement("section");
+        section.className = "category";
+
+        const header = document.createElement("div");
+        header.className = "category-header";
+        header.textContent = name + " ⋯";
+        section.appendChild(header);
+
+        const unitsDiv = document.createElement("div");
+        unitsDiv.className = "units";
+
+        for (const [key, unit] of Object.entries(data.units)) {
+          const unitRow = document.createElement("div");
+          unitRow.className = "unit-row";
+
+          const input = document.createElement("input");
+          input.type = "number";
+          input.step = "any";
+          input.placeholder = unit.name;
+          input.dataset.category = name;
+          input.dataset.unit = key;
+          input.title = unit.name;
+
+          const label = document.createElement("span");
+          label.className = "unit-label";
+          label.textContent = unit.name;
+
+          unitRow.appendChild(input);
+          unitRow.appendChild(label);
+          unitsDiv.appendChild(unitRow);
+
+          input.addEventListener("input", () => {
+            if (input.value === "" || isNaN(input.value)) {
+              clearCategory(name);
+              return;
+            }
+            convertCategory(name, key, parseFloat(input.value));
+          });
+        }
+
+        section.appendChild(unitsDiv);
+
+        header.addEventListener("click", () => {
+          const visible = unitsDiv.style.display === "block";
+          unitsDiv.style.display = visible ? "none" : "block";
+          header.textContent = name + (visible ? " ⋯" : " ⋮");
+        });
+
+        main.appendChild(section);
+      }
+
+      function clearCategory(category) {
+        document.querySelectorAll(`input[data-category="${category}"]`).forEach(i => i.value = "");
+      }
+
+      function convertCategory(category, fromUnit, value) {
+        const data = unitData[category];
+        const units = data.units;
+        const baseValue = units[fromUnit].toBase(value);
+        document.querySelectorAll(`input[data-category="${category}"]`).forEach(input => {
+          if (input.dataset.unit !== fromUnit) {
+            const converted = units[input.dataset.unit].fromBase(baseValue);
+            input.value = (converted === 0) ? "0" : +converted.toFixed(6);
+          }
+        });
+      }
+    }
+
+    loadUnits();
+  </script>
+</body>
+</html>
