@@ -4,86 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>在线工具箱🧰</title>
-  
-    <!-- 浏览器图标 -->
+
+  <!-- 浏览器图标 -->
   <link rel="icon" href="imgs/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="imgs/favicon.ico" type="image/x-icon">
-  
-  <!-- 高分辨率图标（PNG 格式） -->
   <link rel="icon" type="image/png" sizes="32x32" href="imgs/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="imgs/favicon-16x16.png">
-  
-  <!-- Apple 设备（Safari）图标 -->
   <link rel="apple-touch-icon" sizes="180x180" href="imgs/apple-touch-icon.png">
-    
+
+  <!-- 样式 -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <!-- 广告 -->
-  <script src="js/ad.js" defer></script>
-  
-  <!-- 顶部导航 -->
-  <nav id="topNav">
-    <ul id="navList"></ul>
-  </nav>
-  
-  <!-- 顶部菜单 -->
-  <script src="js/nav.js" defer></script>
+  <!-- 左右广告位占位容器 -->
+  <div id="leftPlaceholder"></div>
+  <div id="rightPlaceholder"></div>
 
-  <!-- 页面主结构 -->
-<header>
-  <!-- 滚动公告栏 -->
-  <div class="marquee" id="noticeContainer">
-    加载中...
-  </div>
-    
-  <!-- 搜索工具 -->
-  <div id="header-controls">
-    <input type="text" id="searchInput" placeholder="搜索项目..." />
-  </div>
-</header>
+  <!-- 主体内容包裹容器 -->
+  <div id="mainContent">
 
-  <!-- banner 图片区域 -->
-  <section id="banner" class="container">
-    <div class="scroll-container" id="bannerImages"></div>
-  </section>
-  
-  <!-- 图片 -->
-  <script src="js/banner.js"></script>
+    <!-- 广告脚本（可异步加载） -->
+    <script src="js/ad.js" defer></script>
 
-  <!-- 分类菜单自动生成 -->
-  <main id="menuContainer" class="container"></main>
+    <!-- 顶部导航 -->
+    <nav id="topNav">
+      <ul id="navList"></ul>
+    </nav>
 
-  <!-- iframe 工具展示区域 -->
-  <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
+    <!-- 顶部菜单 -->
+    <script src="js/nav.js" defer></script>
 
-  <!-- 滚动公告 -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      fetch('./notice.html')
-        .then(res => res.text())
-        .then(text => {
-          document.getElementById('noticeContainer').innerHTML =
-            `<div class="marquee-inner">${text}</div>`;
-        })
-        .catch(err => {
-          document.getElementById('noticeContainer').innerHTML =
-            `<div class="marquee-inner">公告加载失败</div>`;
-        });
-    });
-  </script>
-  
-  <!-- 声明信息 -->
-  <hr class="divider" />
+    <!-- 页面主结构 -->
+    <header>
+      <!-- 滚动公告栏 -->
+      <div class="marquee" id="noticeContainer">加载中...</div>
+
+      <!-- 搜索工具 -->
+      <div id="header-controls">
+        <input type="text" id="searchInput" placeholder="搜索项目..." />
+      </div>
+    </header>
+
+    <!-- banner 图片区域 -->
+    <section id="banner" class="container">
+      <div class="scroll-container" id="bannerImages"></div>
+    </section>
+
+    <!-- banner 脚本 -->
+    <script src="js/banner.js"></script>
+
+    <!-- 分类菜单自动生成 -->
+    <main id="menuContainer" class="container"></main>
+
+    <!-- iframe 工具展示区域 -->
+    <iframe name="mainFrame" src="" id="mainFrame" frameborder="0" style="display:none"></iframe>
+
+    <!-- 滚动公告加载 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        fetch('./notice.html')
+          .then(res => res.text())
+          .then(text => {
+            document.getElementById('noticeContainer').innerHTML =
+              `<div class="marquee-inner">${text}</div>`;
+          })
+          .catch(err => {
+            document.getElementById('noticeContainer').innerHTML =
+              `<div class="marquee-inner">公告加载失败</div>`;
+          });
+      });
+    </script>
+
+    <!-- 声明信息 -->
+    <hr class="divider" />
     <footer class="site-footer">
-    本站工具仅供学习与个人使用，内容生成后请自行核对准确性。<br>
-    版权所有 © 2025 bb1026 | 由 <a href="https://chat.openai.com/" target="_blank">ChatGPT</a> 和 <a href="https://www.deepseek.com/" target="_blank">DeepSeek</a> 生成并优化。<br><br>
-    <a href="#" class="footer-link">关于本站</a> | 
-    <a href="#" class="footer-link">联系我们</a> | 
-    <a href="#" class="footer-link">使用条款</a><br><br>
-  </footer>
-  
-  <!-- 主脚本 -->
-  <script src="js/main.js"></script>
+      本站工具仅供学习与个人使用，内容生成后请自行核对准确性。<br>
+      版权所有 © 2025 bb1026 | 由 
+      <a href="https://chat.openai.com/" target="_blank">ChatGPT</a> 和 
+      <a href="https://www.deepseek.com/" target="_blank">DeepSeek</a> 生成并优化。<br><br>
+      <a href="#" class="footer-link">关于本站</a> | 
+      <a href="#" class="footer-link">联系我们</a> | 
+      <a href="#" class="footer-link">使用条款</a><br><br>
+    </footer>
+
+    <!-- 主脚本 -->
+    <script src="js/main.js"></script>
+    
+  </div> <!-- #mainContent 结束 -->
+
 </body>
 </html>
