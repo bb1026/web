@@ -12,9 +12,8 @@ body {
 #topNav {
   background: #444;
   color: #fff;
-  padding: 10px 0px;
+  padding: 10px 20px;
   width: 100%;
-  /*margin: 0;*/
 }
 
 #topNav ul {
@@ -424,7 +423,7 @@ header {
 
 /* ✅ 手机端适配：隐藏广告、内容全宽、导航贴边 */
 @media screen and (max-width: 768px) {
-  #adWrappler,
+  #adWrapper,
   #leftPlaceholder,
   #rightPlaceholder {
     display: none !important;
