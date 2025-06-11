@@ -5,65 +5,66 @@ body {
   background: #fff;
   color: #000;
   width: 100%;
+  
 }
 
-body, html {
-  width: 100%;
+/* 🔝 顶部导航栏整体样式 */
+#topNav {
+  background: #444;
+  color: #fff;
+  padding: 10px 0px;
+  /*width: 100%;
+  margin: 0;*/
+}
+
+#topNav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
-*, *::before, *::after {
-  box-sizing: inherit;
+#topNav li a {
+  color: #fff;
+  text-decoration: none;
 }
 
-/* 汉堡菜单样式 */
-.hamburger {
-  display: inline-block;
-  cursor: pointer;
-  width: 30px;
-  height: 24px;
+#topNav li.dropdown {
   position: relative;
-  z-index: 1001;
 }
 
-.hamburger span {
-  display: block;
-  height: 3px;
-  width: 100%;
-  background-color: #333;
-  border-radius: 2px;
+#topNav .dropdown-toggle {
+  cursor: pointer;
+}
+
+#topNav .submenu {
+  display: none;
   position: absolute;
+  top: 100%;
   left: 0;
-  transition: all 0.3s ease-in-out;
+  background: #333;
+  padding: 10px;
+  border-radius: 4px;
+  z-index: 1000;
 }
 
-.hamburger span:nth-child(1) {
-  top: 0;
+#topNav .submenu.visible {
+  display: block;
 }
 
-.hamburger span:nth-child(2) {
-  top: 10px;
+#topNav .submenu li {
+  margin-bottom: 5px;
 }
 
-.hamburger span:nth-child(3) {
-  top: 20px;
+#topNav .submenu li:last-child {
+  margin-bottom: 0;
 }
 
-/* 激活状态变成X */
-.hamburger.active span:nth-child(1) {
-  transform: rotate(45deg);
-  top: 10px;
-}
-
-.hamburger.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg);
-  top: 10px;
+#topNav .submenu a {
+  color: #fff;
+  white-space: nowrap;
 }
 
 /* 🧠 页面头部（标题 + 控件） */
@@ -119,6 +120,7 @@ header {
   font-size: 16px;
   color: #333;
   outline: none;
+
   border: 1px solid transparent;
   background: linear-gradient(white, white) padding-box,
               linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
@@ -302,7 +304,7 @@ header {
   color: #551A8B;
 }
 
-/* 📢 广告样式 */
+/* 📢 原有广告样式 */
 #adWrapper {
   position: fixed;
   top: 100px;
@@ -359,14 +361,14 @@ header {
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* 广告间距容器默认设置：桌面端 */
+/* 桌面端：显示左右广告，占用宽度 120px，主体内容居中 */
 #leftPlaceholder,
 #rightPlaceholder {
   position: fixed;
   top: 0;
   width: 120px;
   height: 100%;
-  background-color: transparent;
+  background-color: transparent; /* 可替换为广告背景 */
   z-index: 1;
 }
 
@@ -412,9 +414,17 @@ header {
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
 }
 
+/* 广告间距容器默认设置：桌面端 */
+#mainContent {
+  margin-left: 140px;
+  margin-right: 140px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 /* ✅ 手机端适配：隐藏广告、内容全宽、导航贴边 */
 @media screen and (max-width: 768px) {
-  #adWrapper,
+  #adWrappler,
   #leftPlaceholder,
   #rightPlaceholder {
     display: none !important;
@@ -427,4 +437,14 @@ header {
     max-width: 100% !important;
     box-sizing: border-box;
   }
+}
+
+body, html {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
 }
