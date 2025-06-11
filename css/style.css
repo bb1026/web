@@ -154,7 +154,6 @@ header {
   overflow-x: auto;
 }
 
-/* 单个图片容器 */
 .image-wrapper {
   width: 300px;
   height: 180px;
@@ -165,7 +164,6 @@ header {
   position: relative;
 }
 
-/* 占位图动画 */
 .placeholder-box {
   width: 100%;
   height: 100%;
@@ -179,7 +177,6 @@ header {
   100% { opacity: 1; }
 }
 
-/* 图片淡入动画 */
 .fade-in-image {
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
@@ -192,7 +189,6 @@ header {
   opacity: 1;
 }
 
-/* 🎞️ 横向滚动设置 */
 .scroll-container {
   display: flex;
   overflow-x: auto;
@@ -221,7 +217,6 @@ header {
   margin-top: 0;
 }
 
-/* 📋 工具列表 */
 .tool-list {
   display: flex;
   flex-wrap: wrap;
@@ -229,7 +224,6 @@ header {
   margin-top: 16px;
 }
 
-/* 📋 工具按钮样式 */
 .tool-item {
   display: inline-block;
   padding: 10px 18px;
@@ -252,7 +246,6 @@ header {
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
-/* 📋 响应式优化 */
 @media (max-width: 600px) {
   .tool-item {
     flex: 1 1 100%;
@@ -260,7 +253,6 @@ header {
   }
 }
 
-/* 📋 查看更多按钮 */
 .more-link {
   display: inline-block;
   margin-top: 10px;
@@ -308,7 +300,7 @@ header {
   color: #551A8B;
 }
 
-/* 📢 侧边广告样式，仅桌面端显示 */
+/* 📢 原有广告样式 */
 #adWrapper {
   position: fixed;
   top: 100px;
@@ -365,9 +357,77 @@ header {
   box-shadow: 0 0 5px rgba(0,0,0,0.3);
 }
 
-/* 📱 小屏幕不显示广告 */
-@media (max-width: 767px) {
-  #adWrapper {
+/* 📢 广告左右占位容器 */
+#leftPlaceholder,
+#rightPlaceholder {
+  width: 120px;
+  position: fixed;
+  top: 100px;
+  z-index: 9999;
+  height: auto;
+  pointer-events: none;
+}
+
+#leftPlaceholder {
+  left: 10px;
+}
+
+#rightPlaceholder {
+  right: 10px;
+}
+
+.ad-box {
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
+  max-width: 120px;
+  box-sizing: border-box;
+}
+
+.ad-box img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.ad-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #ff4d4f;
+  color: white;
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 22px;
+  cursor: pointer;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 📄 主内容区域留出广告间距（可用于外层容器） */
+#mainContent {
+  margin-left: 140px;
+  margin-right: 140px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 📱 小屏幕隐藏广告及移除左右间距 */
+@media (max-width: 768px) {
+  #adWrapper,
+  #leftPlaceholder,
+  #rightPlaceholder {
     display: none;
+  }
+
+  #mainContent {
+    margin: 0 10px;
   }
 }
