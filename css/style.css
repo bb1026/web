@@ -5,14 +5,16 @@ body {
   background: #fff;
   color: #000;
   width: 100%;
+  
 }
 
 /* 🔝 顶部导航栏整体样式 */
 #topNav {
   background: #444;
   color: #fff;
-  padding: 10px 20px;
+  padding: 10px 0px;
   width: 100%;
+  margin: 0;
 }
 
 #topNav ul {
@@ -20,6 +22,7 @@ body {
   display: flex;
   gap: 20px;
   margin: 0;
+  width: 100%;
   padding: 0;
   flex-wrap: wrap;
 }
