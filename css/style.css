@@ -11,6 +11,7 @@ body {
   background: #444;
   color: #fff;
   padding: 10px 20px;
+  width: 100%;
 }
 
 #topNav ul {
@@ -86,7 +87,7 @@ header {
 
 /* 📣 滚动公告栏 */
 .marquee {
-  width: 95%;
+  width: 98%;
   margin: 0 auto;
   overflow: hidden;
   white-space: nowrap;
@@ -434,4 +435,14 @@ header {
     max-width: 100% !important;
     box-sizing: border-box;
   }
+}
+
+body, html {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+*, *::before, *::after {
+  box-sizing: inherit;
 }
