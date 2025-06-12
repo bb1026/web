@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 首页按钮
       const homeLi = document.createElement('li');
       const homeLink = document.createElement('a');
-      homeLink.href = "../index.html";
+      homeLink.href = "/index.html";
       homeLink.textContent = "首页";
       homeLink.onclick = (e) => {
         e.preventDefault();
