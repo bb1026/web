@@ -94,13 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-    // 关于按钮
-    const aboutLi = document.createElement('li');
-    const aboutLink = document.createElement('a');
-    aboutLink.href = "pages/about.html";
-    aboutLink.textContent = "关于";
-    aboutLi.appendChild(aboutLink);
-    navList.appendChild(aboutLi);
+      // 关于按钮
+      const aboutLi = document.createElement('li');
+      const aboutLink = document.createElement('a');
+      aboutLink.href = "pages/about.html"; // 直接跳转页面
+      aboutLink.textContent = "关于";
+      aboutLi.appendChild(aboutLink);
+      navList.appendChild(aboutLi);
+    })
+    .catch(err => {
+      console.error('加载菜单失败:', err);
+    });
 
   // 页面其他区域点击时收起所有子菜单
   document.addEventListener('click', (e) => {
