@@ -14,69 +14,34 @@
     randomIndices.push(indices.splice(rand, 1)[0]);
   }
 
-  // 创建 banner-item 容器，包含占位动画
-  const wrappers = randomIndices.map(() => {
-    const item = document.createElement('div');
-    item.className = 'banner-item';
+  // 生成图片元素函数（立即插入 img，不等加载）
+  function createBannerItems(indices) {
+    return indices.map(index => {
+      const item = document.createElement('div');
+      item.className = 'banner-item';
 
-    const placeholder = document.createElement('div');
-    placeholder.className = 'placeholder-box';
-    item.appendChild(placeholder);
+      // 直接用 jpg 作为示例，如果你想用多个扩展可以做判断替换
+      const img = document.createElement('img');
+      img.src = `${imageBasePath}image${index}.jpg`;
+      img.className = 'fade-in-image';
+      img.loading = 'lazy';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
 
-    imageContainer.appendChild(item);
-    return item;
-  });
+      item.appendChild(img);
+      return item;
+    });
+  }
 
-  // 为每个 wrapper 尝试加载实际图片
-  randomIndices.forEach((index, i) => {
-    let imageLoaded = false;
+  // 先清空容器
+  imageContainer.innerHTML = '';
 
-    for (const ext of extensions) {
-      if (imageLoaded) break;
+  // 创建两组图片，用于无缝滚动
+  const firstGroup = createBannerItems(randomIndices);
+  const secondGroup = createBannerItems(randomIndices);
 
-      const candidates = [
-        `${imageBasePath}image${index}.${ext}`,
-        `${imageBasePath}image${index}.${ext.toUpperCase()}`
-      ];
-
-      for (const src of candidates) {
-        const img = new Image();
-        img.src = src;
-        img.className = 'fade-in-image';
-        img.loading = 'lazy';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-
-        img.onload = () => {
-          if (imageLoaded) return;
-          imageLoaded = true;
-
-          img.classList.add('loaded');
-          const wrapper = wrappers[i];
-          wrapper.innerHTML = ''; // 清除占位内容
-          wrapper.appendChild(img);
-        };
-
-        img.onerror = () => {};
-      }
-    }
-  });
-
-  // 🚀 添加：克隆已有图片，实现无缝滚动
-  const cloneImages = () => {
-    const items = Array.from(imageContainer.children);
-    const cloneTimes = 2; // 克隆次数
-    for (let i = 0; i < cloneTimes; i++) {
-      items.forEach(item => {
-        const clone = item.cloneNode(true);
-        imageContainer.appendChild(clone);
-      });
-    }
-  };
-
-  // 等待图片加载完成后克隆（确保尺寸正确）
-  window.addEventListener('load', () => {
-    cloneImages();
-  });
+  // 插入两组图片
+  firstGroup.forEach(item => imageContainer.appendChild(item));
+  secondGroup.forEach(item => imageContainer.appendChild(item));
 })();
