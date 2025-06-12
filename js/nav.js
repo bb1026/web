@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 加载菜单 JSON
-  fetch('/json/menu.json')
+  fetch('../json/menu.json')
     .then(res => res.json())
     .then(menu => {
       const navList = document.getElementById('navList');
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 关于按钮
     const aboutLi = document.createElement('li');
     const aboutLink = document.createElement('a');
-    aboutLink.href = "pages/about.html"; // 直接跳转页面
+    aboutLink.href = "../pages/about.html"; // 直接跳转页面
     aboutLink.textContent = "关于";
     aboutLi.appendChild(aboutLink);
     navList.appendChild(aboutLi);
