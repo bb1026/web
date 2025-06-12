@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 加载菜单 JSON
-  fetch('json/menu.json')
+  fetch('../json/menu.json')
     .then(res => res.json())
     .then(menu => {
       const navList = document.getElementById('navList');
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 首页按钮
       const homeLi = document.createElement('li');
       const homeLink = document.createElement('a');
-      homeLink.href = "#";
+      homeLink.href = "../index.html";
       homeLink.textContent = "首页";
       homeLink.onclick = (e) => {
         e.preventDefault();
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 关于按钮（直接跳转）
       const aboutLi = document.createElement('li');
       const aboutLink = document.createElement('a');
-      aboutLink.href = "pages/about.html";
+      aboutLink.href = "../pages/about.html";
       aboutLink.textContent = "关于";
       // 不阻止默认跳转行为，直接跳转页面
       aboutLi.appendChild(aboutLink);
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.footer-link').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
-      window.location.href = 'pages/about.html';
+      window.location.href = '../pages/about.html';
     });
   });
 
