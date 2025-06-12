@@ -94,37 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // 关于按钮
-      const aboutLi = document.createElement('li');
-      const aboutLink = document.createElement('a');
-      aboutLink.href = "#";
-      aboutLink.textContent = "关于";
-      aboutLink.onclick = (e) => {
-        e.preventDefault();
-        loadPageIntoFrame('pages/about.html');
-        banner.style.display = 'none';
-        menuContainer.style.display = 'none';
-        hideMenus();
-        window.scrollTo(0, 0);
-      };
-      aboutLi.appendChild(aboutLink);
-      navList.appendChild(aboutLi);
-    })
-    .catch(err => {
-      console.error('加载菜单失败:', err);
-    });
-
-  // 页脚链接事件（跳转到 about 页面）
-  document.querySelectorAll('.footer-link').forEach(el => {
-    el.addEventListener('click', e => {
-      e.preventDefault();
-      loadPageIntoFrame('pages/about.html');
-      banner.style.display = 'none';
-      menuContainer.style.display = 'none';
-      hideMenus();
-      window.scrollTo(0, 0);
-    });
-  });
+    // 关于按钮
+    const aboutLi = document.createElement('li');
+    const aboutLink = document.createElement('a');
+    aboutLink.href = "pages/about.html";
+    aboutLink.textContent = "关于";
+    aboutLi.appendChild(aboutLink);
+    navList.appendChild(aboutLi);
 
   // 页面其他区域点击时收起所有子菜单
   document.addEventListener('click', (e) => {
