@@ -1,7 +1,7 @@
 (function () {
   const imageContainer = document.getElementById('bannerImages');
-  const maxImageCount = 20;       // 最大图片数
-  const loadImageCount = 8;       // 实际加载数
+  const maxImageCount = 20;
+  const loadImageCount = 8;
   const imageBasePath = 'imgs/';
   const extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif'];
 
@@ -13,7 +13,6 @@
     randomIndices.push(indices.splice(rand, 1)[0]);
   }
 
-  // 创建并加载图片函数
   function createBannerItem(index) {
     const item = document.createElement('div');
     item.className = 'banner-item';
@@ -22,7 +21,6 @@
     placeholder.className = 'placeholder-box';
     item.appendChild(placeholder);
 
-    // 尝试加载图片
     let imageLoaded = false;
     for (const ext of extensions) {
       if (imageLoaded) break;
@@ -57,10 +55,9 @@
     return item;
   }
 
-  // 先加载一次图片数组
   const bannerItems = randomIndices.map(i => createBannerItem(i));
 
-  // 把图片列表追加两遍，实现无缝滚动
+  // 追加两遍实现无缝滚动
   bannerItems.forEach(item => imageContainer.appendChild(item));
   bannerItems.forEach(item => {
     const clone = item.cloneNode(true);
