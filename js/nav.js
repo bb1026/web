@@ -94,19 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // 关于按钮
+      // 关于按钮（直接跳转）
       const aboutLi = document.createElement('li');
       const aboutLink = document.createElement('a');
-      aboutLink.href = "#";
+      aboutLink.href = "pages/about.html";
       aboutLink.textContent = "关于";
-      aboutLink.onclick = (e) => {
-        e.preventDefault();
-        loadPageIntoFrame('pages/about.html');
-        banner.style.display = 'none';
-        menuContainer.style.display = 'none';
-        hideMenus();
-        window.scrollTo(0, 0);
-      };
+      // 不阻止默认跳转行为，直接跳转页面
       aboutLi.appendChild(aboutLink);
       navList.appendChild(aboutLi);
     })
@@ -114,15 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('加载菜单失败:', err);
     });
 
-  // 页脚链接事件（跳转到 about 页面）
+  // 页脚链接事件（直接跳转）
   document.querySelectorAll('.footer-link').forEach(el => {
     el.addEventListener('click', e => {
       e.preventDefault();
-      loadPageIntoFrame('pages/about.html');
-      banner.style.display = 'none';
-      menuContainer.style.display = 'none';
-      hideMenus();
-      window.scrollTo(0, 0);
+      window.location.href = 'pages/about.html';
     });
   });
 
