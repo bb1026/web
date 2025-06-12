@@ -139,22 +139,19 @@ header {
 
 /* 自动横向滚动图片容器 */
 #bannerImages {
-  display: inline-block;
-  white-space: nowrap;
-  animation: imageScroll 60s linear infinite;
-  will-change: transform;
-}
-#bannerImages:hover {
-  animation-play-state: paused;
+  display: flex;
+  width: max-content; /* 宽度由内容撑开 */
+  animation: scroll-left 40s linear infinite;
 }
 
 /* 滚动动画关键帧 */
-@keyframes imageScroll {
+@keyframes scroll-left {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    /* 滚动长度是容器宽度一半的负值，实现无缝滚动 */
+    transform: translateX(calc(-50%));
   }
 }
 
