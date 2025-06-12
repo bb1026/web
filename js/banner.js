@@ -62,4 +62,21 @@
       }
     }
   });
+
+  // 🚀 添加：克隆已有图片，实现无缝滚动
+  const cloneImages = () => {
+    const items = Array.from(imageContainer.children);
+    const cloneTimes = 2; // 克隆次数
+    for (let i = 0; i < cloneTimes; i++) {
+      items.forEach(item => {
+        const clone = item.cloneNode(true);
+        imageContainer.appendChild(clone);
+      });
+    }
+  };
+
+  // 等待图片加载完成后克隆（确保尺寸正确）
+  window.addEventListener('load', () => {
+    cloneImages();
+  });
 })();
