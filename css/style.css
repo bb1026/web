@@ -8,16 +8,18 @@ body {
 }
 
 #topNav {
-  background: #444; /* 保留深色背景 */
-  color: #fff; /* 保留白色文字 */
-  padding: 10px 0; /* 保留原有内边距 */
-  margin: 0;
-  /* 固定定位相关样式 */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000; /* 确保导航栏在最上层 */
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;    /* 垂直居中（可选） */
+  background: #444;
+  color: #fff;
+  padding: 10px 0;
+  margin: 0;
+  z-index: 1000;
   
   /* 滚动过渡效果 */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
