@@ -99,7 +99,7 @@ document.getElementById('searchInput').addEventListener('input', function () {
 // 在js/main.js中添加
 window.addEventListener('scroll', function() {
   const nav = document.getElementById('topNav');
-  if (window.scrollY > 50) {
+  if (window.scrollY > 10) {
     nav.classList.add('scrolled');
   } else {
     nav.classList.remove('scrolled');
