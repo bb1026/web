@@ -11,7 +11,7 @@ body {
   background: #444; /* 保留深色背景 */
   color: #fff; /* 保留白色文字 */
   padding: 10px 0; /* 保留原有内边距 */
-  
+  margin: 0;
   /* 固定定位相关样式 */
   position: fixed;
   top: 0;
