@@ -8,10 +8,20 @@ body {
 }
 
 #topNav {
-  background: #444;
-  color: #fff;
-  padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  background-color: rgba(255,255,255,0.9); /* 半透明背景 */
+  backdrop-filter: blur(5px); /* 毛玻璃效果 */
+  z-index: 1000;
+  transition: background-color 0.3s ease; /* 平滑过渡效果 */
+}
+
+/* 滚动时改变样式 */
+#topNav.scrolled {
+  background-color: rgba(255,255,255,1);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 #topNav ul {
