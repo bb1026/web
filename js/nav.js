@@ -1,22 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const iframe = document.getElementById('mainFrame');
   const banner = document.getElementById('banner');
   const menuContainer = document.getElementById('menuContainer');
-
-  // 封装统一加载函数
-  function loadPageIntoFrame(url) {
-    iframe.src = 'about:blank';
-    iframe.style.display = 'none';
-
-    setTimeout(() => {
-      iframe.src = url;
-      iframe.style.display = 'block';
-    }, 50);
-  }
-
+  
   // 封装导航状态切换
   function showHome() {
-    iframe.style.display = 'none';
     banner.style.display = '';
     menuContainer.style.display = '';
     window.scrollTo(0, 0);
@@ -35,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 加载菜单 JSON
   fetch('/json/menu.json')
     .then(res => res.json())
-    .then(menu => {
+    .then(menuData => {
       const navList = document.getElementById('navList');
 
       // 首页按钮
@@ -50,8 +37,31 @@ document.addEventListener('DOMContentLoaded', () => {
       homeLi.appendChild(homeLink);
       navList.appendChild(homeLi);
 
-      // 分类菜单
-      for (const category in menu) {
+      // 处理菜单数据
+      for (const [category, items] of Object.entries(menuData)) {
+        // 如果是字符串，说明是直接链接
+        if (typeof items === 'string') {
+          const directLi = document.createElement('li');
+          const directLink = document.createElement('a');
+          directLink.href = items;
+          directLink.textContent = category;
+          directLi.appendChild(directLink);
+          navList.appendChild(directLi);
+          continue;
+        }
+
+        // 如果是数组且只有1个项目，也作为直接链接处理
+        if (items.length === 1) {
+          const singleLi = document.createElement('li');
+          const singleLink = document.createElement('a');
+          singleLink.href = items[0][1];
+          singleLink.textContent = category;
+          singleLi.appendChild(singleLink);
+          navList.appendChild(singleLi);
+          continue;
+        }
+
+        // 多个项目时创建下拉菜单
         const dropdown = document.createElement('li');
         dropdown.className = 'dropdown';
 
@@ -63,21 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const submenu = document.createElement('ul');
         submenu.className = 'submenu';
 
-        for (const [name, href] of menu[category]) {
+        for (const [name, href] of items) {
           const item = document.createElement('li');
           const link = document.createElement('a');
           link.href = href;
           link.textContent = name;
-
-          link.onclick = (e) => {
-            e.preventDefault();
-            loadPageIntoFrame(href);
-            banner.style.display = 'none';
-            menuContainer.style.display = 'none';
-            hideMenus();
-            window.scrollTo(0, 0);
-          };
-
           item.appendChild(link);
           submenu.appendChild(item);
         }
@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         navList.appendChild(dropdown);
 
         // 展开子菜单
-        toggleSpan.addEventListener('click', () => {
+        toggleSpan.addEventListener('click', (e) => {
+          e.preventDefault();
           document.querySelectorAll('#topNav .submenu').forEach(s => {
             if (s !== submenu) s.classList.remove('visible');
           });
@@ -99,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const aboutLink = document.createElement('a');
       aboutLink.href = "/pages/about.html";
       aboutLink.textContent = "关于";
-      // 不阻止默认跳转行为，直接跳转页面
       aboutLi.appendChild(aboutLink);
       navList.appendChild(aboutLi);
     })
@@ -129,18 +129,15 @@ document.addEventListener('DOMContentLoaded', () => {
 function adjustMainContentMargin() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
-  if (topNav && mainContent) { // 确保元素存在
+  if (topNav && mainContent) {
     mainContent.style.marginTop = `${topNav.offsetHeight + 40}px`;
   }
 }
 
 // DOM加载完成后执行
 document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
-
-// 监听窗口变化（可选防抖）
 window.addEventListener('resize', adjustMainContentMargin);
 
-// 监听导航栏DOM变化（可选）
 if (document.getElementById('topNav')) {
   new MutationObserver(adjustMainContentMargin).observe(
     document.getElementById('topNav'),
