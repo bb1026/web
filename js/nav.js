@@ -137,18 +137,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======= 动态计算 margin-top =======
+let lastViewportHeight = window.innerHeight;
+
 function adjustMainContentMargin() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
   if (topNav && mainContent) {
-    mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
+    // 添加防抖检测地址栏变化
+    const currentHeight = window.innerHeight;
+    const heightDiff = Math.abs(currentHeight - lastViewportHeight);
+    
+    // 当高度变化超过50px（典型地址栏高度）时才更新
+    if (heightDiff > 50 || heightDiff === 0) {
+      mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
+      lastViewportHeight = currentHeight;
+    }
   }
 }
 
-// DOM加载完成后执行
-document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
-window.addEventListener('resize', adjustMainContentMargin);
+// 使用 visualViewport API 优先（如果可用）
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', adjustMainContentMargin);
+} else {
+  // 传统浏览器降级方案
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(adjustMainContentMargin, 100);
+  });
+}
 
+// 保持原有初始化逻辑
+document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
+
+// 保持原有的 MutationObserver
 if (document.getElementById('topNav')) {
   new MutationObserver(adjustMainContentMargin).observe(
     document.getElementById('topNav'),
