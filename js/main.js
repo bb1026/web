@@ -39,30 +39,32 @@ function renderMenu(filtered = null) {
       more.className = 'more-link';
       more.textContent = '展开...';
       
-      more.onclick = (e) => {
-        e.preventDefault();
-        expanded = !expanded;
-        
-        const newList = document.createElement('div');
-        newList.className = 'tool-list';
-        const visible = expanded ? normalizedTools : normalizedTools.slice(0, maxDisplay);
-        
-        visible.forEach(([name, href]) => {
-          const a = document.createElement('a');
-          a.className = 'tool-item';
-          a.href = href;
-          a.appendChild(document.createTextNode(name));
-          newList.appendChild(a);
-        });
-        
-        // 关键修复：先保存父节点引用
-        const parent = toolList.parentNode;
-        parent.removeChild(toolList);
-        parent.appendChild(newList);
-        toolList = newList; // 更新toolList引用
-        
-        more.textContent = expanded ? '收起...' : '展开...';
-      };
+      // 修改后的展开/收起逻辑
+more.onclick = (e) => {
+  e.preventDefault();
+  expanded = !expanded;
+
+  // 创建新列表时保留原样式和类
+  const newList = toolList.cloneNode(false); // 复制原列表容器
+  newList.innerHTML = ''; // 清空内容
+  
+  const visible = expanded ? normalizedTools : normalizedTools.slice(0, maxDisplay);
+  
+  visible.forEach(([name, href]) => {
+    const a = document.createElement('a');
+    a.className = 'tool-item';
+    a.href = href;
+    a.textContent = name;
+    newList.appendChild(a);
+  });
+
+  // 平滑替换（保留布局上下文）
+  toolList.parentNode.insertBefore(newList, toolList);
+  toolList.remove();
+  toolList = newList; // 更新引用
+
+  more.textContent = expanded ? '收起...' : '展开...';
+};
       
       section.appendChild(more);
     }
