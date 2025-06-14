@@ -132,17 +132,19 @@ header {
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  background: #fff;
+  /* background: #fff; */
   border-bottom: 1px solid #ccc;
   font-size: 14px;
   line-height: 1.2;
+  width: 95%;
+  margin: 0 auto;
 }
 
 #header-controls {
   display: flex;
   gap: 10px;
-  width: 95%;
-  max-width: 400px;
+  width: 100%;
+  /* max-width: 400px; */
   margin: 5px 0;
 }
 
