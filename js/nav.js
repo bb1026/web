@@ -169,9 +169,4 @@ document.addEventListener('DOMContentLoaded', () => {
       childList: true,
       subtree: true
     });
-    
-    // 即时执行 + 滚动监听
-    lockContentPosition();
-    window.addEventListener('scroll', lockContentPosition);
-  }
 });
