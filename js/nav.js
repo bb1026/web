@@ -136,37 +136,44 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ======= 动态计算间距 =======
-// ======= 绝对定位间距控制 =======
-function lockContentPosition() {
+// 自动调整菜单与下方距离
+function updateContentSpacing() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
   
   if (topNav && mainContent) {
-    // 完全放弃margin，改用top定位
-    const navRect = topNav.getBoundingClientRect();
-    const absoluteTop = navRect.top + navRect.height + window.scrollY;
+    // 1. 获取菜单栏底部文档流绝对位置（非视口相对位置）
+    const navHeight = topNav.offsetHeight;
+    const navTop = topNav.offsetTop; // 相对于文档顶部的位置
     
-    // 直接设置绝对位置（强制10px间距）
-    mainContent.style.position = 'relative';
-    mainContent.style.top = `${absoluteTop + 10}px`;
-    mainContent.style.marginTop = '0'; // 清除原有margin
+    // 2. 设置正文的起始位置（菜单栏底部 + 10px）
+    mainContent.style.position = 'static'; // 确保在文档流中
+    mainContent.style.marginTop = `${navHeight + 10}px`;
+    
+    // 3. 同步更新padding确保滚动连续性
+    document.body.style.paddingTop = `${navHeight}px`;
   }
 }
 
-// 使用高性能监听器
-const observer = new ResizeObserver(lockContentPosition);
-const mutationObserver = new MutationObserver(lockContentPosition);
+// 使用现代API监听（性能最佳）
+const navObserver = new ResizeObserver(updateContentSpacing);
+const mutationObserver = new MutationObserver(updateContentSpacing);
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   const topNav = document.getElementById('topNav');
   if (topNav) {
-    // 双保险监听
-    observer.observe(topNav);
+    // 双监听模式
+    navObserver.observe(topNav);
     mutationObserver.observe(topNav, {
       attributes: true,
-      childList: true,
-      subtree: true
+      attributeFilter: ['style', 'class']
     });
+    
+    // 即时执行 + 滚动时微调
+    updateContentSpacing();
+    window.addEventListener('scroll', () => {
+      requestAnimationFrame(updateContentSpacing);
+    });
+  }
 });
