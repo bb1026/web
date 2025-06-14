@@ -7,9 +7,7 @@
     ["二维码生成", "pages/qrcode.html"],
     ["条形码生成", "pages/barcode.html"],
     ["图像转Base64", "pages/img2base64.html"],
-    ["字数统计", "pages/word-counter.html"]
-  ],
-  "其它工具": [
+    ["字数统计", "pages/word-counter.html"],
     ["IP查询", "pages/ip.html"],
     ["正则表达式", "pages/regex.html"],
     ["身份证号码查验", "pages/idcheck.html"],
@@ -22,5 +20,6 @@
     ["单词拼写3", "https://bing.0515364.xyz/game4.html"],
     ["华容道", "https://bing.0515364.xyz/game5.html"],
     ["井字游戏", "pages/xogame.html"]
-  ]
+  ],
+  "色彩查询": "pages/color.html"
 }
