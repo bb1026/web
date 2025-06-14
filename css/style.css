@@ -1,5 +1,5 @@
 /* 页面整体样式 */
-body {
+.main-body {
   margin: 0;
   font-family: system-ui, sans-serif;
   background: #fff;
@@ -429,7 +429,7 @@ header {
 }
 
 /* 通用设置 */
-body, html {
+.main-body, html {
   width: 100%;
   margin: 0;
   padding: 0;
