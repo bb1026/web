@@ -302,15 +302,6 @@ header {
   position: relative;
 }
 
-.more-link::after {
-  content: ' ⇩';
-  transition: transform 0.3s ease;
-}
-
-.more-link.expanded::after {
-  content: ' ⇧';
-}
-
 .more-link:hover {
   text-decoration: underline;
   color: #0056b3;
