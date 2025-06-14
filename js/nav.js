@@ -136,44 +136,43 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ======= 动态计算 margin-top =======
-let lastViewportHeight = window.innerHeight;
-
-function adjustMainContentMargin() {
+// ======= 动态计算间距 =======
+function updateContentPosition() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
+  
   if (topNav && mainContent) {
-    // 添加防抖检测地址栏变化
-    const currentHeight = window.innerHeight;
-    const heightDiff = Math.abs(currentHeight - lastViewportHeight);
+    // 获取菜单栏底部绝对位置
+    const navRect = topNav.getBoundingClientRect();
+    const navBottom = navRect.top + navRect.height;
     
-    // 当高度变化超过50px（典型地址栏高度）时才更新
-    if (heightDiff > 50 || heightDiff === 0) {
-      mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
-      lastViewportHeight = currentHeight;
-    }
+    // 始终在菜单栏下方保持10px间距
+    mainContent.style.marginTop = `${navBottom + 10}px`;
   }
 }
 
-// 使用 visualViewport API 优先（如果可用）
-if ('visualViewport' in window) {
-  window.visualViewport.addEventListener('resize', adjustMainContentMargin);
-} else {
-  // 传统浏览器降级方案
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(adjustMainContentMargin, 100);
-  });
-}
+// 高效监听器配置
+const observer = new ResizeObserver(updateContentPosition);
+const mutationObserver = new MutationObserver(updateContentPosition);
 
-// 保持原有初始化逻辑
-document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+  const topNav = document.getElementById('topNav');
+  if (topNav) {
+    // 监听菜单栏尺寸变化（现代API）
+    observer.observe(topNav);
+    
+    // 监听菜单栏DOM变化（备用方案）
+    mutationObserver.observe(topNav, {
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    });
+    
+    updateContentPosition();
+  }
+});
 
-// 保持原有的 MutationObserver
-if (document.getElementById('topNav')) {
-  new MutationObserver(adjustMainContentMargin).observe(
-    document.getElementById('topNav'),
-    { childList: true, subtree: true, attributes: true }
-  );
-}
+// 窗口滚动时也更新（解决部分浏览器定位问题）
+window.addEventListener('scroll', () => {
+  requestAnimationFrame(updateContentPosition);
+});
