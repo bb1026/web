@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>字数统计工具</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f0f2f5;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
+    .stats {
+      margin-top: 20px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .stat-item {
+      margin-bottom: 8px;
+    }
+    .highlight {
+      color: #007bff;
+      font-weight: bold;
+    }
+    @media (max-width: 600px) {
+      textarea {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 字数统计工具</h1>
+  <textarea id="inputText" placeholder="请输入或粘贴文本..."></textarea>
+  <div class="stats" id="stats">
+    <div class="stat-item">总字符数：<span class="highlight" id="totalCount">0</span></div>
+    <div class="stat-item">中文字符数：<span class="highlight" id="chineseCount">0</span></div>
+    <div class="stat-item">英文字母数：<span class="highlight" id="letterCount">0</span></div>
+    <div class="stat-item">数字数：<span class="highlight" id="digitCount">0</span></div>
+    <div class="stat-item">空格数：<span class="highlight" id="spaceCount">0</span></div>
+    <div class="stat-item">特殊符号数：<span class="highlight" id="specialCount">0</span></div>
+
+    <div class="stat-item"><strong>标点符号统计：</strong></div>
+    <ul style="margin-left: 20px;">
+      <li>句号（。 .）：<span class="highlight" id="periodCount">0</span></li>
+      <li>逗号（， ,）：<span class="highlight" id="commaCount">0</span></li>
+      <li>顿号（、）：<span class="highlight" id="dunCount">0</span></li>
+      <li>问号（？ ?）：<span class="highlight" id="questionCount">0</span></li>
+      <li>感叹号（！ !）：<span class="highlight" id="exclamCount">0</span></li>
+      <li>引号（“” ‘’ " '）：<span class="highlight" id="quoteCount">0</span></li>
+      <li>括号（（） [] {}）：<span class="highlight" id="bracketCount">0</span></li>
+      <li>冒号（： :）：<span class="highlight" id="colonCount">0</span></li>
+      <li>分号（； ;）：<span class="highlight" id="semicolonCount">0</span></li>
+      <li>其他标点（- / … —— 等）：<span class="highlight" id="otherPunctCount">0</span></li>
+    </ul>
+  </div>
+
+  <script>
+    const textArea = document.getElementById('inputText');
+
+    const counters = {
+      totalCount: 'totalCount',
+      chineseCount: 'chineseCount',
+      letterCount: 'letterCount',
+      digitCount: 'digitCount',
+      spaceCount: 'spaceCount',
+      specialCount: 'specialCount',
+      periodCount: 'periodCount',
+      commaCount: 'commaCount',
+      dunCount: 'dunCount',
+      questionCount: 'questionCount',
+      exclamCount: 'exclamCount',
+      quoteCount: 'quoteCount',
+      bracketCount: 'bracketCount',
+      colonCount: 'colonCount',
+      semicolonCount: 'semicolonCount',
+      otherPunctCount: 'otherPunctCount',
+    };
+
+    function updateStats(text) {
+      let stats = {};
+      for (let key in counters) stats[key] = 0;
+
+      for (let char of text) {
+        if (char.match(/[\u4e00-\u9fa5]/)) {
+          stats.chineseCount++;
+        } else if (/[a-zA-Z]/.test(char)) {
+          stats.letterCount++;
+        } else if (/\d/.test(char)) {
+          stats.digitCount++;
+        } else if (char === ' ') {
+          stats.spaceCount++;
+        } else if ('。.'.includes(char)) {
+          stats.periodCount++;
+        } else if ('，,'.includes(char)) {
+          stats.commaCount++;
+        } else if (char === '、') {
+          stats.dunCount++;
+        } else if ('？?'.includes(char)) {
+          stats.questionCount++;
+        } else if ('！!'.includes(char)) {
+          stats.exclamCount++;
+        } else if ('“”‘’"\''.includes(char)) {
+          stats.quoteCount++;
+        } else if ('（）[]{}'.includes(char)) {
+          stats.bracketCount++;
+        } else if ('：:'.includes(char)) {
+          stats.colonCount++;
+        } else if ('；;'.includes(char)) {
+          stats.semicolonCount++;
+        } else if ('-——/…～·'.includes(char)) {
+          stats.otherPunctCount++;
+        } else {
+          stats.specialCount++;
+        }
+      }
+
+      stats.totalCount = text.length;
+
+      for (let key in counters) {
+        document.getElementById(counters[key]).textContent = stats[key];
+      }
+    }
+
+    textArea.addEventListener('input', () => updateStats(textArea.value));
+    updateStats('');
+  </script>
+</body>
+</html>
