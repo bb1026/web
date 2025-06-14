@@ -11,7 +11,7 @@ function renderMenu(filtered = null) {
     const toolList = document.createElement('div');
     toolList.className = 'tool-list';
 
-    const limited = tools.slice(0, 3);
+    const limited = tools.slice(0, 6); // 显示数量
     limited.forEach(([name, href]) => {
       const a = document.createElement('a');
       a.className = 'tool-item';
@@ -29,7 +29,7 @@ function renderMenu(filtered = null) {
 
     section.appendChild(toolList);
 
-    if (tools.length > 3) {
+    if (tools.length > 6) {
       const more = document.createElement('a');
       more.className = 'more-link';
       more.href = '#';
