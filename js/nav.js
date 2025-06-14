@@ -30,10 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const homeLink = document.createElement('a');
       homeLink.href = "/";
       homeLink.textContent = "首页";
-      homeLink.onclick = (e) => {
-        e.preventDefault();
+      //homeLink.onclick = (e) => {
+        //e.preventDefault();
         showHome();
-      };
+      //};
       homeLi.appendChild(homeLink);
       navList.appendChild(homeLi);
 
