@@ -100,6 +100,7 @@ header {
   border-bottom: 1px solid #ccc;
   font-size: 14px;
   line-height: 1.2;
+  margin-top: 60px;
 }
 
 #header-controls {
@@ -150,7 +151,6 @@ header {
   font-size: 16px;
   color: #333;
   outline: none;
-  margin-top: 60px;
   border: 1px solid transparent;
   background: linear-gradient(white, white) padding-box, linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
   border-radius: 20px;
