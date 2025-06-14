@@ -1,4 +1,5 @@
 let allData = {};
+const maxDisplay = 6;
 
 function renderMenu(filtered = null) {
   const container = document.getElementById('menuContainer');
@@ -8,10 +9,10 @@ function renderMenu(filtered = null) {
     const section = document.createElement('div');
     section.className = 'category';
     section.innerHTML = `<h2>${cat}</h2>`;
-    const toolList = document.createElement('div');
+    let toolList = document.createElement('div');
     toolList.className = 'tool-list';
 
-    const limited = tools.slice(0, 6); // 显示数量
+    const limited = tools.slice(0, maxDisplay); // 显示数量
     limited.forEach(([name, href]) => {
       const a = document.createElement('a');
       a.className = 'tool-item';
@@ -29,24 +30,29 @@ function renderMenu(filtered = null) {
 
     section.appendChild(toolList);
 
-    if (tools.length > 6) {
+    if (tools.length > maxDisplay) {
+      let expanded = false;
+    
       const more = document.createElement('a');
       more.className = 'more-link';
       more.href = '#';
-      more.textContent = '查看更多...';
+      more.textContent = '查看更多工具 ⇩';
+    
       more.onclick = (e) => {
-  e.preventDefault();
-
-  const newList = document.createElement('div');
-  newList.className = 'tool-list';
-
-  tools.forEach(([name, href]) => {
-    const a = document.createElement('a');
-    a.className = 'tool-item';
-    a.href = href;
-    a.target = 'mainFrame';
-    a.textContent = name;
-    a.onclick = () => {
+        e.preventDefault();
+        expanded = !expanded;
+    
+        const newList = document.createElement('div');
+        newList.className = 'tool-list';
+        const visible = expanded ? tools : tools.slice(0, maxDisplay);
+    
+        visible.forEach(([name, href]) => {
+          const a = document.createElement('a');
+          a.className = 'tool-item';
+          a.href = href;
+          a.target = 'mainFrame';
+          a.textContent = name;
+          a.onclick = () => {
             document.getElementById('mainFrame').style.display = 'block';
             document.getElementById('banner').style.display = 'none';
             document.getElementById('menuContainer').style.display = 'none';
@@ -54,10 +60,13 @@ function renderMenu(filtered = null) {
           };
           newList.appendChild(a);
         });
-      
+    
         toolList.replaceWith(newList);
-        more.remove();
+        toolList = newList;
+    
+        more.textContent = expanded ? '收起工具 ⇧' : '查看更多工具 ⇩';
       };
+    
       section.appendChild(more);
     }
 
