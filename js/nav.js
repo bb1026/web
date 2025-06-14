@@ -130,7 +130,7 @@ function adjustMainContentMargin() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
   if (topNav && mainContent) {
-    mainContent.style.marginTop = `${topNav.offsetHeight + 40}px`;
+    mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
   }
 }
 
