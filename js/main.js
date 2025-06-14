@@ -36,6 +36,7 @@ function renderMenu(filtered = null) {
       const more = document.createElement('a');
       more.className = 'more-link';
       more.href = '#';
+      more.textContent = '展开...';
       
       more.onclick = (e) => {
         e.preventDefault();
