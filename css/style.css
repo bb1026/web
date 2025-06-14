@@ -13,19 +13,16 @@
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: center;    /* 垂直居中（可选） */
+  justify-content: center;
+  align-items: center;
   background: #444;
   color: #fff;
   padding: 10px 0;
   margin: 0;
   z-index: 1000;
-  
-  /* 滚动过渡效果 */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* 滚动时的样式 - 保持深色但增加阴影 */
 #topNav.scrolled {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
@@ -84,13 +81,13 @@
   display: inline-block;
 }
 
-/* 主体内容下移，避免被固定导航栏遮挡 */
+/* 主体内容 */
 #mainContent {
   margin-left: 140px;
   margin-right: 140px;
   padding: 20px;
   box-sizing: border-box;
-  padding-top :60px;
+  padding-top: 60px;
 }
 
 /* 滚动公告栏 */
@@ -116,13 +113,8 @@
 }
 
 @keyframes scroll {
-  0% { 
-    transform: translateX(100%); 
-  }
-  
-  100% { 
-    transform: translateX(-100%); 
-  }
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 
 /* 页面头部和搜索框 */
@@ -146,7 +138,6 @@ header {
   margin: 5px 0;
 }
 
-/* 搜索框 */
 #searchInput {
   width: 100%;
   height: 40px;
@@ -155,18 +146,21 @@ header {
   color: #333;
   outline: none;
   border: 1px solid transparent;
-  background: linear-gradient(white, white) padding-box, linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
   border-radius: 20px;
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 #searchInput:hover {
-  background: linear-gradient(white, white) padding-box, linear-gradient(135deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(135deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
   box-shadow: 0 0 5px rgba(255, 0, 118, 0.5), 0 0 20px rgba(30, 174, 255, 0.5);
 }
 
 #searchInput:focus {
-  background: linear-gradient(white, white) padding-box, linear-gradient(45deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(45deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
   box-shadow: 0 0 15px rgba(255, 0, 118, 0.7), 0 0 25px rgba(30, 174, 255, 0.7);
   color: #000;
 }
@@ -176,7 +170,7 @@ header {
   font-style: italic;
 }
 
-/* 🎞️ banner 图片区域 */
+/* banner 图片区域 */
 #banner {
   padding: 10px;
   overflow: hidden;
@@ -190,14 +184,8 @@ header {
 }
 
 @keyframes scroll-left {
-  0% {
-  transform: translateX(0);
-  }
-  
-  100% {
-  /* 滚动宽度为一半内容宽度，实现无缝 */
-  transform: translateX(calc(-50%));
-  }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50%)); }
 }
 
 .banner-item {
@@ -209,7 +197,7 @@ header {
   overflow: hidden;
   background: #eee;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  flex-shrink: 0; /* 防止缩小 */
+  flex-shrink: 0;
 }
 
 .banner-item img {
@@ -234,16 +222,9 @@ header {
 }
 
 @keyframes pulse {
-  0% { 
-    opacity: 1; 
-  }
-  
-  50% { 
-    opacity: 0.6; 
-  }
-  100% { 
-    opacity: 1; 
-  }
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
 /* 分类模块 */
@@ -288,13 +269,6 @@ header {
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 600px) {
-  .tool-item {
-  flex: 1 1 100%;
-  text-align: center;
-  }
-}
-
 .more-link {
   display: block;
   text-align: center;
@@ -309,15 +283,6 @@ header {
 .more-link:hover {
   text-decoration: underline;
   color: #0056b3;
-}
-
-/* iframe 样式 */
-#mainFrame {
-  width: 100%;
-  height: 1000px;
-  border: none;
-  margin-top: 20px;
-  background: #fff;
 }
 
 /* 分隔线 */
@@ -353,7 +318,8 @@ header {
 /* 广告样式 */
 #adWrapper { 
   position: fixed; 
-  top: 100px; left: 0; 
+  top: 100px; 
+  left: 0; 
   right: 0; 
   pointer-events: none; 
   z-index: 9999; 
@@ -406,31 +372,45 @@ header {
   box-shadow: 0 0 5px rgba(0,0,0,0.3); 
 }
 
-/* 手机端适配 */
-@media screen and (max-width: 768px) {
-  #adWrapper,
-  #leftPlaceholder,
-  #rightPlaceholder {
-  display: none !important;
-  }
-  
+/* 响应式设计 */
+@media (max-width: 768px) {
   #mainContent {
-  margin: 0 !important;
-  padding: 10px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box;
+    margin-left: 10px !important;
+    margin-right: 10px !important;
+    padding: 10px !important;
+  }
+
+  .tool-list {
+    grid-template-columns: 1fr;
+  }
+
+  #topNav ul {
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .banner-item {
+    width: 250px;
+    height: 150px;
+  }
+
+  #adWrapper,
+  .side-ad {
+    display: none;
   }
 }
 
-/* 通用设置 */
-.main-body, html {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* 新增的高亮样式 */
+.highlight {
+  background-color: #ffeb3b;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
-*, *::before, *::after {
-  box-sizing: inherit;
+.no-results {
+  padding: 40px;
+  text-align: center;
+  font-size: 1.2em;
+  color: #666;
 }
