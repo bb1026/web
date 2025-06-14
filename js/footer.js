@@ -17,9 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   `;
 
-  // 插入到指定的容器中
+  // 插入到页脚容器
   const footerContainer = document.createElement('div');
-  footerContainer.id = 'footerContainer';
   footerContainer.innerHTML = footerHTML;
   document.body.appendChild(footerContainer);
+
+  // 动态加载不蒜子统计
+  const busuanziScript = document.createElement('script');
+  busuanziScript.defer = true;
+  busuanziScript.src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
+  document.body.appendChild(busuanziScript);
 });
