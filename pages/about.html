@@ -81,9 +81,10 @@
 </head>
 <body>
   
-  <div style="text-align: center; margin-bottom: 30px; font-size: 18px;">
-  <a href="/">首页</a>
-  </div>
+  <!-- 添加导航栏 -->
+  <nav id="topNav">
+    <ul id="navList"></ul>
+  </nav>
 
   <h1>关于本站</h1>
 
@@ -107,6 +108,9 @@
 
   <h2>开源协议</h2>
   <p>本项目以 MIT 协议开源，您可自由使用、修改、分发源码，唯需保留原作者信息和许可证声明。</p>
+  
+  <!-- 添加页脚容器 -->
+  <div id="footerContainer"></div>
 
   <!-- 遮罩层 -->
   <div id="overlay" onclick="hideQr()"></div>
@@ -142,8 +146,9 @@
     }
   </script>
   
-  <!-- 声明信息 -->
-  <script src="js/footer.js"></script>
+  <!-- 加载导航栏和页脚脚本 -->
+  <script src="/js/nav.js"></script>
+  <script src="/js/footer.js"></script>
   
 </body>
 </html>
