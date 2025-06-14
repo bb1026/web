@@ -137,42 +137,41 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======= 动态计算间距 =======
-function updateContentPosition() {
+// ======= 绝对定位间距控制 =======
+function lockContentPosition() {
   const topNav = document.getElementById('topNav');
   const mainContent = document.getElementById('mainContent');
   
   if (topNav && mainContent) {
-    // 获取菜单栏底部绝对位置
+    // 完全放弃margin，改用top定位
     const navRect = topNav.getBoundingClientRect();
-    const navBottom = navRect.top + navRect.height;
+    const absoluteTop = navRect.top + navRect.height + window.scrollY;
     
-    // 始终在菜单栏下方保持10px间距
-    mainContent.style.marginTop = `${navBottom + 10}px`;
+    // 直接设置绝对位置（强制10px间距）
+    mainContent.style.position = 'relative';
+    mainContent.style.top = `${absoluteTop + 10}px`;
+    mainContent.style.marginTop = '0'; // 清除原有margin
   }
 }
 
-// 高效监听器配置
-const observer = new ResizeObserver(updateContentPosition);
-const mutationObserver = new MutationObserver(updateContentPosition);
+// 使用高性能监听器
+const observer = new ResizeObserver(lockContentPosition);
+const mutationObserver = new MutationObserver(lockContentPosition);
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
   const topNav = document.getElementById('topNav');
   if (topNav) {
-    // 监听菜单栏尺寸变化（现代API）
+    // 双保险监听
     observer.observe(topNav);
-    
-    // 监听菜单栏DOM变化（备用方案）
     mutationObserver.observe(topNav, {
       attributes: true,
-      attributeFilter: ['class', 'style']
+      childList: true,
+      subtree: true
     });
     
-    updateContentPosition();
+    // 即时执行 + 滚动监听
+    lockContentPosition();
+    window.addEventListener('scroll', lockContentPosition);
   }
-});
-
-// 窗口滚动时也更新（解决部分浏览器定位问题）
-window.addEventListener('scroll', () => {
-  requestAnimationFrame(updateContentPosition);
 });
