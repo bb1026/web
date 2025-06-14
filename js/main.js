@@ -5,67 +5,60 @@ function renderMenu(filtered = null) {
   const container = document.getElementById('menuContainer');
   container.innerHTML = '';
   const categories = filtered || allData;
+  
   Object.entries(categories).forEach(([cat, tools]) => {
+    // 跳过空分类
+    if (!tools || tools.length === 0) return;
+
     const section = document.createElement('div');
     section.className = 'category';
     section.innerHTML = `<h2>${cat}</h2>`;
     let toolList = document.createElement('div');
     toolList.className = 'tool-list';
 
-    const limited = tools.slice(0, maxDisplay); // 显示数量
+    // 处理单项目直接链接的情况（如 "色彩查询": "pages/color.html"）
+    const normalizedTools = Array.isArray(tools[0]) ? tools : [[cat, tools]];
+    
+    const limited = normalizedTools.slice(0, maxDisplay);
     limited.forEach(([name, href]) => {
       const a = document.createElement('a');
       a.className = 'tool-item';
       a.href = href;
-      a.target = 'mainFrame';
       a.textContent = name;
-      a.onclick = () => {
-  document.getElementById('mainFrame').style.display = 'block';
-  document.getElementById('banner').style.display = 'none';
-  document.getElementById('menuContainer').style.display = 'none';
-  window.scrollTo(0, 0);
-};
       toolList.appendChild(a);
     });
 
     section.appendChild(toolList);
 
-    if (tools.length > maxDisplay) {
+    // 显示"更多/收起"按钮
+    if (normalizedTools.length > maxDisplay) {
       let expanded = false;
-    
       const more = document.createElement('a');
       more.className = 'more-link';
       more.href = '#';
-    
+      more.textContent = '展开...';
+      
       more.onclick = (e) => {
         e.preventDefault();
         expanded = !expanded;
-    
+        
         const newList = document.createElement('div');
         newList.className = 'tool-list';
-        const visible = expanded ? tools : tools.slice(0, maxDisplay);
-    
+        const visible = expanded ? normalizedTools : normalizedTools.slice(0, maxDisplay);
+        
         visible.forEach(([name, href]) => {
           const a = document.createElement('a');
           a.className = 'tool-item';
           a.href = href;
-          a.target = 'mainFrame';
           a.textContent = name;
-          a.onclick = () => {
-            document.getElementById('mainFrame').style.display = 'block';
-            document.getElementById('banner').style.display = 'none';
-            document.getElementById('menuContainer').style.display = 'none';
-            window.scrollTo(0, 0);
-          };
           newList.appendChild(a);
         });
-    
+        
         toolList.replaceWith(newList);
         toolList = newList;
-    
         more.textContent = expanded ? '收起...' : '展开...';
       };
-    
+      
       section.appendChild(more);
     }
 
@@ -73,24 +66,23 @@ function renderMenu(filtered = null) {
   });
 }
 
-// 加载 menu.json 并渲染菜单
+// 加载并渲染菜单
 fetch('json/menu.json')
   .then(response => response.json())
   .then(data => {
-    allData = data;
+    // 标准化数据格式：确保所有值都是数组
+    allData = Object.entries(data).reduce((acc, [cat, items]) => {
+      acc[cat] = Array.isArray(items) ? items : [[cat, items]];
+      return acc;
+    }, {});
     renderMenu();
-  });
+  })
+  .catch(err => console.error('加载菜单失败:', err));
 
 // 搜索功能
-document.getElementById('searchInput').addEventListener('input', function () {
+document.getElementById('searchInput')?.addEventListener('input', function() {
   const keyword = this.value.trim().toLowerCase();
-
-  // 始终显示菜单，隐藏 iframe
-  document.getElementById('mainFrame').style.display = 'none';
-  document.getElementById('banner').style.display = '';
-  document.getElementById('menuContainer').style.display = '';
-  window.scrollTo(0, 0);
-
+  
   if (!keyword) {
     renderMenu();
     return;
@@ -98,18 +90,32 @@ document.getElementById('searchInput').addEventListener('input', function () {
 
   const result = {};
   for (const [cat, tools] of Object.entries(allData)) {
-    const match = tools.filter(([name]) => name.toLowerCase().includes(keyword));
-    if (match.length > 0) result[cat] = match;
+    const match = tools.filter(([name]) => 
+      name.toLowerCase().includes(keyword)
+    );
+    if (match.length > 0) {
+      // 高亮匹配关键词
+      result[cat] = match.map(([name, href]) => [
+        name.replace(
+          new RegExp(keyword, 'gi'), 
+          match => `<span class="highlight">${match}</span>`
+        ),
+        href
+      ]);
+    }
   }
-  renderMenu(result);
+  
+  renderMenu(Object.keys(result).length > 0 ? result : null);
+  
+  // 无结果提示
+  if (Object.keys(result).length === 0) {
+    const container = document.getElementById('menuContainer');
+    container.innerHTML = `<div class="no-results">未找到匹配的工具</div>`;
+  }
 });
 
-// 在js/main.js中添加
+// 滚动时导航栏样式变化
 window.addEventListener('scroll', function() {
   const nav = document.getElementById('topNav');
-  if (window.scrollY > 10) {
-    nav.classList.add('scrolled');
-  } else {
-    nav.classList.remove('scrolled');
-  }
+  nav?.classList.toggle('scrolled', window.scrollY > 10);
 });
