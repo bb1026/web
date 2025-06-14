@@ -4,14 +4,17 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 封装导航状态切换
   function showHome() {
+  // 只有当前是首页时才执行这些操作
+  if (location.pathname === "/") {
     banner.style.display = '';
     menuContainer.style.display = '';
     window.scrollTo(0, 0);
-
+    
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.value = '';
     if (typeof renderMenu === 'function') renderMenu();
   }
+}
 
   function hideMenus() {
     document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
@@ -26,16 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const navList = document.getElementById('navList');
 
       // 首页按钮
-      const homeLi = document.createElement('li');
-      const homeLink = document.createElement('a');
-      homeLink.href = "/";
-      homeLink.textContent = "首页";
-      //homeLink.onclick = (e) => {
-        //e.preventDefault();
+          const homeLi = document.createElement('li');
+    const homeLink = document.createElement('a');
+    homeLink.href = "/";
+    homeLink.textContent = "首页";
+    homeLink.onclick = (e) => {
+      //e.preventDefault();
+      history.pushState(null, "", "/");
+      showHome();
+    };
+    homeLi.appendChild(homeLink);
+    navList.appendChild(homeLi);
+    
+    // 添加路由监听
+    window.addEventListener('popstate', () => {
+      if (location.pathname === "/") {
         showHome();
-      //};
-      homeLi.appendChild(homeLink);
-      navList.appendChild(homeLi);
+      }
+    });
 
       // 处理菜单数据
       for (const [category, items] of Object.entries(menuData)) {
