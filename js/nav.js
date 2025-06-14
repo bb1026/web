@@ -1,281 +1,157 @@
-// 全局状态管理
-const appState = {
-  currentPath: window.location.pathname,
-  isLoading: false,
-  menuData: null
-};
-
-// DOM 元素缓存
-const domElements = {
-  banner: document.getElementById('banner'),
-  menuContainer: document.getElementById('menuContainer'),
-  navList: document.getElementById('navList'),
-  mainContent: document.getElementById('mainContent'),
-  pageLoader: document.getElementById('pageLoader'),
-  searchInput: document.getElementById('searchInput')
-};
-
-// 初始化应用
-function initApp() {
-  setupRouter();
-  loadMenuData();
-  setupEventListeners();
-  adjustMainContentMargin();
-}
-
-// 路由系统
-function setupRouter() {
-  // 初始路由处理
-  handleRouteChange();
+document.addEventListener('DOMContentLoaded', () => {
+  const banner = document.getElementById('banner');
+  const menuContainer = document.getElementById('menuContainer');
   
-  // 监听浏览器前进/后退
-  window.addEventListener('popstate', handleRouteChange);
-  
-  // 全局链接拦截
-  document.addEventListener('click', handleLinkClick);
-}
-
-// 路由变化处理
-function handleRouteChange() {
-  appState.currentPath = window.location.pathname;
-  
-  // 根据路由显示不同内容
-  switch(appState.currentPath) {
-    case '/':
-      showHomePage();
-      break;
-    case '/about':
-      showAboutPage();
-      break;
-    // 可以添加更多路由
-    default:
-      showNotFound();
+  // 封装导航状态切换
+  function showHome() {
+  // 只有当前是首页时才执行这些操作
+  if (location.pathname === "/") {
+    banner.style.display = '';
+    menuContainer.style.display = '';
+    window.scrollTo(0, 0);
+    
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    if (typeof renderMenu === 'function') renderMenu();
   }
-  
-  // 关闭所有打开的菜单
-  closeAllSubmenus();
-  
-  // 滚动到顶部
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 链接点击处理
-function handleLinkClick(event) {
-  const link = event.target.closest('a[href^="/"]');
-  if (!link || link.hasAttribute('data-external')) return;
-  
-  event.preventDefault();
-  const targetUrl = link.getAttribute('href');
-  
-  // 如果点击的是当前活动链接，不做处理
-  if (targetUrl === appState.currentPath) return;
-  
-  navigateTo(targetUrl);
-}
-
-// 编程式导航
-function navigateTo(path) {
-  if (appState.isLoading) return;
-  
-  startLoading();
-  
-  // 使用 fetch API 获取新内容
-  fetch(path, {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(response => {
-    if (!response.ok) throw new Error('Network response was not ok');
-    return response.text();
-  })
-  .then(html => {
-    updatePageContent(html);
-    history.pushState({}, '', path);
-    handleRouteChange();
-  })
-  .catch(error => {
-    console.error('Fetch error:', error);
-    // 降级方案：传统跳转
-    window.location.href = path;
-  })
-  .finally(() => {
-    stopLoading();
-  });
-}
-
-// 更新页面内容
-function updatePageContent(html) {
-  const parser = new DOMParser();
-  const newDoc = parser.parseFromString(html, 'text/html');
-  
-  // 更新主内容区域
-  domElements.mainContent.innerHTML = newDoc.getElementById('mainContent').innerHTML;
-  
-  // 更新页面标题
-  document.title = newDoc.title;
-}
-
-// 加载指示器
-function startLoading() {
-  appState.isLoading = true;
-  domElements.pageLoader.style.display = 'block';
-  document.body.classList.add('loading');
-}
-
-function stopLoading() {
-  appState.isLoading = false;
-  domElements.pageLoader.style.display = 'none';
-  document.body.classList.remove('loading');
-}
-
-// 页面控制器
-function showHomePage() {
-  if (domElements.banner) domElements.banner.style.display = '';
-  if (domElements.menuContainer) domElements.menuContainer.style.display = '';
-  if (domElements.searchInput) domElements.searchInput.value = '';
-}
-
-function showAboutPage() {
-  // 可以添加关于页面的特殊处理
-}
-
-function showNotFound() {
-  domElements.mainContent.innerHTML = `
-    <div class="error-page">
-      <h1>404 - 页面未找到</h1>
-      <p>您访问的页面不存在</p>
-      <a href="/">返回首页</a>
-    </div>
-  `;
-}
-
-// 菜单系统
-function loadMenuData() {
-  fetch('/json/menu.json')
-    .then(response => response.json())
-    .then(data => {
-      appState.menuData = data;
-      renderMenu();
-    })
-    .catch(error => {
-      console.error('菜单加载失败:', error);
-      renderDefaultMenu();
+  function hideMenus() {
+    document.querySelectorAll('#topNav .submenu.visible').forEach(menu => {
+      menu.classList.remove('visible');
     });
-}
+  }
 
-function renderMenu() {
-  domElements.navList.innerHTML = '';
-  
-  // 首页菜单项
-  createMenuItem('首页', '/', true);
-  
-  // 动态生成菜单项
-  Object.entries(appState.menuData).forEach(([category, items]) => {
-    if (typeof items === 'string') {
-      createMenuItem(category, items);
-    } else if (items.length === 1) {
-      createMenuItem(category, items[0][1]);
-    } else {
-      createDropdownMenu(category, items);
-    }
-  });
-  
-  // 关于菜单项
-  createMenuItem('关于', '/about');
-}
+  // 加载菜单 JSON
+  fetch('/json/menu.json')
+    .then(res => res.json())
+    .then(menuData => {
+      const navList = document.getElementById('navList');
 
-function createMenuItem(text, href, isHome = false) {
-  const li = document.createElement('li');
-  const a = document.createElement('a');
-  a.href = href;
-  a.textContent = text;
-  if (isHome) a.classList.add('home-link');
-  li.appendChild(a);
-  domElements.navList.appendChild(li);
-}
+      // 首页按钮
+          const homeLi = document.createElement('li');
+    const homeLink = document.createElement('a');
+    homeLink.href = "/";
+    homeLink.textContent = "首页";
+    homeLink.onclick = (e) => {
+      //e.preventDefault();
+      history.pushState(null, "", "/");
+      showHome();
+    };
+    homeLi.appendChild(homeLink);
+    navList.appendChild(homeLi);
+    
+    // 添加路由监听
+    window.addEventListener('popstate', () => {
+      if (location.pathname === "/") {
+        showHome();
+      }
+    });
 
-function createDropdownMenu(category, items) {
-  const dropdown = document.createElement('li');
-  dropdown.className = 'dropdown';
-  
-  const toggle = document.createElement('span');
-  toggle.className = 'dropdown-toggle';
-  toggle.textContent = category;
-  dropdown.appendChild(toggle);
-  
-  const submenu = document.createElement('ul');
-  submenu.className = 'submenu';
-  
-  items.forEach(([name, href]) => {
-    const item = document.createElement('li');
-    const link = document.createElement('a');
-    link.href = href;
-    link.textContent = name;
-    item.appendChild(link);
-    submenu.appendChild(item);
-  });
-  
-  dropdown.appendChild(submenu);
-  domElements.navList.appendChild(dropdown);
-  
-  // 添加下拉菜单交互
-  setupDropdownInteraction(dropdown, submenu);
-}
+      // 处理菜单数据
+      for (const [category, items] of Object.entries(menuData)) {
+        // 如果是字符串，说明是直接链接
+        if (typeof items === 'string') {
+          const directLi = document.createElement('li');
+          const directLink = document.createElement('a');
+          directLink.href = items;
+          directLink.textContent = category;
+          directLi.appendChild(directLink);
+          navList.appendChild(directLi);
+          continue;
+        }
 
-function setupDropdownInteraction(dropdown, submenu) {
-  dropdown.addEventListener('mouseenter', () => {
-    closeAllSubmenus();
-    submenu.classList.add('visible');
-  });
-  
-  dropdown.addEventListener('mouseleave', () => {
-    submenu.classList.remove('visible');
-  });
-  
-  // 触摸设备支持
-  dropdown.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768) {
+        // 如果是数组且只有1个项目，也作为直接链接处理
+        if (items.length === 1) {
+          const singleLi = document.createElement('li');
+          const singleLink = document.createElement('a');
+          singleLink.href = items[0][1];
+          singleLink.textContent = category;
+          singleLi.appendChild(singleLink);
+          navList.appendChild(singleLi);
+          continue;
+        }
+
+        // 多个项目时创建下拉菜单
+        const dropdown = document.createElement('li');
+        dropdown.className = 'dropdown';
+
+        const toggleSpan = document.createElement('span');
+        toggleSpan.textContent = category;
+        toggleSpan.className = 'dropdown-toggle';
+        dropdown.appendChild(toggleSpan);
+
+        const submenu = document.createElement('ul');
+        submenu.className = 'submenu';
+
+        for (const [name, href] of items) {
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = href;
+          link.textContent = name;
+          item.appendChild(link);
+          submenu.appendChild(item);
+        }
+
+        dropdown.appendChild(submenu);
+        navList.appendChild(dropdown);
+
+        // 展开子菜单
+        toggleSpan.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('#topNav .submenu').forEach(s => {
+            if (s !== submenu) s.classList.remove('visible');
+          });
+          submenu.classList.toggle('visible');
+        });
+      }
+
+      // 关于按钮（直接跳转）
+      const aboutLi = document.createElement('li');
+      const aboutLink = document.createElement('a');
+      aboutLink.href = "/pages/about.html";
+      aboutLink.textContent = "关于";
+      aboutLi.appendChild(aboutLink);
+      navList.appendChild(aboutLi);
+    })
+    .catch(err => {
+      console.error('加载菜单失败:', err);
+    });
+
+  // 页脚链接事件（直接跳转）
+  document.querySelectorAll('.footer-link').forEach(el => {
+    el.addEventListener('click', e => {
       e.preventDefault();
-      submenu.classList.toggle('visible');
-    }
+      window.location.href = '/pages/about.html';
+    });
   });
-}
 
-function closeAllSubmenus() {
-  document.querySelectorAll('.submenu.visible').forEach(menu => {
-    menu.classList.remove('visible');
-  });
-}
-
-// 响应式布局调整
-function adjustMainContentMargin() {
-  if (domElements.topNav && domElements.mainContent) {
-    domElements.mainContent.style.marginTop = `${domElements.topNav.offsetHeight + 20}px`;
-  }
-}
-
-// 事件监听器
-function setupEventListeners() {
-  // 窗口大小变化时调整布局
-  window.addEventListener('resize', () => {
-    adjustMainContentMargin();
-    closeAllSubmenus();
-  });
-  
-  // 点击页面其他区域关闭菜单
+  // 页面其他区域点击时收起所有子菜单
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.dropdown')) {
-      closeAllSubmenus();
-    }
+    if (
+      e.target.closest('#topNav .dropdown') ||
+      e.target.classList.contains('dropdown-toggle')
+    ) return;
+    hideMenus();
   });
-  
-  // 观察导航栏变化
-  if (domElements.topNav) {
-    new MutationObserver(adjustMainContentMargin).observe(
-      domElements.topNav,
-      { childList: true, subtree: true, attributes: true }
-    );
+});
+
+// ======= 动态计算 margin-top =======
+function adjustMainContentMargin() {
+  const topNav = document.getElementById('topNav');
+  const mainContent = document.getElementById('mainContent');
+  if (topNav && mainContent) {
+    mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
   }
 }
 
-// 启动应用
-document.addEventListener('DOMContentLoaded', initApp);
+// DOM加载完成后执行
+document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
+window.addEventListener('resize', adjustMainContentMargin);
+
+if (document.getElementById('topNav')) {
+  new MutationObserver(adjustMainContentMargin).observe(
+    document.getElementById('topNav'),
+    { childList: true, subtree: true, attributes: true }
+  );
+}
