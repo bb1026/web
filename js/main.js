@@ -6,7 +6,6 @@ function renderMenu(filtered = null) {
   container.innerHTML = '';
   const categories = filtered || allData;
   
-  // 无结果提示
   if (filtered && Object.keys(filtered).length === 0) {
     container.innerHTML = '<div class="no-results">未找到匹配的工具</div>';
     return;
@@ -18,34 +17,26 @@ function renderMenu(filtered = null) {
     const section = document.createElement('div');
     section.className = 'category';
     section.innerHTML = `<h2>${cat}</h2>`;
-    const toolList = document.createElement('div');
+    let toolList = document.createElement('div'); // 使用let以便更新引用
     toolList.className = 'tool-list';
 
-    // 处理单项目直接链接的情况
     const normalizedTools = Array.isArray(tools[0]) ? tools : [[cat, tools]];
-    
-    // 搜索时显示所有匹配项，否则显示有限数量
     const itemsToShow = filtered ? normalizedTools : normalizedTools.slice(0, maxDisplay);
     
     itemsToShow.forEach(([name, href]) => {
       const a = document.createElement('a');
       a.className = 'tool-item';
       a.href = href;
-      
-      // 创建包含原始文本的文本节点，避免HTML被转义
       a.appendChild(document.createTextNode(name));
-      
       toolList.appendChild(a);
     });
 
     section.appendChild(toolList);
 
-    // 非搜索状态下显示"更多/收起"按钮
     if (!filtered && normalizedTools.length > maxDisplay) {
       let expanded = false;
-      const more = document.createElement('a');
+      const more = document.createElement('button'); // 改为button避免href="#"
       more.className = 'more-link';
-      more.href = '#';
       more.textContent = '展开...';
       
       more.onclick = (e) => {
@@ -64,7 +55,12 @@ function renderMenu(filtered = null) {
           newList.appendChild(a);
         });
         
-        toolList.replaceWith(newList);
+        // 关键修复：先保存父节点引用
+        const parent = toolList.parentNode;
+        parent.removeChild(toolList);
+        parent.appendChild(newList);
+        toolList = newList; // 更新toolList引用
+        
         more.textContent = expanded ? '收起...' : '展开...';
       };
       
