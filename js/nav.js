@@ -124,3 +124,26 @@ document.addEventListener('DOMContentLoaded', () => {
     hideMenus();
   });
 });
+
+// ======= 动态计算 margin-top =======
+function adjustMainContentMargin() {
+  const topNav = document.getElementById('topNav');
+  const mainContent = document.getElementById('mainContent');
+  if (topNav && mainContent) { // 确保元素存在
+    mainContent.style.marginTop = `${topNav.offsetHeight + 20}px`;
+  }
+}
+
+// DOM加载完成后执行
+document.addEventListener('DOMContentLoaded', adjustMainContentMargin);
+
+// 监听窗口变化（可选防抖）
+window.addEventListener('resize', adjustMainContentMargin);
+
+// 监听导航栏DOM变化（可选）
+if (document.getElementById('topNav')) {
+  new MutationObserver(adjustMainContentMargin).observe(
+    document.getElementById('topNav'),
+    { childList: true, subtree: true, attributes: true }
+  );
+}
