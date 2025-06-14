@@ -36,7 +36,6 @@ function renderMenu(filtered = null) {
       const more = document.createElement('a');
       more.className = 'more-link';
       more.href = '#';
-      more.textContent = '查看更多工具 ⇩';
     
       more.onclick = (e) => {
         e.preventDefault();
@@ -64,7 +63,7 @@ function renderMenu(filtered = null) {
         toolList.replaceWith(newList);
         toolList = newList;
     
-        more.textContent = expanded ? '收起工具 ⇧' : '查看更多工具 ⇩';
+        more.textContent = expanded ? '收起...' : '展开...';
       };
     
       section.appendChild(more);
