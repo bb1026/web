@@ -95,7 +95,7 @@
   margin-right: 140px;
   padding: 20px;
   box-sizing: border-box;
-  /*padding-top: 60px;*/
+  padding-top: 60px;
 }
 
 /* 滚动公告栏 */
@@ -131,8 +131,8 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
+  gap: 4px;
+  padding: 4px 20px;
   /* background: #fff; */
   border-bottom: 1px solid #ccc;
   font-size: 14px;
@@ -183,7 +183,7 @@ header {
 
 /* banner 图片区域 */
 #banner {
-  padding: 10px;
+  padding: 0px;
   overflow: hidden;
   width: 100%;
 }
