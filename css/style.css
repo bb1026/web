@@ -398,6 +398,8 @@ header {
 /* 响应式设计 */
 @media (max-width: 768px) {
   #mainContent {
+    margin-left: 10px !important;
+    margin-right: 10px !important;
     padding-right: 10px;
     padding-left: 10px;
     padding-bottom: 10px;
