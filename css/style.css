@@ -182,14 +182,17 @@ header {
 
 /* banner 图片区域 */
 #banner {
-  padding: 20px;
+  padding: 0;
   overflow: hidden;
   width: 100%;
 }
 
+.scroll-wrapper {
+  padding: 0 20px;   /* ✅ 左右缓冲边距 */
+  overflow: hidden;  /* ✅ 裁剪动画范围 */
+}
+
 #bannerImages {
-  padding-right: 20px; /* ✅ 给右边留出空隙 */
-  box-sizing: content-box;
   display: flex;
   width: max-content;
   animation: scroll-left 40s linear infinite;
