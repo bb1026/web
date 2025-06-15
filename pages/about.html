@@ -32,10 +32,12 @@
       margin-top: 30px;
       font-size: 22px;
       color: #007acc;
+      padding-left: 12px; /* ✅ 左边加一点距离 */
     }
     
     p {
       margin: 10px 0;
+      padding: 0 12px; /* 左右各加 12px 间距 */
     }
     
     a {
@@ -105,7 +107,7 @@
   <ul>
     <li>邮箱：<a href="mailto:540154897@qq.com?subject=反馈建议&body=网页开发者你好：%0D%0A%0D%0A我有以下建议：%0D%0A1. 优化界面设计%0D%0A2. 增加新功能%0D%0A%0D%0A谢谢！">发送反馈邮件</a></li>
     <li>
-      QQ：<a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">QQ</a>
+      QQ：<a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">发送QQ信息</a>
       <a onclick="showQr('qq')" style="margin-left: 10px;">点击显示二维码</a>
     </li>
     <li>微信：<a onclick="showQr('wechat')">点击显示二维码</a>
