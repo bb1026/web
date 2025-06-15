@@ -93,9 +93,8 @@
 #mainContent {
   margin-left: 140px;
   margin-right: 140px;
-  padding: 20px;
+  padding: 40px 20px 20px;
   box-sizing: border-box;
-  padding-top: 60px 20px 20px;
 }
 
 /* 滚动公告栏 */
