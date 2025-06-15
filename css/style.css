@@ -93,8 +93,8 @@
 #mainContent {
   margin-left: 140px;
   margin-right: 140px;
-  padding: 0px 20px 20px;
-  box-sizing: border-box;
+  padding: 0 20px 20px; /* ✅ 顶部 padding 为 0 */
+  margin-top: 0;         /* ✅ 清除任何默认 margin */
 }
 
 /* 滚动公告栏 */
