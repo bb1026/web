@@ -188,6 +188,8 @@ header {
 }
 
 #bannerImages {
+  padding-right: 20px; /* ✅ 给右边留出空隙 */
+  box-sizing: content-box;
   display: flex;
   width: max-content;
   animation: scroll-left 40s linear infinite;
