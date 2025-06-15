@@ -95,7 +95,7 @@
   margin-right: 140px;
   padding: 20px;
   box-sizing: border-box;
-  padding-top: 60px;
+  padding-top: 60px 20px 20px;
 }
 
 /* 滚动公告栏 */
@@ -107,7 +107,7 @@
   color: #007AFF;
   font-size: 16px;
   padding: 6px 8px;
-  /*margin-top: 40px;*/
+  margin-top: 0;
   align-items: center;
   background: #f5f5f5;
   border-top: 1px solid #eee;
@@ -133,7 +133,7 @@ header {
   align-items: center;
   gap: 4px;
   padding: 4px 20px;
-  /* background: #fff; */
+  margin-top: 0;
   border-bottom: 1px solid #ccc;
   font-size: 14px;
   line-height: 1.2;
@@ -183,7 +183,7 @@ header {
 
 /* banner 图片区域 */
 #banner {
-  padding: 0px;
+  padding: 20px;
   overflow: hidden;
   width: 100%;
 }
