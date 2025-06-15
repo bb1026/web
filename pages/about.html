@@ -78,6 +78,35 @@
       background: rgba(0,0,0,0.4);
       z-index: 999;
     }
+    
+    /* ✅ 响应式优化 */
+  @media (max-width: 768px) {
+    body {
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      padding: 12px;
+    }
+
+    h1 {
+      font-size: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+  }
   </style>
 </head>
 <body>
