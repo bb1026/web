@@ -146,9 +146,9 @@ function updateContentSpacing() {
     const navHeight = topNav.offsetHeight;
     const navTop = topNav.offsetTop; // 相对于文档顶部的位置
     
-    // 2. 设置正文的起始位置（菜单栏底部 + 10px）
+    // 2. 设置正文的起始位置（菜单栏底部 + 20px）
     mainContent.style.position = 'static'; // 确保在文档流中
-    mainContent.style.marginTop = `${navHeight + 10}px`;
+    mainContent.style.marginTop = `${navHeight + 20}px`;
     
     // 3. 同步更新padding确保滚动连续性
     document.body.style.paddingTop = `${navHeight}px`;
