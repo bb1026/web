@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 创建菜单结构（保持不变）
+    // 创建菜单结构
     const menuContainer = document.getElementById('fm-container');
     menuContainer.innerHTML = `
         <div id="fm-toggle">
@@ -9,12 +9,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="fm-item fm-home">首页</div>
             <div id="fm-menu-items"></div>
             <div class="fm-item fm-about">关于</div>
-            <input type="text" id="fm-search" placeholder="搜索...">
-            <div id="fm-search-suggestions"></div>
+            <div class="fm-search-container" style="position:relative">
+                <input type="text" id="fm-search" placeholder="搜索...">
+                <div id="fm-search-suggestions"></div>
+            </div>
         </div>
     `;
 
-    // 获取DOM元素（保持不变）
+    // 获取DOM元素
     const menu = document.getElementById('fm-container');
     const toggle = document.getElementById('fm-toggle');
     const menuItemsContainer = document.getElementById('fm-menu-items');
@@ -28,17 +30,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         display: none;
         position: absolute;
         top: 100%;
-        left: 30px;
-        right: 30px;
-        max-height: 300px;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
         overflow-y: auto;
         background: white;
-        border-radius: 0 0 18px 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border: 1px solid #eee;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         z-index: 1000;
+        font-size: 0.8em;
+        color: #666;
     `;
 
-    // 状态管理（保持不变）
+    // 状态管理
     let isOpen = false;
     let activeSubmenu = null;
     let idleTimer;
@@ -47,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let allMenuData = {};
     let searchTimeout;
 
-    // 初始化空闲计时器（保持不变）
+    // 初始化空闲计时器
     const initializeTimer = () => {
         if (!initialized) {
             initialized = true;
@@ -57,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 重置空闲计时器（保持不变）
+    // 重置空闲计时器
     const resetIdleTimer = () => {
         clearTimeout(idleTimer);
         menu.classList.remove('fm-idle');
@@ -66,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, IDLE_TIMEOUT);
     };
 
-    // 关闭所有二级菜单（保持不变）
+    // 关闭所有二级菜单
     const closeAllSubmenus = () => {
         if (activeSubmenu) {
             activeSubmenu.classList.remove('show');
@@ -75,14 +80,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 加载菜单数据（保持不变）
+    // 加载菜单数据
     const loadMenuData = async () => {
         try {
-            const response = await fetch('/json/menu.json');
+            const response = await fetch('https://www.0515364.xyz/json/menu.json');
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
-            // 标准化数据格式
             allMenuData = Object.entries(data).reduce((acc, [cat, items]) => {
                 acc[cat] = Array.isArray(items) ? items : [[cat, items]];
                 return acc;
@@ -99,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 渲染菜单项（保持不变）
+    // 渲染菜单项
     const renderMenuItems = (menuData) => {
         menuItemsContainer.innerHTML = '';
         
@@ -144,14 +148,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // 模糊搜索函数（新增）
+    // 模糊搜索函数
     const fuzzySearch = (items, keyword) => {
         if (!keyword) return [];
         const lowerKeyword = keyword.toLowerCase();
         return items.filter(([name]) => name.toLowerCase().includes(lowerKeyword));
     };
 
-    // 显示搜索建议（新增）
+    // 显示搜索建议
     const showSuggestions = (items) => {
         suggestionsContainer.innerHTML = '';
         
@@ -159,6 +163,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const noResult = document.createElement('div');
             noResult.className = 'fm-suggestion-item';
             noResult.textContent = '无匹配结果';
+            noResult.style.cssText = `
+                padding: 8px 12px;
+                color: #999;
+            `;
             suggestionsContainer.appendChild(noResult);
             return;
         }
@@ -168,9 +176,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.className = 'fm-suggestion-item';
             item.textContent = name;
             item.style.cssText = `
-                padding: 10px 20px;
+                padding: 8px 12px;
                 cursor: pointer;
                 transition: background 0.2s;
+                color: #666;
             `;
             item.addEventListener('mouseenter', () => {
                 item.style.background = '#f5f5f5';
@@ -178,7 +187,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.addEventListener('mouseleave', () => {
                 item.style.background = 'white';
             });
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
                 menuSearch.value = name;
                 suggestionsContainer.style.display = 'none';
             });
@@ -188,72 +198,92 @@ document.addEventListener('DOMContentLoaded', async () => {
         suggestionsContainer.style.display = 'block';
     };
 
-    // 显示搜索结果（新增）
+    // 显示搜索结果（覆盖页面内容）
     const showSearchResults = (items) => {
+        // 隐藏菜单和搜索建议
+        suggestionsContainer.style.display = 'none';
+        menu.classList.remove('fm-active');
+        isOpen = false;
+        
+        // 清空搜索框
+        menuSearch.value = '';
+        
+        // 创建覆盖层
+        const overlay = document.createElement('div');
+        overlay.id = 'search-results-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 999;
+            overflow-y: auto;
+            padding: 20px;
+        `;
+        
         // 创建结果容器
         const resultsContainer = document.createElement('div');
-        resultsContainer.id = 'fm-search-results';
         resultsContainer.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            max-width: 600px;
-            max-height: 70vh;
-            overflow-y: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
+            max-width: 800px;
+            margin: 20px auto;
+            padding-bottom: 60px; /* 为关闭按钮留出空间 */
         `;
         
         if (items.length === 0) {
             resultsContainer.innerHTML = `
-                <div style="text-align: center; padding: 30px;">
-                    <h3>没有找到匹配的结果</h3>
-                    <p>5秒后将返回首页...</p>
+                <div style="text-align: center; padding: 40px;">
+                    <h3 style="color: #666;">没有找到匹配的结果</h3>
+                    <p style="color: #999;">请尝试其他关键词</p>
                 </div>
             `;
-            
-            setTimeout(() => {
-                document.body.removeChild(resultsContainer);
-                window.location.href = '/';
-            }, 5000);
         } else {
-            const resultsList = document.createElement('div');
+            resultsContainer.innerHTML = `
+                <h3 style="color: #444; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    搜索结果 (${items.length})
+                </h3>
+                <div style="display: grid; grid-gap: 10px;">
+            `;
+            
             items.forEach(([name, url]) => {
-                const resultItem = document.createElement('div');
-                resultItem.style.cssText = `
-                    padding: 12px;
-                    border-bottom: 1px solid #eee;
+                resultsContainer.innerHTML += `
+                    <a href="${url}" style="display: block; padding: 12px; border: 1px solid #eee; border-radius: 4px; color: #333; text-decoration: none;">
+                        ${name}
+                    </a>
                 `;
-                resultItem.innerHTML = `<a href="${url}" style="display: block; color: #333; text-decoration: none;">${name}</a>`;
-                resultItem.querySelector('a').addEventListener('mouseenter', () => {
-                    resultItem.style.background = '#f8f8f8';
-                });
-                resultItem.querySelector('a').addEventListener('mouseleave', () => {
-                    resultItem.style.background = 'white';
-                });
-                resultsList.appendChild(resultItem);
             });
-            resultsContainer.appendChild(resultsList);
+            
+            resultsContainer.innerHTML += `</div>`;
         }
         
-        document.body.appendChild(resultsContainer);
+        // 创建关闭按钮（放在结果下方）
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '关闭搜索结果';
+        closeBtn.style.cssText = `
+            display: block;
+            margin: 30px auto 0;
+            background: #6e8efb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1em;
+        `;
+        closeBtn.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
         
-        // 点击外部关闭
-        const closeResults = (e) => {
-            if (!resultsContainer.contains(e.target)) {
-                document.body.removeChild(resultsContainer);
-                document.removeEventListener('click', closeResults);
-            }
-        };
-        setTimeout(() => document.addEventListener('click', closeResults), 0);
+        resultsContainer.appendChild(closeBtn);
+        overlay.appendChild(resultsContainer);
+        document.body.appendChild(overlay);
+        
+        // 滚动到顶部
+        window.scrollTo(0, 0);
     };
 
-    // 搜索功能实现（新增）
+    // 搜索功能实现
     menuSearch.addEventListener('input', function() {
         resetIdleTimer();
         clearTimeout(searchTimeout);
@@ -276,21 +306,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             const keyword = this.value.trim();
             if (!keyword) return;
             
-            suggestionsContainer.style.display = 'none';
             const allItems = Object.values(allMenuData).flat();
             const matchedItems = fuzzySearch(allItems, keyword);
             showSearchResults(matchedItems);
         }
     });
 
-    // 点击外部关闭建议框（新增）
+    // 点击外部关闭建议框
     document.addEventListener('click', (e) => {
         if (!menuSearch.contains(e.target) && !suggestionsContainer.contains(e.target)) {
             suggestionsContainer.style.display = 'none';
         }
     });
 
-    // 原有事件监听（保持不变）
+    // 菜单交互
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
         resetIdleTimer();
@@ -306,7 +335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     aboutBtn.addEventListener('click', () => {
         resetIdleTimer();
-        window.location.href = '/pages/about.html';
+        window.location.href = '/about.html';
     });
     
     document.addEventListener('click', (e) => {
