@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 加载菜单数据（保持不变）
     const loadMenuData = async () => {
         try {
-            const response = await fetch('https://www.0515364.xyz/json/menu.json');
+            const response = await fetch('/json/menu.json');
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     aboutBtn.addEventListener('click', () => {
         resetIdleTimer();
-        window.location.href = '/about.html';
+        window.location.href = '/pages/about.html';
     });
     
     document.addEventListener('click', (e) => {
