@@ -1,0 +1,270 @@
+/* 球形菜单核心样式 */
+#fm-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease, opacity 0.5s ease;
+  overflow: visible;
+  user-select: none;
+  opacity: 1;
+}
+
+/* 空闲状态 - 半透明（包括初始状态） */
+#fm-container.fm-idle {
+  opacity: 0.3;
+}
+
+/* 激活状态 - 完整渐变和透明度 */
+#fm-container.fm-active {
+  width: 280px;
+  border-radius: 25px;
+  padding-bottom: 15px;
+  background: linear-gradient(to bottom, #6e8efb, #a777e3) !important;
+  opacity: 1 !important;
+  height: auto; /* 允许高度自适应内容 */
+}
+
+/* 菜单内容区域 - 透明背景 */
+#fm-content {
+  opacity: 0;
+  max-height: 0;
+  overflow: visible;
+  transition: all 0.3s ease;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  border-radius: inherit;
+}
+
+#fm-container.fm-active #fm-content {
+  opacity: 1;
+  max-height: 70vh;
+  padding: 15px 0;
+}
+
+/* 菜单项容器 */
+#fm-menu-items {
+  width: 100%;
+  position: relative;
+}
+
+/* 菜单项基础样式 - 透明背景 */
+.fm-item {
+  width: 100%;
+  padding: 12px 25px;
+  box-sizing: border-box;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: nowrap;
+  text-align: center;
+  background-color: transparent;
+}
+
+.fm-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 首页和关于菜单项 */
+.fm-home, .fm-about {
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  margin: 0 0 8px 0;
+}
+
+/* 二级菜单容器 */
+.fm-submenu {
+  position: absolute;
+  left: 30%;
+  top: 0;
+  min-width: 220px;
+  background: linear-gradient(135deg, #7a8efb, #b277e3);
+  border-radius: 0 15px 15px 15px;
+  box-shadow: 5px 5px 20px rgba(0,0,0,0.3);
+  z-index: 1100;
+  opacity: 0;
+  transform: translateX(-15px);
+  transition: all 0.3s ease;
+  max-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.fm-submenu.show {
+  opacity: 1;
+  transform: translateX(0);
+  max-height: 80vh;
+  overflow-y: auto;
+  visibility: visible;
+}
+
+/* 二级菜单项 */
+.fm-submenu .fm-item {
+  padding: 10px 20px;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* 带子菜单的项 */
+.fm-has-submenu {
+  position: relative;
+}
+
+.fm-has-submenu::after {
+  content: '›';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.3s ease;
+  font-size: 20px;
+}
+
+.fm-has-submenu.open::after {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+/* 搜索框 - 渐变色版本 */
+#fm-search {
+  width: calc(100% - 60px);
+  height: 36px;
+  margin: 15px auto;
+  padding: 8px 20px;
+  border: 1px solid transparent;
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(45deg, #ff7eb3, #65d9ff, #c7f464, #ff7eb3) border-box;
+  border-radius: 20px;
+  outline: none;
+  display: block;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+#fm-search:hover {
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(135deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
+  box-shadow: 0 0 5px rgba(255, 0, 118, 0.5), 0 0 20px rgba(30, 174, 255, 0.5);
+}
+
+#fm-search:focus {
+  background: linear-gradient(white, white) padding-box, 
+              linear-gradient(45deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
+  box-shadow: 0 0 15px rgba(255, 0, 118, 0.7), 0 0 25px rgba(30, 174, 255, 0.7);
+  color: #000;
+}
+
+#fm-search::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+/* 搜索建议样式 */
+#fm-search-suggestions {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 30px;
+    right: 30px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+}
+
+.fm-suggestion-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.fm-suggestion-item:hover {
+    background-color: #f5f5f5;
+}
+
+/* 搜索结果样式 */
+#fm-search-results a {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    padding: 12px;
+}
+
+#fm-search-results a:hover {
+    color: #0066cc;
+    background-color: #f8f8f8;
+}
+
+/* 切换按钮 */
+#fm-toggle {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* 汉堡图标动画 */
+.fm-hamburger {
+  width: 30px;
+  height: 3px;
+  background: white;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.fm-hamburger::before,
+.fm-hamburger::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 3px;
+  background: white;
+  left: 0;
+  transition: all 0.3s ease;
+}
+
+.fm-hamburger::before { top: -8px; }
+.fm-hamburger::after { top: 8px; }
+
+#fm-container.fm-active .fm-hamburger {
+  background: transparent;
+}
+
+#fm-container.fm-active .fm-hamburger::before {
+  transform: rotate(45deg);
+  top: 0;
+  width: 25px;
+  left: 3px;
+}
+
+#fm-container.fm-active .fm-hamburger::after {
+  transform: rotate(-45deg);
+  top: 0;
+  width: 25px;
+  left: 3px;
+}
+
+/* 滚动条样式 */
+.fm-submenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fm-submenu::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 3px;
+}
