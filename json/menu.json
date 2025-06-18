@@ -1,4 +1,5 @@
 {
+  "首页": "/",
   "小工具": [
     ["VBA 代码混淆器 / 还原器", "https://bing.0515364.xyz/vba.html"],
     ["时间戳", "https://bing.0515364.xyz/timestamp.html"],
@@ -21,5 +22,6 @@
     ["华容道", "https://bing.0515364.xyz/game5.html"],
     ["井字游戏", "pages/xogame.html"]
   ],
-  "色彩查询": "pages/color.html"
+  "色彩查询": "pages/color.html",
+  "关于": "pages/about.html"
 }
