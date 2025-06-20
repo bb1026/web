@@ -14,31 +14,43 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-      padding: 30px;
-      max-width: 800px;
+      padding: 20px 15px;
+      max-width: 700px;
       width: 100%;
-      margin: auto;
+      margin: 0 auto;
       line-height: 1.7;
       background-color: #f9f9f9;
       color: #333;
+      box-sizing: border-box;
+      overflow-x: hidden;
+		padding-top: 10px;
     }
     
     h1 {
       text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
+      margin: 20px 0 25px;
+      font-size: 26px;
     }
     
     h2 {
-      margin-top: 30px;
-      font-size: 22px;
+      margin-top: 25px;
+      font-size: 20px;
       color: #007acc;
-      padding-left: 12px; /* ✅ 左边加一点距离 */
+      padding-left: 10px;
+      border-left: 3px solid #007acc;
     }
     
-    p {
-      margin: 10px 0;
-      padding: 0 12px; /* 左右各加 12px 间距 */
+    p, ul {
+      margin: 12px 0;
+      padding: 0 10px;
+    }
+    
+    ul {
+      padding-left: 30px;
+    }
+    
+    li {
+      margin-bottom: 8px;
     }
     
     a {
@@ -57,18 +69,23 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      padding: 20px;
+      padding: 15px;
       background: white;
       border: 1px solid #ccc;
+      border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
       z-index: 1000;
       text-align: center;
+      width: 90%;
+      max-width: 320px;
+      box-sizing: border-box;
     }
     
     .qr-popup img {
-      width: 80vw;
-      max-width: 300px;
+      width: 100%;
+      max-width: 280px;
       height: auto;
+      margin: 10px 0;
     }
     
     #overlay {
@@ -76,10 +93,27 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,0.4);
       z-index: 999;
+    }
+
+    /* 响应式调整 */
+    @media (min-width: 768px) {
+      body {
+        padding: 30px 20px;
+      }
+      
+      h1 {
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
+      
+      h2 {
+        font-size: 22px;
+        margin-top: 30px;
+      }
     }
   </style>
 </head>
