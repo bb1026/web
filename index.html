@@ -1,82 +1,52 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <!-- 设置移动端状态栏颜色为 #444 -->
-  <meta name="theme-color" content="#444">
-  <title>在线工具箱🧰</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f9fa">
+  <title>🧰在线小工具</title>
 
   <!-- 浏览器图标 -->
-  <link rel="icon" href="imgs/favicon.ico" type="image/x-icon">
-  <link rel="shortcut icon" href="imgs/favicon.ico" type="image/x-icon">
-  <link rel="icon" type="image/png" sizes="32x32" href="imgs/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="imgs/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="imgs/apple-touch-icon.png">
+  <link rel="icon" href="/imgs/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/imgs/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="/imgs/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/imgs/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/imgs/apple-touch-icon.png">
 
-  <!-- 样式 -->
-  <link rel="stylesheet" href="css/style.css" />
+  <!-- 样式表 -->
+  <link rel="stylesheet" href="/css/floating-menu.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/notice.css">
 </head>
-<body class="main-body">
-  <!-- 左右广告位占位容器 -->
-  <div id="leftPlaceholder"></div>
-  <div id="rightPlaceholder"></div>
+<body>
+  <!-- 顶部导航栏 -->
+<div class="header">
+  <div class="header-main"> <!-- 新增包裹容器 -->
+    <div class="header-content">
+      <img src="/imgs/apple-touch-icon.png" alt="Logo" class="logo">
+      <div class="title-container">
+        <span class="site-title">🧰在线小工具</span>
+      </div>
+    </div>
+  </div>
   
-  <!-- 顶部导航菜单 -->
-  <nav id="topNav">
-    <ul id="navList"></ul>
-  </nav>
-  <script src="js/nav.js" defer></script>
+  <!-- 公告栏 -->
+  <div id="noticeContainer" class="notice-container"></div>
+</div>
 
-  <!-- 主体内容包裹容器 -->
-  <div id="mainContent">
+  <!-- 球形菜单挂载点 -->
+  <div id="fm-container"></div>
 
-    <!-- 广告脚本 -->
-    <script src="js/ad.js" defer></script>
-    
-    <!-- 滚动公告栏 -->
-    <div class="marquee" id="noticeContainer">加载中...</div>
-    
-    <!-- 页面主结构 -->
-    <header>
-      <!-- 搜索工具 -->
-      <div id="header-controls">
-        <input type="text" id="searchInput" placeholder="搜索项目..." />
-      </div>
-    </header>
-    
-    <!-- banner 图片区域 -->
-    <section id="banner">
-      <div class="scroll-wrapper">
-        <div id="bannerImages"></div>
-      </div>
-    </section>
-    <script src="js/banner.js"></script>
+  <!-- 页面内容 -->
+  <div class="content" style="height: auto; padding: 20px;">
+    <h1>我的网站</h1>
+    <p>球形菜单演示</p>
+    <p>3秒不操作菜单会变半透明</p>
+  </div>
 
-    <!-- 分类菜单自动生成 -->
-    <main id="menuContainer" class="container"></main>
-
-    <!-- 滚动公告加载 -->
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        fetch('./notice.html')
-          .then(res => res.text())
-          .then(text => {
-            document.getElementById('noticeContainer').innerHTML =
-              `<div class="marquee-inner">${text}</div>`;
-          })
-          .catch(err => {
-            document.getElementById('noticeContainer').innerHTML =
-              `<div class="marquee-inner">公告加载失败</div>`;
-          });
-      });
-    </script>
-
-    <!-- 声明信息 -->
-    <script src="js/footer.js"></script>
-
-    <!-- 主脚本 -->
-    <script src="js/main.js"></script>
-  </div> <!-- #mainContent 结束 -->
+  <!-- JavaScript -->
+  <script src="/js/floating-menu.js"></script>
+  <script src="/js/notice.js"></script>
+  <script src="/js/footer.js"></script>
 </body>
 </html>
