@@ -12,19 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="/pages/about.html" class="footer-link">使用条款</a>
     </footer>
 
-    <div style="text-align:center; font-size:14px; color:#666; margin-top:20px;">
-      访问量：<span id="busuanzi_value_site_pv">加载中...</span> 次　
-    </div>
-  `;
-
   // 插入到页脚容器
   const footerContainer = document.createElement('div');
   footerContainer.innerHTML = footerHTML;
   document.body.appendChild(footerContainer);
-
-  // 动态加载不蒜子统计
-  const busuanziScript = document.createElement('script');
-  busuanziScript.defer = true;
-  busuanziScript.src = '//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js';
-  document.body.appendChild(busuanziScript);
 });
