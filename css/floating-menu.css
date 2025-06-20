@@ -2,7 +2,7 @@
 #fm-container {
   position: fixed;
   top: 20px;
-  left: 20px;
+  right: 20px;
   width: 60px;
   height: 60px;
   background: linear-gradient(135deg, #6e8efb, #a777e3);
@@ -43,12 +43,14 @@
   align-items: center;
   background: transparent;
   border-radius: inherit;
+  pointer-events: none;
 }
 
 #fm-container.fm-active #fm-content {
   opacity: 1;
   max-height: 70vh;
   padding: 15px 0;
+pointer-events: auto;
 }
 
 /* 菜单项容器 */
@@ -85,15 +87,16 @@
 /* 二级菜单容器 */
 .fm-submenu {
   position: absolute;
-  left: 30%;
+  right: 30%;
+  left: auto;
   top: 0;
   min-width: 220px;
   background: linear-gradient(135deg, #7a8efb, #b277e3);
-  border-radius: 0 15px 15px 15px;
-  box-shadow: 5px 5px 20px rgba(0,0,0,0.3);
+  border-radius: 15px 0 15px 15px;
+  box-shadow: -5px 5px 20px rgba(0,0,0,0.3);
   z-index: 1100;
   opacity: 0;
-  transform: translateX(-15px);
+  transform: translateX(15px);
   transition: all 0.3s ease;
   max-height: 0;
   overflow: hidden;
@@ -121,9 +124,9 @@
 }
 
 .fm-has-submenu::after {
-  content: '›';
+  content: '<';
   position: absolute;
-  right: 15px;
+  left: 15px;
   top: 50%;
   transform: translateY(-50%);
   transition: transform 0.3s ease;
@@ -131,7 +134,7 @@
 }
 
 .fm-has-submenu.open::after {
-  transform: translateY(-50%) rotate(90deg);
+  transform: translateY(-50%) rotate(-90deg);
 }
 
 /* 搜索框 - 渐变色版本 */
@@ -267,4 +270,32 @@
 .fm-submenu::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.3);
   border-radius: 3px;
+}
+
+/* 移动设备触摸反馈 */
+.fm-item {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 防止移动设备上长按出现菜单 */
+#fm-container, .fm-item {
+  -webkit-touch-callout: none;
+}
+
+/* 移动设备上的子菜单调整 */
+@media (max-width: 768px) {
+  .fm-submenu {
+    right: 10%;
+    min-width: 180px;
+  }
+  
+  .fm-item {
+    padding: 12px 15px;
+  }
+  
+  #fm-search {
+    width: calc(100% - 40px);
+    height: 32px;
+    margin: 10px auto;
+  }
 }
