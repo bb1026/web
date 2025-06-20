@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 加载菜单数据
     const loadMenuData = async () => {
         try {
-            const response = await fetch('https://www.0515364.xyz/json/menu.json');
+            const response = await fetch('/json/menu.json');
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
@@ -112,8 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ["时间戳工具", "https://bing.0515364.xyz/timestamp.html"],
                     ["编码解码", "https://bing.0515364.xyz/encoder.html"]
                 ],
-                "色彩查询": "pages/color.html",
-                "关于": "pages/about.html"
+                "色彩查询": "/pages/color.html",
+                "关于": "/pages/about.html"
             };
             return allMenuData;
         }
@@ -318,7 +318,7 @@ const showSearchResults = (items) => {
     
     // 2. 动态加载footer.js（确保统计脚本运行）
     const footerScript = document.createElement('script');
-    footerScript.src = 'https://www.0515364.xyz/js/footer.js';
+    footerScript.src = '/js/footer.js';
     
     // 填充内容
     if (items.length === 0) {
