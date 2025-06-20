@@ -1,44 +1,74 @@
-/* 顶部导航栏样式 */
+/* 基础样式 */
 .header {
-  display: flex;
-  justify-content: flex-start; /* 水平居中 */
-  align-items: center;
-  padding: 2px 30px 0;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: block;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  padding: 10px 30px;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  cursor: pointer; /* 鼠标悬停时显示手型 */
-  width: 100%; /* 撑满容器宽度 */
-  flex-direction: row;
+  cursor: pointer;
+  width: auto;
 }
 
 .logo {
-  height: 45px;
-  margin-right: 20px;
+  height: 35px;
+  width: 35px;
+  margin-right: 15px;
 }
 
 .title-container {
-  flex: 1; /* 标题容器占满剩余空间 */
-  text-align: center; /* 标题文字居中 */
+  display: inline-block;
+  text-align: left;
+}
+
+.title-container a {
+  text-decoration: none;
 }
 
 .site-title {
-  font-size: 30px;
+  font-size: 25px;
   font-weight: bold;
   color: #333;
+  line-height: 1;
 }
 
 .content {
   margin-top: 100px;
+  padding: 20px;
+}
+
+/* 页脚样式 */
+.site-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #666;
+}
+
+.site-footer a, .footer-link {
+  color: #666;
+  text-decoration: underline;
+}
+
+.footer-link {
+  color: #0000EE !important;
+}
+
+.footer-link:hover {
+  color: #551A8B;
 }
 
 /* 分隔线 */
@@ -48,84 +78,86 @@
   border-top: 1px solid #ccc;
 }
 
-/* 页脚 */
-.site-footer {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
-  color: #666;
+/* 搜索结果页面专用样式 */
+#search-results-overlay {
+  top: 70px !important;
+  height: calc(100vh - 70px) !important;
+  z-index: 999 !important;
 }
 
-.site-footer a {
-  color: #666;
-  text-decoration: underline;
+#search-results-overlay .site-footer {
+  position: static;
+  margin-top: 0;
+  z-index: auto;
 }
 
-.footer-link {
-  color: #0000EE !important;
-  text-decoration: underline;
-  cursor: pointer;
+body.search-mode .site-footer {
+  display: none;
 }
 
-.footer-link:hover {
-  color: #551A8B;
+/* 球形菜单样式 */
+#fm-container {
+  width: 50px;
+  height: 50px;
+  top: 20px;
+  right: 20px;
+}
+
+#fm-container.fm-active {
+  width: 90vw;
+  max-width: 280px;
+  right: 5vw;
+}
+
+.fm-hamburger,
+.fm-hamburger::before,
+.fm-hamburger::after {
+  width: 25px;
+  height: 2px;
+}
+
+.fm-hamburger::before { top: -7px; }
+.fm-hamburger::after { top: 7px; }
+
+#fm-toggle {
+  width: 50px;
+  height: 50px;
 }
 
 /* 移动设备适配 */
 @media (max-width: 768px) {
-  /* 调整顶部导航栏 */
-  .header {
-    padding: 2px 20px;
+  .header-main {
+    padding: 8px 20px;
   }
   
   .logo {
-    height: 45px;
-    margin-right: 15px;
+    height: 35px;
+    width: 35px;
+    margin-right: 10px;
   }
   
   .site-title {
-    font-size: 40px;
+    font-size: 25px;
   }
   
-  /* 调整内容区域 */
   .content {
-    margin-top: 100px;
+    margin-top: 80px;
     padding: 15px !important;
   }
   
-  /* 调整球形菜单 */
   #fm-container {
-    width: 50px;
-    height: 50px;
     top: 10px;
     right: 10px;
   }
   
-  #fm-container.fm-active {
-    width: 90vw;
-    max-width: 280px;
-    right: 5vw;
-    left: auto;
-  }
-  
-  /* 调整汉堡菜单图标 */
-  .fm-hamburger,
-  .fm-hamburger::before,
-  .fm-hamburger::after {
-    width: 25px;
-    height: 2px;
-  }
-  
-  .fm-hamburger::before { top: -7px; }
-  .fm-hamburger::after { top: 7px; }
-  
-  #fm-toggle {
-    width: 50px;
-    height: 50px;
+  #search-results-overlay {
+    top: 60px !important;
+    height: calc(100vh - 60px) !important;
+    padding: 15px;
   }
 }
 
-/* 适配iPhone X等设备的安全区域 */
+/* 安全区域适配 */
 @supports (padding: max(0px)) {
   .header, .content {
     padding-left: max(15px, env(safe-area-inset-left));
@@ -137,51 +169,7 @@
   }
   
   #fm-container {
-    top: max(20px, env(safe-area-inset-top)));
-    right: max(20px, env(safe-area-inset-right)));
-  }
-}
-
-/* 搜索结果页面专用样式 */
-#search-results-overlay {
-    top: 70px !important;
-    height: calc(100vh - 70px) !important;
-    z-index: 999 !important;
-}
-
-#search-results-overlay .site-footer {
-    position: static;
-    margin-top: 0;
-    z-index: auto;
-}
-
-/* 仅对搜索结果页面生效的页脚样式 */
-body.search-mode .site-footer {
-    display: none;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-    #search-results-overlay {
-        top: 60px !important;
-        height: calc(100vh - 60px) !important;
-        padding: 15px;
-    }
-}
-
-/* 新增：header布局修正 */
-.header {
-  display: block; /* 改为块级布局 */
-}
-
-.header-main {
-  display: flex;
-  padding: 20px 30px;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .header-main {
-    padding: 15px 20px;
+    top: max(20px, env(safe-area-inset-top));
+    right: max(20px, env(safe-area-inset-right));
   }
 }
