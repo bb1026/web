@@ -253,7 +253,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
 		// 显示搜索结果
-		// 显示搜索结果
 const showSearchResults = (items) => {
     suggestionsContainer.style.display = 'none';
     menu.classList.remove('fm-active');
