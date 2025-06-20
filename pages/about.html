@@ -10,12 +10,13 @@
   
   <!-- 样式 -->
   <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/floating-menu.css">
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-      /*padding: 30px;*/
-      /*max-width: 800px;*/
-      /*width: 100%; */
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
       margin: auto;
       line-height: 1.7;
       background-color: #f9f9f9;
@@ -84,10 +85,8 @@
 </head>
 <body>
   
-  <!-- 添加导航栏 -->
-  <nav id="topNav">
-    <ul id="navList"></ul>
-  </nav>
+  <!-- 球形菜单挂载点 -->
+  <div id="fm-container"></div>
 
   <h1>关于本站</h1>
 
@@ -151,7 +150,7 @@
   </script>
   
   <!-- 加载导航栏和页脚脚本 -->
-  <script src="/js/nav.js" defer></script>
+  <script src="/js/floating-menu.js" defer></script>
   <script src="/js/footer.js"></script>
   
 </body>
