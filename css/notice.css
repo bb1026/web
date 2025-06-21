@@ -21,7 +21,7 @@
   padding-left: 100%;
   animation: marquee 20s linear infinite;
   color: #6c757d;
-  font-size: 1.2em;
+  font-size: 1.6em;
 }
 
 @keyframes marquee {
