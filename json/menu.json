@@ -1,7 +1,7 @@
 {
   "首页": "/",
   "小工具": [
-    ["VBA 代码混淆器 / 还原器", "https://bing.0515364.xyz/vba.html"],
+    ["VBA 代码混淆器 / 还原器", "/vba.html"],
     ["时间戳", "https://bing.0515364.xyz/timestamp.html"],
     ["64位编码解码", "https://bing.0515364.xyz/encoder.html"],
     ["密码生成", "/pages/password.html"],
