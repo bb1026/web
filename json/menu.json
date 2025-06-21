@@ -1,9 +1,9 @@
 {
   "首页": "/",
   "小工具": [
-    ["VBA 代码混淆器 / 还原器", "/vba.html"],
-    ["时间戳", "https://bing.0515364.xyz/timestamp.html"],
-    ["64位编码解码", "https://bing.0515364.xyz/encoder.html"],
+    ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
+    ["时间戳", "/pages/timestamp.html"],
+    ["64位编码解码", "/pages/encoder.html"],
     ["密码生成", "/pages/password.html"],
     ["二维码生成", "/pages/qrcode.html"],
     ["条形码生成", "/pages/barcode.html"],
@@ -12,7 +12,7 @@
     ["IP查询", "/pages/ip.html"],
     ["正则表达式", "/pages/regex.html"],
     ["身份证号码查验", "/pages/idcheck.html"],
-    ["单位换算", "pages/unit-conversion.html"]
+    ["单位换算", "/pages/unit-conversion.html"]
   ],
   "小游戏": [
     ["单词消消乐", "https://bing.0515364.xyz/game1.html"],
