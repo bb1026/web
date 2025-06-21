@@ -78,10 +78,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 加载菜单数据
+    // 加载菜单数据（仅用于显示搜索建议）
     const loadMenuData = async () => {
         try {
-            const response = await fetch('/json/menu.json');
+            const response = await fetch('https://www.0515364.xyz/json/menu.json');
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
@@ -112,8 +112,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ["时间戳工具", "https://bing.0515364.xyz/timestamp.html"],
                     ["编码解码", "https://bing.0515364.xyz/encoder.html"]
                 ],
-                "色彩查询": "/pages/color.html",
-                "关于": "/pages/about.html"
+                "色彩查询": "pages/color.html",
+                "关于": "pages/about.html"
             };
             return allMenuData;
         }
@@ -195,14 +195,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // 模糊搜索函数
+    // 简单模糊匹配（仅用于显示搜索建议）
     const fuzzySearch = (items, keyword) => {
         if (!keyword) return [];
         const lowerKeyword = keyword.toLowerCase();
         return items.filter(([name]) => name.toLowerCase().includes(lowerKeyword));
     };
 
-    // 显示搜索建议
+    // 显示搜索建议（点击后跳转到search.html）
     const showSuggestions = (items) => {
         suggestionsContainer.innerHTML = '';
         
@@ -231,9 +231,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const handleClick = (e) => {
                 e.stopPropagation();
-                menuSearch.value = name;
-                suggestionsContainer.style.display = 'none';
-                menuSearch.focus();
+                // 点击建议项跳转到search.html
+                window.location.href = `/search.html?q=${encodeURIComponent(name)}`;
             };
             
             item.addEventListener('click', handleClick);
@@ -252,133 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         suggestionsContainer.style.display = 'block';
     };
 
-		// 显示搜索结果
-const showSearchResults = (items) => {
-    suggestionsContainer.style.display = 'none';
-    menu.classList.remove('fm-active');
-    isOpen = false;
-    menuSearch.value = '';
-    
-    // 清除旧的搜索结果覆盖层（如果存在）
-    const oldOverlay = document.getElementById('search-results-overlay');
-    if (oldOverlay) {
-        document.body.removeChild(oldOverlay);
-    }
-    
-    // 创建新的覆盖层（包含结果和页脚）
-    const overlay = document.createElement('div');
-    overlay.id = 'search-results-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: white;
-        z-index: 999;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    `;
-    
-    // 结果容器（可滚动，顶部留出空间）
-    const scrollContainer = document.createElement('div');
-    scrollContainer.style.cssText = `
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        margin-top: 70px;
-        -webkit-overflow-scrolling: touch;
-    `;
-    
-    // 内容容器
-    const resultsContainer = document.createElement('div');
-    resultsContainer.style.cssText = `
-        max-width: 800px;
-        margin: 0 auto;
-        padding-bottom: 20px;
-    `;
-    
-    // 获取原始页脚
-    const originalFooter = document.querySelector('.site-footer');
-    
-    // 创建页脚容器
-    const footerContainer = document.createElement('div');
-    footerContainer.className = 'site-footer';
-    footerContainer.style.cssText = `
-        flex-shrink: 0;
-        background: white;
-        padding: 15px 0;
-        border-top: 1px solid #eee;
-    `;
-    
-    // 1. 先克隆原始HTML结构
-    footerContainer.innerHTML = originalFooter.innerHTML;
-    
-    // 2. 动态加载footer.js（确保统计脚本运行）
-    const footerScript = document.createElement('script');
-    footerScript.src = '/js/footer.js';
-    
-    // 填充内容
-    if (items.length === 0) {
-        resultsContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px;">
-                <h3 style="color: #666;">没有找到匹配的结果</h3>
-                <p style="color: #999;">请尝试其他关键词</p>
-            </div>
-        `;
-    } else {
-        resultsContainer.innerHTML = `
-            <h3 style="color: #444; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                搜索结果 (${items.length})
-            </h3>
-            <div style="display: grid; grid-gap: 10px;">
-        `;
-        
-        items.forEach(([name, url]) => {
-            resultsContainer.innerHTML += `
-                <a href="${url}" style="display: block; padding: 12px; border: 1px solid #eee; border-radius: 4px; color: #333; text-decoration: none;">
-                    ${name}
-                </a>
-            `;
-        });
-        
-        resultsContainer.innerHTML += `</div>`;
-    }
-    
-    // 关闭按钮
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '关闭搜索结果';
-    closeBtn.style.cssText = `
-        display: block;
-        margin: 30px auto 0;
-        background: #6e8efb;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 10px 20px;
-        cursor: pointer;
-    `;
-    closeBtn.addEventListener('click', () => {
-        document.body.removeChild(overlay);
-        document.querySelector('.content').style.display = 'block';
-        document.querySelector('.site-footer').style.display = 'block';
-    });
-    
-    // 组装元素
-    resultsContainer.appendChild(closeBtn);
-    scrollContainer.appendChild(resultsContainer);
-    overlay.appendChild(scrollContainer);
-    overlay.appendChild(footerContainer);
-    overlay.appendChild(footerScript); // 添加脚本
-    
-    // 隐藏原始内容
-    document.querySelector('.content').style.display = 'none';
-    document.querySelector('.site-footer').style.display = 'none';
-    document.body.appendChild(overlay);
-};
-
-    // 搜索功能实现
+    // 处理搜索输入
     const handleSearchInput = function() {
         resetIdleTimer();
         clearTimeout(searchTimeout);
@@ -415,23 +288,14 @@ const showSearchResults = (items) => {
         });
     }
 
+    // 处理回车键（跳转到search.html）
     menuSearch.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             const keyword = this.value.trim();
             if (!keyword) return;
             
-            const allItems = [];
-            for (const [name, items] of Object.entries(allMenuData)) {
-                if (typeof items === 'string') {
-                    allItems.push([name, items]);
-                } else {
-                    items.forEach(([subName, subUrl]) => {
-                        allItems.push([subName, subUrl]);
-                    });
-                }
-            }
-            const matchedItems = fuzzySearch(allItems, keyword);
-            showSearchResults(matchedItems);
+            // 直接跳转到search.html
+            window.location.href = `/search.html?q=${encodeURIComponent(keyword)}`;
         }
     });
 
