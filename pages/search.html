@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>工具搜索 - 在线工具箱</title>
   <!-- 样式表 -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="floating-menu.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/floating-menu.css">
   <style>
     /* search.css 内容 */
     .search-page {
@@ -110,7 +110,7 @@
     <div class="header-main">
       <div class="header-content">
         <a href="https://www.0515364.xyz">
-          <img src="https://www.0515364.xyz/imgs/apple-touch-icon.png" alt="Logo" class="logo">
+          <img src="/imgs/apple-touch-icon.png" alt="Logo" class="logo">
         </a>
         <div class="title-container">
           <a href="https://www.0515364.xyz">
@@ -158,7 +158,7 @@
       // 数据加载
       const loadToolsData = async () => {
         try {
-          const response = await fetch('https://www.0515364.xyz/json/menu.json');
+          const response = await fetch('/json/menu.json');
           if (!response.ok) throw new Error('网络响应不正常');
           const data = await response.json();
           
@@ -272,9 +272,9 @@
   </script>
 
   <!-- 球形菜单脚本 -->
-  <script src="floating-menu.js"></script>
+  <script src="/js/floating-menu.js"></script>
   
   <!-- 页脚脚本 -->
-  <script src="https://www.0515364.xyz/js/footer.js"></script>
+  <script src="/js/footer.js"></script>
 </body>
 </html>
