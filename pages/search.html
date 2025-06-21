@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>工具搜索 - 在线工具箱</title>
+  <!-- 样式表 -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="floating-menu.css">
+  <style>
+    /* search.css 内容 */
+    .search-page {
+      max-width: 800px;
+      margin: 100px auto 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .search-header {
+      margin: 40px 0 30px;
+      text-align: center;
+    }
+    .search-box-container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+    .search-box {
+      position: relative;
+      margin: 0 auto 30px;
+      width: 100%;
+      max-width: 800px;
+    }
+    #search-input {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 18px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    #search-input:focus {
+      border-color: #0366d6;
+      box-shadow: 0 2px 12px rgba(3, 102, 214, 0.2);
+      outline: none;
+    }
+    .default-hint {
+      text-align: center;
+      color: #666;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .search-results {
+      margin-top: 30px;
+    }
+    .result-item {
+      display: block;
+      padding: 16px;
+      margin-bottom: 15px;
+      background: white;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+    .result-item:hover {
+      border-color: #0366d6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .result-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: #24292e;
+      margin-bottom: 5px;
+    }
+    .result-category {
+      font-size: 14px;
+      color: #586069;
+    }
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      background: #fafbfc;
+      border-radius: 8px;
+      margin-top: 30px;
+    }
+    .no-results h3 {
+      color: #24292e;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    @media (max-width: 768px) {
+      .search-page {
+        margin: 80px auto 0;
+        padding: 15px;
+      }
+      #search-input {
+        padding: 14px 20px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <div class="header">
+    <div class="header-main">
+      <div class="header-content">
+        <a href="https://www.0515364.xyz">
+          <img src="https://www.0515364.xyz/imgs/apple-touch-icon.png" alt="Logo" class="logo">
+        </a>
+        <div class="title-container">
+          <a href="https://www.0515364.xyz">
+            <span class="site-title">🧰在线小工具</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 球形菜单挂载点 -->
+  <div id="fm-container"></div>
+
+  <!-- 搜索主内容区 -->
+  <main class="search-page">
+    <div class="search-header">
+      <h1>搜索工具箱</h1>
+    </div>
+    
+    <div class="search-box-container">
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="输入工具名称、功能关键词..." 
+          autofocus
+          autocomplete="off"
+          aria-label="搜索工具"
+        >
+      </div>
+      <div id="default-hint" class="default-hint">
+        <p>例如：时间戳转换、JSON格式化、URL编码</p>
+      </div>
+    </div>
+    
+    <div id="results" class="search-results"></div>
+  </main>
+
+  <!-- 页脚 -->
+  <div id="footerContainer"></div>
+
+  <script>
+    // 搜索功能实现
+    document.addEventListener('DOMContentLoaded', () => {
+      // 数据加载
+      const loadToolsData = async () => {
+        try {
+          const response = await fetch('https://www.0515364.xyz/json/menu.json');
+          if (!response.ok) throw new Error('网络响应不正常');
+          const data = await response.json();
+          
+          const normalizedData = {};
+          for (const [category, items] of Object.entries(data)) {
+            if (typeof items === 'string') {
+              normalizedData[category] = [[category, items]];
+            } else if (Array.isArray(items)) {
+              normalizedData[category] = items.map(item => 
+                Array.isArray(item) ? item : [item, "#"]
+              );
+            }
+          }
+          return normalizedData;
+        } catch (error) {
+          console.error('加载工具数据失败:', error);
+          return null; // 直接返回null而不是默认数据
+        }
+      };
+
+      // 执行搜索
+      const performSearch = (data, query) => {
+        if (!data) return []; // 如果数据加载失败返回空数组
+        
+        const results = [];
+        const lowerQuery = query.toLowerCase().trim();
+        const hintElement = document.getElementById('default-hint');
+        
+        if (!lowerQuery) {
+          hintElement.style.display = 'block';
+          return [];
+        }
+        
+        hintElement.style.display = 'none';
+        
+        Object.entries(data).forEach(([category, items]) => {
+          items.forEach(([name, url]) => {
+            if (name.toLowerCase().includes(lowerQuery)) {
+              results.push({
+                name,
+                url: url.startsWith('http') ? url : `https://www.0515364.xyz${url}`,
+                category
+              });
+            }
+          });
+        });
+        
+        return results.sort((a, b) => a.name.localeCompare(b.name));
+      };
+
+      // 渲染结果
+      const renderResults = (results) => {
+        const container = document.getElementById('results');
+        
+        if (!results) {
+          container.innerHTML = `
+            <div class="no-results">
+              <h3>数据加载失败</h3>
+              <p>请刷新页面重试</p>
+            </div>
+          `;
+          return;
+        }
+        
+        if (!results.length && document.getElementById('search-input').value.trim()) {
+          container.innerHTML = `
+            <div class="no-results">
+              <h3>没有找到匹配的工具</h3>
+              <p>建议尝试其他关键词</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = results.map(item => `
+          <a href="${item.url}" class="result-item">
+            <div class="result-title">${item.name}</div>
+            <div class="result-category">${item.category}</div>
+          </a>
+        `).join('');
+      };
+
+      // 初始化搜索
+      const initSearch = async () => {
+        const toolsData = await loadToolsData();
+        const searchInput = document.getElementById('search-input');
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialQuery = urlParams.get('q') || '';
+        
+        if (initialQuery) {
+          searchInput.value = initialQuery;
+          const results = performSearch(toolsData, initialQuery);
+          renderResults(results);
+        }
+        
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value;
+          const results = performSearch(toolsData, query);
+          
+          // 更新URL
+          const newUrl = query ? 
+            `/search.html?q=${encodeURIComponent(query)}` : '/search.html';
+          history.pushState(null, '', newUrl);
+          
+          renderResults(results);
+        });
+      };
+
+      initSearch();
+    });
+  </script>
+
+  <!-- 球形菜单脚本 -->
+  <script src="floating-menu.js"></script>
+  
+  <!-- 页脚脚本 -->
+  <script src="https://www.0515364.xyz/js/footer.js"></script>
+</body>
+</html>
