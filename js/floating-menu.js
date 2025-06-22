@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 加载菜单数据（仅用于显示搜索建议）
     const loadMenuData = async () => {
         try {
-            const response = await fetch('https://www.0515364.xyz/json/menu.json');
+            const response = await fetch('/json/menu.json');
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             allMenuData = {
                 "首页": "/",
                 "小工具": [
-                    ["VBA 代码混淆器 / 还原器", "https://bing.0515364.xyz/vba.html"],
-                    ["时间戳工具", "https://bing.0515364.xyz/timestamp.html"],
-                    ["编码解码", "https://bing.0515364.xyz/encoder.html"]
+                    ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
+                    ["时间戳工具", "/pages/timestamp.html"],
+                    ["编码解码", "/pages/encoder.html"]
                 ],
-                "色彩查询": "pages/color.html",
-                "关于": "pages/about.html"
+                "色彩查询": "/pages/color.html",
+                "关于": "/pages/about.html"
             };
             return allMenuData;
         }
