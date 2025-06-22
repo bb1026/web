@@ -203,6 +203,17 @@
       transform: scale(1.1);
     }
 
+    .code-block {
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 14px;
+        background-color: #f5f5f5;
+        padding: 10px 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        color: #333;
+        overflow-x: auto;
+      }
+
     @media (max-width: 768px) {
       .container {
         padding: 10px;
@@ -255,6 +266,15 @@
       <div id="fileInfo" class="file-info"></div>
       <textarea id="base64Output" placeholder="生成的 Base64 编码将显示在这里..." readonly></textarea>
       <button class="btn btn-block" onclick="copyBase64()">复制 Base64 编码</button>
+
+	<!-- 使用方法展示 -->
+	<br>
+	<pre class="code-block">
+	<p>使用方法：</p>
+	&lt;img src="替换此处data:image/png;base64编码内容" alt="图片描述" /&gt;
+	</pre>
+
+
       <div class="preview-container">
         <img id="previewImage" class="preview-image" alt="图片预览"/>
         <button class="close-btn" onclick="clearUploadedImage()" id="closeUploadBtn">×</button>
