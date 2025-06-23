@@ -5,56 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>工具搜索 - 在线工具箱</title>
   <!-- 样式表 -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="floating-menu.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/floating-menu.css">
   <style>
-    /* search.css 内容 */
-    .search-page {
-      max-width: 800px;
-      margin: 100px auto 0;
-      padding: 20px;
+    * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
-    .search-header {
-      margin: 40px 0 30px;
-      text-align: center;
+    
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+      background: #fff;
     }
-    .search-box-container {
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-    .search-box {
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      line-height: 1.5;
       position: relative;
-      margin: 0 auto 30px;
+    }
+
+    /* 主内容区 */
+    .search-page {
+      flex: 1;
       width: 100%;
       max-width: 800px;
+      margin: 100px auto 10px;
+      padding: 20px;
     }
+
+    /* 搜索框区域 */
+    .search-header {
+      margin: 20px 0 30px;
+      text-align: center;
+    }
+    
+    .search-box-container {
+      width: 100%;
+      padding: 0 20px;
+    }
+    
+    .search-box {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 30px;
+    }
+    
     #search-input {
       width: 100%;
       padding: 16px 24px;
       font-size: 18px;
       border: 2px solid #ddd;
       border-radius: 10px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
       transition: all 0.2s ease;
-      box-sizing: border-box;
+      background: #fff;
     }
+    
     #search-input:focus {
       border-color: #0366d6;
-      box-shadow: 0 2px 12px rgba(3, 102, 214, 0.2);
       outline: none;
     }
+    
     .default-hint {
       text-align: center;
       color: #666;
       margin-top: 15px;
       font-size: 14px;
     }
+    
+    /* 搜索结果 */
     .search-results {
-      margin-top: 30px;
+      margin: 30px 0 10px;
+      width: 100%;
     }
+    
     .result-item {
       display: block;
       padding: 16px;
@@ -62,41 +90,79 @@
       background: white;
       border: 1px solid #e1e4e8;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       transition: all 0.2s ease;
+      width: 100%;
     }
+    
     .result-item:hover {
       border-color: #0366d6;
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
+    
     .result-title {
       font-size: 17px;
       font-weight: 600;
       color: #24292e;
       margin-bottom: 5px;
     }
+    
     .result-category {
       font-size: 14px;
       color: #586069;
     }
+    
     .no-results {
       text-align: center;
       padding: 40px 20px;
       background: #fafbfc;
       border-radius: 8px;
       margin-top: 30px;
+      width: 100%;
+      border: 1px solid #e1e4e8;
     }
+    
     .no-results h3 {
       color: #24292e;
       margin-bottom: 15px;
       font-size: 18px;
     }
+
+   /* 页脚样式调整 */
+    #footerContainer {
+      width: 100%;
+      /*margin-top: 10px;*/ 
+    }
+    
+    /* 确保菜单球不变形 */
+    #fm-container {
+      transform: none !important;
+    }
+    
+    .fm-button {
+      border-radius: 50% !important;
+      transform: scale(1) !important;
+    }
+
+    .site-footer {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      padding: 10px 0 !important;
+      margin-top: 0 !important;
+    }
+
+    .footer-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* 响应式调整 */
     @media (max-width: 768px) {
       .search-page {
-        margin: 80px auto 0;
+        margin: 80px auto 10px;
         padding: 15px;
       }
+      
       #search-input {
         padding: 14px 20px;
         font-size: 16px;
@@ -105,27 +171,16 @@
   </style>
 </head>
 <body>
-  <!-- 顶部导航栏 -->
-  <div class="header">
-    <div class="header-main">
-      <div class="header-content">
-        <a href="https://www.0515364.xyz">
-          <img src="https://www.0515364.xyz/imgs/apple-touch-icon.png" alt="Logo" class="logo">
-        </a>
-        <div class="title-container">
-          <a href="https://www.0515364.xyz">
-            <span class="site-title">🧰在线小工具</span>
-          </a>
-        </div>
-      </div>
-    </div>
+  <!-- 顶部Logo容器 -->
+  <div class="header" style="height: 80px; width: 100%;">
+    <div class="header-main"></div>
   </div>
 
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
+  <!-- 球形菜单挂载点 - 确保不变形 -->
+  <div id="fm-container" style="transform: none !important;"></div>
 
   <!-- 搜索主内容区 -->
-  <main class="search-page">
+  <main class="search-page" style="width: 100%;">
     <div class="search-header">
       <h1>搜索工具箱</h1>
     </div>
@@ -135,22 +190,19 @@
         <input 
           type="text" 
           id="search-input" 
-          placeholder="输入工具名称、功能关键词..." 
+          placeholder="输入工具关键词..." 
           autofocus
           autocomplete="off"
           aria-label="搜索工具"
         >
       </div>
       <div id="default-hint" class="default-hint">
-        <p>例如：时间戳转换、JSON格式化、URL编码</p>
+        <p>例如：时间戳、JSON、编码</p>
       </div>
     </div>
     
     <div id="results" class="search-results"></div>
   </main>
-
-  <!-- 页脚 -->
-  <div id="footerContainer"></div>
 
   <script>
     // 搜索功能实现
@@ -158,7 +210,7 @@
       // 数据加载
       const loadToolsData = async () => {
         try {
-          const response = await fetch('https://www.0515364.xyz/json/menu.json');
+          const response = await fetch('/json/menu.json');
           if (!response.ok) throw new Error('网络响应不正常');
           const data = await response.json();
           
@@ -175,13 +227,13 @@
           return normalizedData;
         } catch (error) {
           console.error('加载工具数据失败:', error);
-          return null; // 直接返回null而不是默认数据
+          return null;
         }
       };
 
       // 执行搜索
       const performSearch = (data, query) => {
-        if (!data) return []; // 如果数据加载失败返回空数组
+        if (!data) return [];
         
         const results = [];
         const lowerQuery = query.toLowerCase().trim();
@@ -194,14 +246,25 @@
         
         hintElement.style.display = 'none';
         
+        // 需要完全匹配过滤的关键词（不区分大小写）
+        const excludeExactMatches = ['首页', '关于', 'home', 'about'];
+        
         Object.entries(data).forEach(([category, items]) => {
           items.forEach(([name, url]) => {
-            if (name.toLowerCase().includes(lowerQuery)) {
-              results.push({
-                name,
-                url: url.startsWith('http') ? url : `https://www.0515364.xyz${url}`,
-                category
-              });
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes(lowerQuery)) {
+              // 检查是否是完全匹配要排除的关键词
+              const shouldExclude = excludeExactMatches.some(keyword => 
+                name.toLowerCase() === keyword.toLowerCase()
+              );
+              
+              if (!shouldExclude) {
+                results.push({
+                  name,
+                  url: url.startsWith('http') ? url : `https://www.0515364.xyz${url}`,
+                  category
+                });
+              }
             }
           });
         });
@@ -258,7 +321,6 @@
           const query = e.target.value;
           const results = performSearch(toolsData, query);
           
-          // 更新URL
           const newUrl = query ? 
             `/search.html?q=${encodeURIComponent(query)}` : '/search.html';
           history.pushState(null, '', newUrl);
@@ -271,10 +333,32 @@
     });
   </script>
 
-  <!-- 球形菜单脚本 -->
-  <script src="floating-menu.js"></script>
+  <!-- js加载 -->
+  <script src="/js/floating-menu.js"></script>
+  <script src="/js/header-logo.js"></script>
+  <script src="/js/footer.js"></script>
   
-  <!-- 页脚脚本 -->
-  <script src="https://www.0515364.xyz/js/footer.js"></script>
+  <!-- 确保菜单球不变形的额外脚本 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 防止浮动菜单变形
+      const observer = new MutationObserver(function() {
+        const fmContainer = document.getElementById('fm-container');
+        if (fmContainer) {
+          fmContainer.style.transform = 'none';
+          const buttons = fmContainer.querySelectorAll('.fm-button');
+          buttons.forEach(btn => {
+            btn.style.transform = 'scale(1)';
+            btn.style.borderRadius = '50%';
+          });
+        }
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+  </script>
 </body>
 </html>
