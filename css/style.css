@@ -53,9 +53,12 @@
 /* 页脚样式 */
 .site-footer {
   text-align: center;
+  padding: 20px;
   margin-top: 20px;
   font-size: 13px;
   color: #666;
+  background-color: #f8f9fa;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .site-footer a, .footer-link {
@@ -78,52 +81,6 @@
   border-top: 1px solid #ccc;
 }
 
-/* 搜索结果页面专用样式 */
-#search-results-overlay {
-  top: 70px !important;
-  height: calc(100vh - 70px) !important;
-  z-index: 999 !important;
-}
-
-#search-results-overlay .site-footer {
-  position: static;
-  margin-top: 0;
-  z-index: auto;
-}
-
-body.search-mode .site-footer {
-  display: none;
-}
-
-/* 球形菜单样式 */
-#fm-container {
-  width: 50px;
-  height: 50px;
-  top: 20px;
-  right: 20px;
-}
-
-#fm-container.fm-active {
-  width: 90vw;
-  max-width: 280px;
-  right: 5vw;
-}
-
-.fm-hamburger,
-.fm-hamburger::before,
-.fm-hamburger::after {
-  width: 25px;
-  height: 2px;
-}
-
-.fm-hamburger::before { top: -7px; }
-.fm-hamburger::after { top: 7px; }
-
-#fm-toggle {
-  width: 50px;
-  height: 50px;
-}
-
 /* 移动设备适配 */
 @media (max-width: 768px) {
   .header-main {
@@ -144,17 +101,6 @@ body.search-mode .site-footer {
     margin-top: 80px;
     padding: 15px !important;
   }
-  
-  #fm-container {
-    top: 10px;
-    right: 10px;
-  }
-  
-  #search-results-overlay {
-    top: 60px !important;
-    height: calc(100vh - 60px) !important;
-    padding: 15px;
-  }
 }
 
 /* 安全区域适配 */
@@ -167,9 +113,20 @@ body.search-mode .site-footer {
   .header {
     padding-top: max(2px, env(safe-area-inset-top));
   }
-  
-  #fm-container {
-    top: max(20px, env(safe-area-inset-top));
-    right: max(20px, env(safe-area-inset-right));
-  }
+}
+
+/* 页面整体布局：页脚固定底部 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 中间内容容器必须设置 flex:1 占据中间区域 */
+main,
+.content,
+.search-page {
+  flex: 1;
 }
