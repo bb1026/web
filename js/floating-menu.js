@@ -21,25 +21,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const menuSearch = document.getElementById('fm-search');
     const suggestionsContainer = document.getElementById('fm-search-suggestions');
 
-    // 设置搜索建议框样式
-    suggestionsContainer.style.cssText = `
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-        background: white;
-        border: 1px solid #eee;
-        border-radius: 0 0 4px 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        z-index: 1000;
-        font-size: 0.8em;
-        color: #666;
-        -webkit-overflow-scrolling: touch;
-    `;
-
     // 状态管理
     let isOpen = false;
     let activeSubmenu = null;
