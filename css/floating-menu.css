@@ -1,8 +1,8 @@
 /* 球形菜单核心样式 */
 #fm-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
   width: 60px;
   height: 60px;
   background: linear-gradient(135deg, #6e8efb, #a777e3);
@@ -152,6 +152,7 @@ pointer-events: auto;
   text-align: center;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-size: 1em;
 }
 
 #fm-search:hover {
@@ -177,14 +178,18 @@ pointer-events: auto;
     display: none;
     position: absolute;
     top: 100%;
-    left: 30px;
-    right: 30px;
-    max-height: 300px;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
     overflow-y: auto;
     background: white;
-    border-radius: 0 0 18px 18px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #eee;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 1000;
+    font-size: 0.8em;
+    color: #666;
+    -webkit-overflow-scrolling: touch;
 }
 
 .fm-suggestion-item {
