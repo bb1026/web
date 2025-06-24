@@ -1,1 +1,225 @@
-网站建设中
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>图片画廊</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      padding: 10px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    #gallery {
+      display: grid;
+      gap: 10px;
+    }
+    .image-item {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px;
+    }
+    .image-item img {
+      width: 100%;
+      height: 140px; /* 默认手机 */
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .download-btn {
+      margin-top: 6px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .download-btn:hover {
+      background-color: #0056b3;
+    }
+
+    #pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .page-btn, .page-num {
+      padding: 8px 12px;
+      margin: 0 4px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .page-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .page-num.active {
+      background-color: #28a745;
+    }
+
+    @media (max-width: 600px) {
+      #gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .image-item img {
+        height: 140px;
+      }
+    }
+
+    @media (min-width: 601px) and (max-width: 1024px) {
+      #gallery {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .image-item img {
+        height: 120px;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      #gallery {
+        grid-template-columns: repeat(6, 1fr);
+      }
+      .image-item img {
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>图片画廊</h1>
+  <div id="gallery"></div>
+  <div id="pagination"></div>
+
+  <script>
+    const baseUrl = '/imgs/';
+    const baseNames = [];
+    for (let i = 0; i <= 20; i++) {
+      baseNames.push(`image${i}`);
+    }
+
+    const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+    const imageList = [];
+    let currentPage = 1;
+
+    function tryLoadImages(callback) {
+      let pending = baseNames.length;
+      baseNames.forEach(name => {
+        tryOneExtension(name, 0, url => {
+          if (url) imageList.push(url);
+          pending--;
+          if (pending === 0) callback();
+        });
+      });
+    }
+
+    function tryOneExtension(baseName, index, done) {
+      if (index >= extensions.length) return done(null);
+      const url = baseUrl + baseName + extensions[index];
+      const img = new Image();
+      img.onload = () => done(url);
+      img.onerror = () => tryOneExtension(baseName, index + 1, done);
+      img.src = url;
+    }
+
+    function getPageSize() {
+      const width = window.innerWidth;
+      if (width <= 600) return 10;
+      if (width <= 1024) return 12;
+      return 24;
+    }
+
+    function renderGallery() {
+      const pageSize = getPageSize();
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageImages = imageList.slice(start, end);
+
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+
+      pageImages.forEach(url => {
+        const item = document.createElement('div');
+        item.className = 'image-item';
+        item.innerHTML = `
+          <a href="${url}" target="_blank">
+            <img src="${url}" alt="image">
+          </a>
+          <button class="download-btn" onclick="downloadImage('${url}')">保存</button>
+        `;
+        gallery.appendChild(item);
+      });
+
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const pageSize = getPageSize();
+      const totalPages = Math.ceil(imageList.length / pageSize);
+      const pagination = document.getElementById('pagination');
+
+      const maxButtons = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+      let endPage = startPage + maxButtons - 1;
+      if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      let html = '';
+      html += `<button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
+
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<button class="page-num ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      html += `<button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+      pagination.innerHTML = html;
+    }
+
+    function changePage(delta) {
+      const pageSize = getPageSize();
+      const totalPages = Math.ceil(imageList.length / pageSize);
+      currentPage += delta;
+      if (currentPage < 1) currentPage = 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      renderGallery();
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderGallery();
+    }
+
+    function downloadImage(url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = url.split('/').pop();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.addEventListener('resize', renderGallery);
+    window.addEventListener('DOMContentLoaded', () => {
+      tryLoadImages(() => {
+        renderGallery();
+      });
+    });
+  </script>
+</body>
+</html>
