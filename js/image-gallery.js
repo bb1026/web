@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 创建DOM结构
   container.innerHTML = `
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; width: 100%;">
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; margin-bottom: 5px; width: 99%;">
       <button id="refreshBtn" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; opacity: 0.6;" disabled>换一批</button>
       <button id="moreBtn" style="padding: 8px 16px; margin-right: 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s;">更多</button>
     </div>
