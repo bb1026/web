@@ -30,10 +30,11 @@
     }
     .image-item img {
       width: 100%;
-      height: 140px; /* 默认手机 */
+      height: 140px;
       object-fit: cover;
       cursor: pointer;
       border-radius: 4px;
+      background: #eee;
     }
     .download-btn {
       margin-top: 6px;
@@ -47,12 +48,10 @@
     .download-btn:hover {
       background-color: #0056b3;
     }
-
     #pagination {
       text-align: center;
       margin-top: 20px;
     }
-
     .page-btn, .page-num {
       padding: 8px 12px;
       margin: 0 4px;
@@ -62,41 +61,30 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     .page-btn:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
-
     .page-num.active {
       background-color: #28a745;
     }
-
     @media (max-width: 600px) {
       #gallery {
         grid-template-columns: repeat(2, 1fr);
       }
-      .image-item img {
-        height: 140px;
-      }
+      .image-item img { height: 140px; }
     }
-
     @media (min-width: 601px) and (max-width: 1024px) {
       #gallery {
         grid-template-columns: repeat(4, 1fr);
       }
-      .image-item img {
-        height: 120px;
-      }
+      .image-item img { height: 120px; }
     }
-
     @media (min-width: 1025px) {
       #gallery {
         grid-template-columns: repeat(6, 1fr);
       }
-      .image-item img {
-        height: 100px;
-      }
+      .image-item img { height: 100px; }
     }
   </style>
 </head>
@@ -107,20 +95,18 @@
 
   <script>
     const baseUrl = '/imgs/';
-    const baseNames = [];
     const totalImages = 22;
-    for (let i = 0; i <= totalImages; i++) {
-      baseNames.push(`image${i}`);
-    }
+    const baseNames = Array.from({ length: totalImages + 1 }, (_, i) => `image${i}`);
+    const rawExts = ['.jpg', '.jpeg', '.png', '.webp', '.heif'];
+    const extensions = rawExts.flatMap(ext => [ext, ext.toUpperCase()]);
 
-    const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
     const imageList = [];
     let currentPage = 1;
 
-    function tryLoadImages(callback) {
+    function tryLoadAllImages(callback) {
       let pending = baseNames.length;
       baseNames.forEach(name => {
-        tryOneExtension(name, 0, url => {
+        tryLoadExtension(name, 0, url => {
           if (url) imageList.push(url);
           pending--;
           if (pending === 0) callback();
@@ -128,12 +114,12 @@
       });
     }
 
-    function tryOneExtension(baseName, index, done) {
+    function tryLoadExtension(name, index, done) {
       if (index >= extensions.length) return done(null);
-      const url = baseUrl + baseName + extensions[index];
+      const url = baseUrl + name + extensions[index];
       const img = new Image();
       img.onload = () => done(url);
-      img.onerror = () => tryOneExtension(baseName, index + 1, done);
+      img.onerror = () => tryLoadExtension(name, index + 1, done);
       img.src = url;
     }
 
@@ -156,16 +142,48 @@
       pageImages.forEach(url => {
         const item = document.createElement('div');
         item.className = 'image-item';
-        item.innerHTML = `
-          <a href="${url}" target="_blank">
-            <img src="${url}" alt="image">
-          </a>
-          <button class="download-btn" onclick="downloadImage('${url}')">保存</button>
-        `;
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+
+        const img = document.createElement('img');
+        img.dataset.src = url;
+        img.alt = 'image';
+        img.loading = 'lazy'; // fallback
+
+        link.appendChild(img);
+        item.appendChild(link);
+
+        const btn = document.createElement('button');
+        btn.className = 'download-btn';
+        btn.textContent = '保存';
+        btn.onclick = () => downloadImage(url);
+        item.appendChild(btn);
+
         gallery.appendChild(item);
       });
 
+      lazyLoadImages();
       renderPagination();
+    }
+
+    function lazyLoadImages() {
+      const images = document.querySelectorAll('img[data-src]');
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            obs.unobserve(img);
+          }
+        });
+      }, {
+        rootMargin: '50px',
+        threshold: 0.01
+      });
+      images.forEach(img => observer.observe(img));
     }
 
     function renderPagination() {
@@ -175,19 +193,15 @@
 
       const maxButtons = 5;
       let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-      let endPage = startPage + maxButtons - 1;
-      if (endPage > totalPages) {
-        endPage = totalPages;
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {
         startPage = Math.max(1, endPage - maxButtons + 1);
       }
 
-      let html = '';
-      html += `<button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
-
+      let html = `<button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
       for (let i = startPage; i <= endPage; i++) {
         html += `<button class="page-num ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
       }
-
       html += `<button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
       pagination.innerHTML = html;
     }
@@ -196,8 +210,7 @@
       const pageSize = getPageSize();
       const totalPages = Math.ceil(imageList.length / pageSize);
       currentPage += delta;
-      if (currentPage < 1) currentPage = 1;
-      if (currentPage > totalPages) currentPage = totalPages;
+      currentPage = Math.max(1, Math.min(totalPages, currentPage));
       renderGallery();
     }
 
@@ -217,7 +230,7 @@
 
     window.addEventListener('resize', renderGallery);
     window.addEventListener('DOMContentLoaded', () => {
-      tryLoadImages(() => {
+      tryLoadAllImages(() => {
         renderGallery();
       });
     });
