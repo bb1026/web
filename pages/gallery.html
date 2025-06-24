@@ -87,11 +87,15 @@
       .image-item img { height: 100px; }
     }
   </style>
+  <link rel="stylesheet" href="/css/floating-menu.css">
 </head>
 <body>
   <h1>图片画廊</h1>
   <div id="gallery"></div>
   <div id="pagination"></div>
+  
+  <!-- 球形菜单挂载点 -->
+  <div id="fm-container"></div>
 
   <script>
     const baseUrl = '/imgs/';
@@ -148,9 +152,10 @@
         link.target = '_blank';
 
         const img = document.createElement('img');
-        img.dataset.src = url;
+        img.src = url;  // 直接设置src，不使用data-src
         img.alt = 'image';
-        img.loading = 'lazy'; // fallback
+        img.loading = 'lazy'; // 使用原生懒加载
+        img.style.display = 'block'; // 确保图片正确渲染
 
         link.appendChild(img);
         item.appendChild(link);
@@ -164,26 +169,7 @@
         gallery.appendChild(item);
       });
 
-      lazyLoadImages();
       renderPagination();
-    }
-
-    function lazyLoadImages() {
-      const images = document.querySelectorAll('img[data-src]');
-      const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {
-        rootMargin: '50px',
-        threshold: 0.01
-      });
-      images.forEach(img => observer.observe(img));
     }
 
     function renderPagination() {
@@ -228,12 +214,21 @@
       document.body.removeChild(link);
     }
 
-    window.addEventListener('resize', renderGallery);
+    // 优化resize处理，避免频繁重绘
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderGallery();
+      }, 200);
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       tryLoadAllImages(() => {
         renderGallery();
       });
     });
   </script>
+  <script src="/js/floating-menu.js"></script>
 </body>
 </html>
