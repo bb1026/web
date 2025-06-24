@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 加载菜单数据
-  fetch('https://www.0515364.xyz/json/menu.json')
+  fetch('/json/menu.json')
     .then(response => response.json())
     .then(data => {
       allData = Object.entries(data).reduce((acc, [cat, items]) => {
