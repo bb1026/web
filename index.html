@@ -16,41 +16,28 @@
   <!-- 样式表 -->
   <link rel="stylesheet" href="/css/floating-menu.css">
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/notice.css">
 </head>
 <body>
-  <!-- 顶部Logo -->
-<div class="header">
-  <div class="header-main"> <!-- 新增包裹容器 -->
-    <div class="header-content">
-      <a href="https://www.0515364.xyz">
-        <img src="/imgs/apple-touch-icon.png" alt="Logo" class="logo">
-      </a>
-      <div class="title-container">
-        <a href="https://www.0515364.xyz">
-          <span class="site-title">🧰在线小工具</span>
-        </a>
-      </div>
-    </div>
+  <!-- 顶部Logo容器 -->
+  <div class="header">
+    <div class="header-main"></div>
+    
+    <!-- 公告栏 -->
+    <div id="noticeContainer" class="notice-container"></div>
   </div>
-  
-  <!-- 公告栏 -->
-  <div id="noticeContainer" class="notice-container"></div>
-</div>
 
   <!-- 球形菜单挂载点 -->
   <div id="fm-container"></div>
 
-  <!-- 页面内容 -->
-  <div class="content" style="height: auto; padding: 20px;">
-    <h1>🚧网站建设中...🚧</h1>
-    <p>🚧网站建设中...🚧</p>
-  </div>
+  <!-- 图片内容 -->
+  <div id="imageGalleryContainer"></div>
+
+  <!-- 分类菜单自动生成 -->
+  <div id="menuContainer" class="container"></div>
 
   <!-- JavaScript -->
   <script src="/js/floating-menu.js"></script>
-  <script src="/js/notice.js"></script>
   <script src="/js/image-gallery.js"></script>
-  <script src="/js/footer.js"></script>
+<script src="/js/main-header-notice-footer.js"></script>
 </body>
 </html>
