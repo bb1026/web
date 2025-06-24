@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>图片 ↔ Base64 转换工具</title>
-  <style>
+<style>
     :root {
       --primary-color: #4361ee;
       --secondary-color: #3f37c9;
@@ -259,7 +259,7 @@
       <h2>图片转 Base64</h2>
       <div class="drag-area" id="dragArea">
         <div class="icon">📁</div>
-        <div class="text">点击或拖拽图片到此处</div>
+        <div class="text">点击或拖拽图片到此处，或直接粘贴图片</div>
         <div class="hint">支持 JPG, PNG, GIF 等格式</div>
         <input type="file" id="fileInput" accept="image/*" hidden>
       </div>
@@ -267,13 +267,10 @@
       <textarea id="base64Output" placeholder="生成的 Base64 编码将显示在这里..." readonly></textarea>
       <button class="btn btn-block" onclick="copyBase64()">复制 Base64 编码</button>
 
-	<!-- 使用方法展示 -->
-	<br>
-	<pre class="code-block">
-	<p>使用方法：</p>
-	&lt;img src="替换此处data:image/png;base64编码内容" alt="图片描述" /&gt;
-	</pre>
-
+      <pre class="code-block">
+<p>使用方法：</p>
+&lt;img src="替换此处data:image/png;base64编码内容" alt="图片描述" /&gt;
+</pre>
 
       <div class="preview-container">
         <img id="previewImage" class="preview-image" alt="图片预览"/>
@@ -294,7 +291,6 @@
   </div>
 
   <script>
-  // 用于标记是否为用户主动清除图片，避免触发错误提示
   let userClearing = false;
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -325,45 +321,57 @@
         processImageFile(fileInput.files[0]);
       }
     });
+  });
 
-    function processImageFile(file) {
-      if (!file || !file.type.startsWith('image/')) {
-        alert('请选择有效的图片文件！');
-        return;
+  // ✅ 支持粘贴图片转 Base64
+  document.addEventListener('paste', function (event) {
+    const items = (event.clipboardData || window.clipboardData).items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          processImageFile(file);
+        }
       }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const base64Data = e.target.result;
-        const previewImage = document.getElementById('previewImage');
-        const fileInfo = document.getElementById('fileInfo');
-
-        document.getElementById('base64Output').value = base64Data;
-        previewImage.src = base64Data;
-        previewImage.style.display = 'block';
-        toggleCloseButtons();
-
-        fileInfo.innerHTML = `
-          <strong>${file.name}</strong><br>
-          大小: ${(file.size / 1024).toFixed(1)} KB |
-          类型: ${file.type} |
-          尺寸: <span id="imageDimensions">计算中...</span>
-        `;
-
-        const img = new Image();
-        img.onload = function () {
-          document.getElementById('imageDimensions').textContent =
-            `${this.width} × ${this.height} 像素`;
-        };
-        img.src = base64Data;
-      };
-
-      reader.onerror = () => alert('读取文件时出错，请重试！');
-      reader.readAsDataURL(file);
     }
   });
 
-  // ✅ 修复：不再选中文本，只复制内容
+  function processImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert('请选择有效的图片文件！');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Data = e.target.result;
+      const previewImage = document.getElementById('previewImage');
+      const fileInfo = document.getElementById('fileInfo');
+
+      document.getElementById('base64Output').value = base64Data;
+      previewImage.src = base64Data;
+      previewImage.style.display = 'block';
+      toggleCloseButtons();
+
+      fileInfo.innerHTML = `
+        <strong>${file.name || '粘贴图片'}</strong><br>
+        大小: ${(file.size / 1024).toFixed(1)} KB |
+        类型: ${file.type} |
+        尺寸: <span id="imageDimensions">计算中...</span>
+      `;
+
+      const img = new Image();
+      img.onload = function () {
+        document.getElementById('imageDimensions').textContent =
+          `${this.width} × ${this.height} 像素`;
+      };
+      img.src = base64Data;
+    };
+
+    reader.onerror = () => alert('读取文件时出错，请重试！');
+    reader.readAsDataURL(file);
+  }
+
   function copyBase64() {
     const text = document.getElementById('base64Output').value;
     if (!text) return;
@@ -391,7 +399,6 @@
       toggleCloseButtons();
     };
 
-    // ✅ 修复：仅在非用户清除时才提示错误
     output.onerror = () => {
       if (!userClearing && data.length > 10) {
         showToast('无效的Base64图片数据！', 'error');
@@ -413,7 +420,6 @@
     };
   }
 
-  // ✅ 标记用户正在清除图片，避免触发错误提示
   function clearUploadedImage() {
     document.getElementById('previewImage').src = '';
     document.getElementById('previewImage').style.display = 'none';
@@ -423,9 +429,8 @@
     toggleCloseButtons();
   }
 
-  // ✅ 标记用户主动清除生成图片
   function clearGeneratedImage() {
-    userClearing = true; // 开始标记清除中
+    userClearing = true;
     const output = document.getElementById('outputImage');
     const downloadBtn = document.getElementById('downloadLink');
 
@@ -436,7 +441,7 @@
     toggleCloseButtons();
 
     setTimeout(() => {
-      userClearing = false; // 稍后取消标记，避免误触其他逻辑
+      userClearing = false;
     }, 100);
   }
 
