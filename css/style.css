@@ -241,6 +241,7 @@ main,
 }
 
 /* ==================== 安全区域适配 (来自style.css) ==================== */
+/* 防抖动 */
 @supports (padding: max(0px)) {
   .header, .content {
     padding-left: max(15px, env(safe-area-inset-left));
