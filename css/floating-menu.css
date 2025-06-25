@@ -1,4 +1,4 @@
-/* 球形菜单核心样式 */
+/* 菜单容器样式 */
 #fm-container {
   position: fixed;
   top: 10px;
@@ -15,23 +15,20 @@
   user-select: none;
   opacity: 1;
 }
-
-/* 空闲状态 - 半透明（包括初始状态） */
+/* 空闲状态样式 */
 #fm-container.fm-idle {
   opacity: 0.3;
 }
-
-/* 激活状态 - 完整渐变和透明度 */
+/* 激活状态样式（展开菜单） */
 #fm-container.fm-active {
   width: 280px;
   border-radius: 25px;
   padding-bottom: 15px;
   background: linear-gradient(to bottom, #6e8efb, #a777e3) !important;
   opacity: 1 !important;
-  height: auto; /* 允许高度自适应内容 */
+  height: auto;
 }
-
-/* 菜单内容区域 - 透明背景 */
+/* 菜单内容区域样式 */
 #fm-content {
   opacity: 0;
   max-height: 0;
@@ -45,21 +42,18 @@
   border-radius: inherit;
   pointer-events: none;
 }
-
 #fm-container.fm-active #fm-content {
   opacity: 1;
   max-height: 70vh;
   padding: 15px 0;
-pointer-events: auto;
+  pointer-events: auto;
 }
-
-/* 菜单项容器 */
+/* 菜单项容器样式 */
 #fm-menu-items {
   width: 100%;
   position: relative;
 }
-
-/* 菜单项基础样式 - 透明背景 */
+/* 菜单项基础样式 */
 .fm-item {
   width: 100%;
   padding: 12px 25px;
@@ -72,19 +66,10 @@ pointer-events: auto;
   text-align: center;
   background-color: transparent;
 }
-
 .fm-item:hover {
   background-color: rgba(255, 255, 255, 0.15);
 }
-
-/* 首页和关于菜单项 */
-.fm-home, .fm-about {
-  font-weight: bold;
-  border-bottom: 1px solid rgba(255,255,255,0.2);
-  margin: 0 0 8px 0;
-}
-
-/* 二级菜单容器 */
+/* 二级菜单样式 */
 .fm-submenu {
   position: absolute;
   right: 30%;
@@ -102,7 +87,6 @@ pointer-events: auto;
   overflow: hidden;
   visibility: hidden;
 }
-
 .fm-submenu.show {
   opacity: 1;
   transform: translateX(0);
@@ -110,19 +94,16 @@ pointer-events: auto;
   overflow-y: auto;
   visibility: visible;
 }
-
-/* 二级菜单项 */
+/* 二级菜单项样式 */
 .fm-submenu .fm-item {
   padding: 10px 20px;
   font-size: 14px;
   text-align: left;
 }
-
-/* 带子菜单的项 */
+/* 带二级菜单的菜单项样式 */
 .fm-has-submenu {
   position: relative;
 }
-
 .fm-has-submenu::after {
   content: '<';
   position: absolute;
@@ -132,12 +113,11 @@ pointer-events: auto;
   transition: transform 0.3s ease;
   font-size: 20px;
 }
-
+/* 带二级菜单的菜单项激活样式 */
 .fm-has-submenu.open::after {
   transform: translateY(-50%) rotate(-90deg);
 }
-
-/* 搜索框 - 渐变色版本 */
+/* 搜索框样式 */
 #fm-search {
   width: calc(100% - 60px);
   height: 36px;
@@ -154,26 +134,22 @@ pointer-events: auto;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   font-size: 1em;
 }
-
 #fm-search:hover {
   background: linear-gradient(white, white) padding-box, 
               linear-gradient(135deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
   box-shadow: 0 0 5px rgba(255, 0, 118, 0.5), 0 0 20px rgba(30, 174, 255, 0.5);
 }
-
 #fm-search:focus {
   background: linear-gradient(white, white) padding-box, 
               linear-gradient(45deg, #ff0076, #1eaeff, #28ffbf, #ff0076) border-box;
   box-shadow: 0 0 15px rgba(255, 0, 118, 0.7), 0 0 25px rgba(30, 174, 255, 0.7);
   color: #000;
 }
-
 #fm-search::placeholder {
   color: #aaa;
   font-style: italic;
 }
-
-/* 搜索建议样式 */
+/* 搜索建议框样式 */
 #fm-search-suggestions {
     display: none;
     position: absolute;
@@ -191,31 +167,15 @@ pointer-events: auto;
     color: #666;
     -webkit-overflow-scrolling: touch;
 }
-
 .fm-suggestion-item {
     padding: 10px 20px;
     cursor: pointer;
     transition: background 0.2s;
 }
-
 .fm-suggestion-item:hover {
     background-color: #f5f5f5;
 }
-
-/* 搜索结果样式 */
-#fm-search-results a {
-    color: #333;
-    text-decoration: none;
-    display: block;
-    padding: 12px;
-}
-
-#fm-search-results a:hover {
-    color: #0066cc;
-    background-color: #f8f8f8;
-}
-
-/* 切换按钮 */
+/* 菜单切换按钮容器样式 */
 #fm-toggle {
   width: 60px;
   height: 60px;
@@ -225,8 +185,7 @@ pointer-events: auto;
   position: relative;
   z-index: 2;
 }
-
-/* 汉堡图标动画 */
+/* 汉堡菜单样式 */
 .fm-hamburger {
   width: 30px;
   height: 3px;
@@ -234,7 +193,6 @@ pointer-events: auto;
   position: relative;
   transition: all 0.3s ease;
 }
-
 .fm-hamburger::before,
 .fm-hamburger::after {
   content: '';
@@ -245,49 +203,55 @@ pointer-events: auto;
   left: 0;
   transition: all 0.3s ease;
 }
-
 .fm-hamburger::before { top: -8px; }
 .fm-hamburger::after { top: 8px; }
-
 #fm-container.fm-active .fm-hamburger {
   background: transparent;
 }
-
 #fm-container.fm-active .fm-hamburger::before {
   transform: rotate(45deg);
   top: 0;
   width: 25px;
   left: 3px;
 }
-
 #fm-container.fm-active .fm-hamburger::after {
   transform: rotate(-45deg);
   top: 0;
   width: 25px;
   left: 3px;
 }
-
-/* 滚动条样式 */
+/* X按钮样式（新增） */
+.fm-close {
+  position: absolute;
+  top: 50%;
+  left: 25px;
+  transform: translateY(-50%);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 3;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.fm-close:hover {
+  opacity: 0.8;
+}
+#fm-container.fm-active .fm-close {
+  opacity: 1;
+  visibility: visible;
+  display: block;
+}
+/* 二级菜单滚动条样式 */
 .fm-submenu::-webkit-scrollbar {
   width: 6px;
 }
-
 .fm-submenu::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.3);
   border-radius: 3px;
 }
-
-/* 移动设备触摸反馈 */
-.fm-item {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* 防止移动设备上长按出现菜单 */
-#fm-container, .fm-item {
-  -webkit-touch-callout: none;
-}
-
-/* 移动设备上的子菜单调整 */
+/* 响应式适配（小屏幕设备） */
 @media (max-width: 768px) {
   .fm-submenu {
     right: 10%;
@@ -303,4 +267,12 @@ pointer-events: auto;
     height: 32px;
     margin: 10px auto;
   }
+}
+
+.fm-hamburger {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+#fm-container.fm-active .fm-hamburger {
+  opacity: 0;
+  visibility: hidden;
 }
