@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const CONFIG = {
     visibleCount: 8, // 显示的数量
     totalImages: 20, // 总图片数量
-    baseUrl: 'https://www.0515364.xyz/imgs/',
+    baseUrl: '/imgs/', // 图片路径
     formats: ['webp', 'avif', 'jpg', 'png', 'jpeg', 'gif'], // 图片格式
     scrollSpeed: 3, // 滚动速度(秒/图片)
 	  gap: 15 // 图片间距
