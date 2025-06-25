@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 创建菜单结构
+    // 创建菜单结构，新增.fm-close元素
     const menuContainer = document.getElementById('fm-container');
     menuContainer.innerHTML = `
         <div id="fm-toggle">
             <div class="fm-hamburger"></div>
+            <div class="fm-close">X</div> 
         </div>
         <div id="fm-content">
             <div id="fm-menu-items"></div>
@@ -13,14 +14,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         </div>
     `;
-
-    // 获取DOM元素
+    
+    // 获取DOM元素（新增fm-close）
     const menu = document.getElementById('fm-container');
     const toggle = document.getElementById('fm-toggle');
     const menuItemsContainer = document.getElementById('fm-menu-items');
     const menuSearch = document.getElementById('fm-search');
     const suggestionsContainer = document.getElementById('fm-search-suggestions');
-
+    const closeButton = document.querySelector('.fm-close'); // 新增
+    
     // 状态管理
     let isOpen = false;
     let activeSubmenu = null;
@@ -30,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let allMenuData = {};
     let searchTimeout;
     let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
+    
     // 初始化空闲计时器
     const initializeTimer = () => {
         if (!initialized) {
@@ -40,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, IDLE_TIMEOUT);
         }
     };
-
+    
     // 重置空闲计时器
     const resetIdleTimer = () => {
         clearTimeout(idleTimer);
@@ -49,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!isOpen) menu.classList.add('fm-idle');
         }, IDLE_TIMEOUT);
     };
-
+    
     // 关闭所有二级菜单
     const closeAllSubmenus = () => {
         if (activeSubmenu) {
@@ -58,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             activeSubmenu = null;
         }
     };
-
+    
     // 加载菜单数据（仅用于显示搜索建议）
     const loadMenuData = async () => {
         try {
@@ -99,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return allMenuData;
         }
     };
-
+    
     // 渲染菜单项
     const renderMenuItems = (menuData) => {
         menuItemsContainer.innerHTML = '';
@@ -122,7 +124,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 menuItemsContainer.appendChild(item);
                 return;
             }
-
             const container = document.createElement('div');
             const header = document.createElement('div');
             header.className = 'fm-item fm-has-submenu';
@@ -175,14 +176,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             menuItemsContainer.appendChild(container);
         });
     };
-
+    
     // 简单模糊匹配（仅用于显示搜索建议）
     const fuzzySearch = (items, keyword) => {
         if (!keyword) return [];
         const lowerKeyword = keyword.toLowerCase();
         return items.filter(([name]) => name.toLowerCase().includes(lowerKeyword));
     };
-
+    
     // 显示搜索建议（点击后跳转到search.html）
     const showSuggestions = (items) => {
         suggestionsContainer.innerHTML = '';
@@ -212,7 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const handleClick = (e) => {
                 e.stopPropagation();
-                // 点击建议项跳转到search.html
                 window.location.href = `/search.html?q=${encodeURIComponent(name)}`;
             };
             
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         suggestionsContainer.style.display = 'block';
     };
-
+    
     // 处理搜索输入
     const handleSearchInput = function() {
         resetIdleTimer();
@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             showSuggestions(matchedItems);
         }, isMobile ? 500 : 300);
     };
-
     menuSearch.addEventListener('input', handleSearchInput);
     
     // 移动设备上添加额外的触摸事件
@@ -268,18 +267,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             isOpen = true;
         });
     }
-
     // 处理回车键（跳转到search.html）
     menuSearch.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             const keyword = this.value.trim();
             if (!keyword) return;
             
-            // 直接跳转到search.html
             window.location.href = `/search.html?q=${encodeURIComponent(keyword)}`;
         }
     });
-
     // 点击外部关闭建议框
     const handleOutsideClick = (e) => {
         if (!menuSearch.contains(e.target) && !suggestionsContainer.contains(e.target)) {
@@ -289,45 +285,75 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     document.addEventListener('click', handleOutsideClick);
     document.addEventListener('touchend', handleOutsideClick, {passive: true});
-
-    // 菜单交互
-    const toggleMenu = (e) => {
-        if (e) e.stopPropagation();
+    
+    // 菜单交互（修改按钮显示逻辑，修复事件冒泡）
+    const toggleMenu = () => {
         resetIdleTimer();
         isOpen = !isOpen;
         menu.classList.toggle('fm-active', isOpen);
-        if (!isOpen) {
+        
+        // 切换汉堡菜单和X按钮的显示
+        const hamburger = document.querySelector('.fm-hamburger');
+        if (isOpen) {
+            hamburger.style.display = 'none';
+            closeButton.style.display = 'block';
+        } else {
+            hamburger.style.display = 'block';
+            closeButton.style.display = 'none';
             closeAllSubmenus();
             menuSearch.blur();
             suggestionsContainer.style.display = 'none';
         }
     };
     
-    toggle.addEventListener('click', toggleMenu);
-    toggle.addEventListener('touchend', toggleMenu, {passive: true});
+    // 汉堡菜单点击事件（绑定到toggle容器）
+    toggle.addEventListener('click', (e) => {
+        if (e.target === toggle || e.target.classList.contains('fm-hamburger')) {
+            e.stopPropagation();
+            toggleMenu();
+        }
+    });
+    toggle.addEventListener('touchend', (e) => {
+        if (e.target === toggle || e.target.classList.contains('fm-hamburger')) {
+            e.stopPropagation();
+            toggleMenu();
+        }
+    }, {passive: true});
     
-    // 分级关闭菜单
+    // X按钮点击事件（单独绑定，阻止冒泡）
+    closeButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleMenu();
+    });
+    closeButton.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        toggleMenu();
+    }, {passive: true});
+    
+    // 关闭菜单逻辑
     const closeMenu = (e) => {
         if (activeSubmenu) {
             const submenuHeader = activeSubmenu.previousElementSibling;
             if (activeSubmenu.contains(e.target) || (submenuHeader && submenuHeader.contains(e.target))) {
                 return;
             }
-
             activeSubmenu.classList.remove('show');
             if (submenuHeader) submenuHeader.classList.remove('open');
             activeSubmenu = null;
             return;
         }
-
         if (menu.contains(e.target)) return;
-
         if (isOpen) {
             isOpen = false;
             menu.classList.remove('fm-active');
             closeAllSubmenus();
             menuSearch.blur();
             suggestionsContainer.style.display = 'none';
+            
+            // 收起时隐藏X按钮，显示汉堡菜单
+            const hamburger = document.querySelector('.fm-hamburger');
+            hamburger.style.display = 'block';
+            closeButton.style.display = 'none';
         }
     };
     
@@ -343,7 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     events.forEach(event => {
         document.addEventListener(event, handleUserActivity);
     });
-
+    
     // 初始化菜单
     const menuData = await loadMenuData();
     renderMenuItems(menuData);
