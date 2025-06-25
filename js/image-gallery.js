@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 更多按钮事件
   moreBtn.addEventListener('click', () => {
-    window.open('/pages/gallery.html', '_blank');
-  });
+  window.location.href = '/pages/gallery.html';
+});
 
   // 图片点击事件
   gallery.addEventListener('click', (e) => {
