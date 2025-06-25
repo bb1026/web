@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+  // 配置参数
+  const CONFIG = {
+    visibleCount: 8, // 显示的数量
+    totalImages: 20, // 总图片数量
+    baseUrl: 'https://www.0515364.xyz/imgs/',
+    formats: ['webp', 'avif', 'jpg', 'png', 'jpeg', 'gif'], // 图片格式
+    scrollSpeed: 3, // 滚动速度(秒/图片)
+	  gap: 15 // 图片间距
+  };
+
   // 容器元素
   const container = document.getElementById('imageGalleryContainer');
   if (!container) return;
@@ -13,30 +24,23 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="loading-overlay" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); z-index: 10; justify-content: center; align-items: center; flex-direction: column;">
         <div style="font-size: 16px; color: #333;">正在加载图片...</div>
       </div>
-      <div style="width: 100%; overflow-x: auto; overflow-y: hidden; padding: 10px 0; -webkit-overflow-scrolling: touch;">
-        <div id="mainGallery" style="display: flex; position: relative; left: 0; gap: 20px; will-change: transform;"></div>
+      <div id="galleryWrapper" style="width: 100%; overflow-x: hidden; padding: 10px 0;">
+        <div id="mainGallery" style="display: flex; position: relative; left: 0; gap: ${CONFIG.gap}px; will-change: transform;"></div>
       </div>
     </div>
   `;
 
   // 获取关键元素
   const gallery = document.getElementById('mainGallery');
+  const galleryWrapper = document.getElementById('galleryWrapper');
   const refreshBtn = document.getElementById('refreshBtn');
   const moreBtn = document.getElementById('moreBtn');
   const loadingOverlay = document.querySelector('.loading-overlay');
 
-  // 配置参数
-  const CONFIG = {
-    visibleCount: 5,
-    totalImages: 20,
-    baseUrl: '/imgs/',
-    formats: ['webp', 'jpg', 'png', 'jpeg']
-  };
-
   // 更多按钮事件
   moreBtn.addEventListener('click', () => {
-  window.location.href = '/pages/gallery.html';
-});
+    window.open('/pages/gallery.html', '_blank');
+  });
 
   // 图片点击事件
   gallery.addEventListener('click', (e) => {
@@ -114,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function setupAnimation() {
     // 移除现有动画
     gallery.style.animation = 'none';
+    gallery.style.transform = 'translateX(0)';
     void gallery.offsetWidth;
 
     const items = gallery.querySelectorAll('.gallery-item');
@@ -121,20 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 计算参数
     const itemWidth = window.innerWidth <= 768 ? 150 : 200;
-    const gap = 20;
-    const totalWidth = (itemWidth + gap) * items.length * 2;
-
-    // 清除旧克隆
-    document.querySelectorAll('.image-clone').forEach(el => el.remove());
-
-    // 创建克隆元素
-    for (let i = 0; i < 3; i++) {
-      items.forEach(item => {
-        const clone = item.cloneNode(true);
-        clone.classList.add('image-clone');
-        gallery.appendChild(clone);
-      });
-    }
+    const moveDistance = itemWidth + CONFIG.gap;
 
     // 添加动画样式
     const style = document.createElement('style');
@@ -142,9 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
     style.textContent = `
       @keyframes marqueeAnimation {
         0% { transform: translateX(0); }
-        100% { transform: translateX(-${totalWidth/2}px); }
+        100% { transform: translateX(-${moveDistance}px); }
       }
-      .image-gallery:hover { animation-play-state: paused; }
       .gallery-item:hover img { transform: scale(1.02); }
       #refreshBtn:hover { background: #3e8e41 !important; }
       #moreBtn:hover { background: #0d8bf2 !important; }
@@ -158,11 +149,61 @@ document.addEventListener('DOMContentLoaded', function() {
     if (oldStyle) oldStyle.remove();
     document.head.appendChild(style);
 
-    // 应用动画
-    gallery.style.animation = `marqueeAnimation ${totalWidth/50}s linear infinite`;
-    gallery.addEventListener('animationiteration', () => {
+    // 使用requestAnimationFrame实现平滑过渡
+    let animationId;
+    let startTime;
+    const duration = CONFIG.scrollSpeed * 1000; // 转换为毫秒
+
+    function animate(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const progress = (timestamp - startTime) / duration;
+      
+      if (progress >= 1) {
+        // 动画完成，移动第一个元素到末尾
+        const firstItem = gallery.firstElementChild;
+        if (firstItem) {
+          gallery.appendChild(firstItem);
+          gallery.style.transform = 'translateX(0)';
+          startTime = timestamp; // 重置开始时间
+        }
+      } else {
+        // 继续动画
+        gallery.style.transform = `translateX(-${moveDistance * progress}px)`;
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function startAnimation() {
+      cancelAnimationFrame(animationId);
       gallery.style.transform = 'translateX(0)';
+      startTime = null;
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // 鼠标悬停暂停
+    galleryWrapper.addEventListener('mouseenter', () => {
+      cancelAnimationFrame(animationId);
     });
+
+    galleryWrapper.addEventListener('mouseleave', startAnimation);
+
+    // 开始动画
+    startAnimation();
+
+    // 窗口大小改变时重新开始动画
+    const resizeHandler = () => {
+      startAnimation();
+    };
+    window.addEventListener('resize', resizeHandler);
+
+    // 清理函数
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', resizeHandler);
+      galleryWrapper.removeEventListener('mouseenter', () => {});
+      galleryWrapper.removeEventListener('mouseleave', startAnimation);
+    };
   }
 
   // 图片存在检测
@@ -187,8 +228,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // 事件监听
-  refreshBtn.addEventListener('click', loadImages);
-  window.addEventListener('resize', setupAnimation);
+  refreshBtn.addEventListener('click', () => {
+    const cleanup = setupAnimation(); // 获取清理函数
+    if (cleanup) cleanup(); // 清理旧动画
+    loadImages();
+  });
+  window.addEventListener('resize', () => {
+    const cleanup = setupAnimation(); // 获取清理函数
+    if (cleanup) cleanup(); // 清理旧动画
+  });
 
   // 初始加载
   loadImages();
