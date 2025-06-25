@@ -250,10 +250,15 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/floating-menu.css">
 </head>
 <body>
   <div class="container">
     <h1>图片 ↔ Base64 转换工具</h1>
+    
+    <!-- 球形菜单挂载点 -->
+    <div id="fm-container"></div>
 
     <div class="card">
       <h2>图片转 Base64</h2>
@@ -478,5 +483,7 @@
       document.getElementById('outputImage').style.display === 'block' ? 'flex' : 'none';
   }
 </script>
+<script src="/js/floating-menu.js"></script>
+<script src="/js/main-header-notice-footer.js"></script>
 </body>
 </html>
