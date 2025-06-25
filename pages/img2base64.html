@@ -202,16 +202,47 @@
       background: rgba(0, 0, 0, 0.8);
       transform: scale(1.1);
     }
-
-    .code-block {
-        font-family: Consolas, "Courier New", monospace;
-        font-size: 14px;
-        background-color: #f5f5f5;
-        padding: 10px 10px;
+      .code-block-container {
+        position: relative;
+        margin-top: 20px;
         border-radius: 6px;
+        background-color: #f5f5f5;
         border: 1px solid #ddd;
+      }
+
+      .code-block {
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 16px;
+        line-height: 1.6;
+        padding: 20px;
         color: #333;
         overflow-x: auto;
+        min-height: 80px;
+        max-height: 300px;
+        margin: 0;
+      }
+
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+      .copy-btn:hover {
+        background: var(--secondary-color);
+        transform: scale(1.05);
       }
 
     @media (max-width: 768px) {
@@ -230,7 +261,17 @@
       .btn {
         padding: 10px 20px;
       }
-    }
+      
+      .code-block {
+        padding-top: 20px;
+        font-size: 15px;
+      }
+  
+      .copy-btn {
+        top: 12px;
+        right: 12px;
+        }
+      }
 
     @media (max-width: 480px) {
       body {
@@ -248,6 +289,17 @@
       .drag-area .text {
         font-size: 1rem;
       }
+      
+        .code-block {
+    font-size: 14px;
+    min-height: 70px;
+  }
+  
+  .copy-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
     }
   </style>
   <link rel="stylesheet" href="/css/style.css">
@@ -272,9 +324,11 @@
       <textarea id="base64Output" placeholder="生成的 Base64 编码将显示在这里..." readonly></textarea>
       <button class="btn btn-block" onclick="copyBase64()">复制 Base64 编码</button>
 
-      <pre class="code-block">
-<p>使用方法：</p>
-&lt;img src="替换此处data:image/png;base64编码内容" alt="图片描述" /&gt;
+      <pre class="code-block-container">
+  <div class="code-block" id="usageExample">
+    &lt;img src="替换此处data:image/png;base64编码内容" alt="图片描述" /&gt;
+  </div>
+  <button class="copy-btn" onclick="copyUsageExample()" title="复制代码">⎘</button>
 </pre>
 
       <div class="preview-container">
@@ -383,6 +437,15 @@
 
     navigator.clipboard.writeText(text)
       .then(() => showToast('Base64 编码已复制到剪贴板！'))
+      .catch(() => alert('复制失败，请手动复制文本'));
+  }
+  
+  function copyUsageExample() {
+    const codeBlock = document.getElementById('usageExample');
+    const codeText = codeBlock.textContent.trim();
+    
+    navigator.clipboard.writeText(codeText)
+      .then(() => showToast('使用示例已复制到剪贴板！'))
       .catch(() => alert('复制失败，请手动复制文本'));
   }
 
