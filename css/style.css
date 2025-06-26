@@ -10,11 +10,11 @@ html, body {
 }
 
 /* 中间内容容器必须设置 flex:1 占据中间区域 */
-main,
+/*main,
 .content,
 .search-page {
   flex: 1;
-}
+}*/
 
 .header {
   display: block;
@@ -151,7 +151,7 @@ main,
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 16px;
+  /*margin-top: 16px;*/
   order: 1;
 }
 
