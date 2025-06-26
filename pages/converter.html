@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>图片格式转换工具</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/converter.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="drop-zone" id="dropZone">
+      <p>拖放图片到此或点击选择</p>
+      <input type="file" id="fileInput" accept="image/*" multiple hidden />
+      <button class="btn btn-outline-primary" id="selectFilesBtn">选择图片</button>
+    </div>
+
+    <div class="mt-3 d-flex flex-wrap align-items-center" style="gap: 1rem;">
+      <span>格式:</span>
+      <div id="formatRadios" class="btn-group btn-group-sm">
+        <input type="radio" class="btn-check" name="format" id="webp" value="webp" checked>
+        <label class="btn btn-outline-primary" for="webp">WebP</label>
+        <input type="radio" class="btn-check" name="format" id="jpeg" value="jpeg">
+        <label class="btn btn-outline-primary" for="jpeg">JPG</label>
+        <input type="radio" class="btn-check" name="format" id="png" value="png">
+        <label class="btn btn-outline-primary" for="png">PNG</label>
+        <input type="radio" class="btn-check" name="format" id="avif" value="avif">
+        <label class="btn btn-outline-primary" for="avif">AVIF</label>
+        <input type="radio" class="btn-check" name="format" id="bmp" value="bmp">
+        <label class="btn btn-outline-primary" for="bmp">BMP</label>
+        <input type="radio" class="btn-check" name="format" id="svg" value="svg">
+        <label class="btn btn-outline-primary" for="svg">SVG</label>
+      </div>
+      <label for="qualityRange">图质量:</label>
+      <input type="range" id="qualityRange" min="1" max="100" value="80" style="width:250px;">
+      <span id="qualityValue">80%</span>
+    </div>
+
+    <div class="settings-group">
+      <div>
+        <label>批量重命名：</label>
+        <input type="text" class="form-control" id="renameInput" placeholder="前缀如 image">
+        <input type="number" class="form-control mt-1" id="renameStart" placeholder="起始数字，默认01" min="1">
+      </div>
+      <div>
+        <label>水印文字：</label>
+        <input type="text" class="form-control" id="watermarkText" placeholder="如：©2025">
+      </div>
+      <div>
+        <label>水印位置：</label>
+        <div id="positionRadios">
+          <div>上：
+            <label><input type="radio" name="position" value="left-top"> 左</label>
+            <label><input type="radio" name="position" value="center-top"> 中</label>
+            <label><input type="radio" name="position" value="right-top"> 右</label>
+          </div>
+          <div>中：
+            <label><input type="radio" name="position" value="left-center"> 左</label>
+            <label><input type="radio" name="position" value="center-center"> 中</label>
+            <label><input type="radio" name="position" value="right-center"> 右</label>
+          </div>
+          <div>下：
+            <label><input type="radio" name="position" value="left-bottom"> 左</label>
+            <label><input type="radio" name="position" value="center-bottom"> 中</label>
+            <label><input type="radio" name="position" value="right-bottom" checked> 右</label>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label>透明度:</label>
+        <input type="range" id="watermarkOpacity" min="0" max="100" value="50" style="width: 250px;"/>
+        <span id="watermarkOpacityValue">50%</span>
+      </div>
+    </div>
+
+    <div class="image-preview" id="imagePreview"></div>
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      <button class="btn btn-primary" id="convertAllBtn" disabled>全部转换</button>
+      <button class="btn btn-outline-primary" id="downloadSelectedBtn" disabled>选中下载 (ZIP)</button>
+      <button class="btn btn-outline-success" id="downloadAllBtn" disabled>全部下载 (ZIP)</button>
+    </div>
+    <img id="floatingPreview" class="hover-preview" />
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="/js/converter.js"></script>
+</body>
+</html>
