@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <a href="/pages/about.html" class="footer-link">使用条款</a>
     </footer>
 
-    <div style="display: flex; justify-content: center; align-items: center; height: 60px; font-size: 14px; color: #666; margin-top: 20px;">
+    <div style="display: flex; justify-content: center; align-items: center; height: 40px; font-size: 14px; color: #666; margin-top: 20px;">
   访问量：<span id="busuanzi_value_site_pv">加载中...</span> 次
 </div>
   `;
