@@ -1,19 +1,28 @@
 {
   "首页": "/",
   "小工具": [
+    ["密码生成", "/pages/password.html"],
+    ["IP查询", "/pages/ip.html"],
+    ["身份证号码查验", "/pages/idcheck.html"],
+    ["单位换算", "/pages/unit-conversion.html"],
+    ["色彩查询": "/pages/color.html"]
+  ],
+  "代码工具": [
     ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
     ["时间戳", "/pages/timestamp.html"],
-    ["64位编码解码", "/pages/encoder.html"],
-    ["密码生成", "/pages/password.html"],
-    ["二维码生成", "/pages/qrcode.html"],
-    ["条形码生成", "/pages/barcode.html"],
-    ["图像转Base64", "/pages/img2base64.html"],
-    ["字数统计", "/pages/word-counter.html"],
-    ["IP查询", "/pages/ip.html"],
     ["正则表达式", "/pages/regex.html"],
-    ["身份证号码查验", "/pages/idcheck.html"],
-    ["单位换算", "/pages/unit-conversion.html"]
+    ["64位编码解码", "/pages/encoder.html"]
   ],
+  "文字工具": [
+    ["字数统计", "/pages/word-counter.html"],
+  ],
+  "图片工具": [
+    ["图片格式转换": "/ pages/converter.html"],
+    ["图像转Base64", "/pages/img2base64.html"],
+    ["二维码生成", "/pages/qrcode.html"],
+    ["条形码生成", "/pages/barcode.html"]
+  ],
+  
   "小游戏": [
     ["单词消消乐", "https://bing.0515364.xyz/game1.html"],
     ["单词拼写", "https://bing.0515364.xyz/game2.html"],
@@ -22,6 +31,5 @@
     ["华容道", "https://bing.0515364.xyz/game5.html"],
     ["井字游戏", "/pages/xogame.html"]
   ],
-  "色彩查询": "/pages/color.html",
   "关于": "/pages/about.html"
 }
