@@ -1,0 +1,68 @@
+body {
+  background-color: #f5f7fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+}
+.drop-zone {
+  border: 2px dashed #adb5bd;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  background-color: white;
+  cursor: pointer;
+}
+.image-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.image-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem;
+}
+.image-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.image-size {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+.hover-preview {
+  display: none;
+  position: fixed;
+  width: 200px;
+  height: auto;
+  border: 1px solid #ccc;
+  z-index: 9999;
+  pointer-events: none;
+}
+.settings-group {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+.settings-group label {
+  margin-right: 0.5rem;
+}
+@media (max-width: 480px) {
+  .settings-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
