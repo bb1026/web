@@ -14,7 +14,7 @@
     ["64位编码解码", "/pages/encoder.html"]
   ],
   "文字工具": [
-    ["字数统计", "/pages/word-counter.html"],
+    ["字数统计", "/pages/word-counter.html"]
   ],
   "图片工具": [
     ["图片格式转换": "/ pages/converter.html"],
@@ -22,7 +22,6 @@
     ["二维码生成", "/pages/qrcode.html"],
     ["条形码生成", "/pages/barcode.html"]
   ],
-  
   "小游戏": [
     ["单词消消乐", "https://bing.0515364.xyz/game1.html"],
     ["单词拼写", "https://bing.0515364.xyz/game2.html"],
