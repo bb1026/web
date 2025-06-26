@@ -36,8 +36,26 @@
   <div id="menuContainer" class="container"></div>
 
   <!-- JavaScript -->
-  <script src="/js/floating-menu.js"></script>
-  <script src="/js/image-gallery.js"></script>
-<script src="/js/main-header-notice-footer.js"></script>
+  <script>
+  const scripts = [
+    '/js/floating-menu.js',
+    '/js/image-gallery.js',
+    '/js/main-header-notice-footer.js'
+  ];
+
+  (async () => {
+    for (const src of scripts) {
+      try {
+        const res = await fetch(src, { headers: { 'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' } });
+        const js = await res.text();
+        const s = document.createElement('script');
+        s.textContent = js;
+        document.head.appendChild(s);
+      } catch (e) {
+        console.error(`加载失败: ${src}`, e);
+      }
+    }
+  })();
+  </script>
 </body>
 </html>
