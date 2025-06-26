@@ -210,7 +210,11 @@
       // 数据加载
       const loadToolsData = async () => {
         try {
-          const response = await fetch('/json/menu.json');
+          const response = await fetch('/json/menu.json', {
+      headers: {
+        'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' 
+      }
+    });
           if (!response.ok) throw new Error('网络响应不正常');
           const data = await response.json();
           
