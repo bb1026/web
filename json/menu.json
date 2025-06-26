@@ -17,7 +17,7 @@
     ["字数统计", "/pages/word-counter.html"]
   ],
   "图片工具": [
-    ["图片格式转换", "/ pages/converter.html"],
+    ["图片格式转换", "/pages/converter.html"],
     ["图像转Base64", "/pages/img2base64.html"],
     ["二维码生成", "/pages/qrcode.html"],
     ["条形码生成", "/pages/barcode.html"]
