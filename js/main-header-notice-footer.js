@@ -149,7 +149,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 加载菜单数据
-  fetch('/json/menu.json')
+  fetch('/json/menu.json', {
+      headers: {
+        'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' 
+      }
+    })
     .then(response => response.json())
     .then(data => {
       allData = Object.entries(data).reduce((acc, [cat, items]) => {
