@@ -36,26 +36,30 @@
   <div id="menuContainer" class="container"></div>
 
   <!-- JavaScript -->
-  <script>
-  const scripts = [
-    '/js/floating-menu.js',
-    '/js/image-gallery.js',
-    '/js/main-header-notice-footer.js'
-  ];
+<script>
+const AUTH_KEY = 'tX3$9mGz@7vLq#F!b2R';
 
-  (async () => {
-    for (const src of scripts) {
-      try {
-        const res = await fetch(src, { headers: { 'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' } });
-        const js = await res.text();
-        const s = document.createElement('script');
-        s.textContent = js;
-        document.head.appendChild(s);
-      } catch (e) {
-        console.error(`加载失败: ${src}`, e);
-      }
-    }
-  })();
-  </script>
+async function loadJS(url) {
+  const res = await fetch(url, {
+    headers: { 'X-Auth-Key': AUTH_KEY }
+  });
+  if (!res.ok) throw new Error(`${url} 加载失败`);
+  const code = await res.text();
+  const s = document.createElement('script');
+  s.textContent = code;
+  document.head.appendChild(s);
+}
+
+// 加载完所有 JS 后手动触发 DOMContentLoaded
+(async () => {
+  await loadJS('/js/floating-menu.js');
+  await loadJS('/js/image-gallery.js');
+  await loadJS('/js/main-header-notice-footer.js');
+
+  // ✅ 触发监听器
+  const evt = new Event('DOMContentLoaded');
+  document.dispatchEvent(evt);
+})();
+</script>
 </body>
 </html>
