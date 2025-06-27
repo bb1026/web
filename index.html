@@ -50,13 +50,11 @@ async function loadJS(url) {
   document.head.appendChild(s);
 }
 
-// 加载完所有 JS 后手动触发 DOMContentLoaded
 (async () => {
   await loadJS('/js/floating-menu.js');
   await loadJS('/js/image-gallery.js');
   await loadJS('/js/main-header-notice-footer.js');
 
-  // ✅ 触发监听器
   const evt = new Event('DOMContentLoaded');
   document.dispatchEvent(evt);
 })();
