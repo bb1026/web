@@ -36,28 +36,32 @@
   <div id="menuContainer" class="container"></div>
 
   <!-- JavaScript -->
-<script>
-const AUTH_KEY = 'tX3$9mGz@7vLq#F!b2R';
+  <script>
+  const AUTH_KEY = 'tX3$9mGz@7vLq#F!b2R';
 
-async function loadJS(url) {
-  const res = await fetch(url, {
-    headers: { 'X-Auth-Key': AUTH_KEY }
-  });
-  if (!res.ok) throw new Error(`${url} 加载失败`);
-  const code = await res.text();
-  const s = document.createElement('script');
-  s.textContent = code;
-  document.head.appendChild(s);
-}
+  async function loadJS(url) {
+    const res = await fetch(url, {
+      headers: { 'X-Auth-Key': AUTH_KEY }
+    });
+    if (!res.ok) throw new Error(`${url} 加载失败`);
+    const code = await res.text();
+    const s = document.createElement('script');
+    s.textContent = code;
+    document.head.appendChild(s);
+  }
+  
+  (async () => {
+    const jsFiles = [
+      '/js/floating-menu.js',
+      '/js/image-gallery.js',
+      '/js/main-header-notice-footer.js'
+    ];
 
-(async () => {
-  await loadJS('/js/floating-menu.js');
-  await loadJS('/js/image-gallery.js');
-  await loadJS('/js/main-header-notice-footer.js');
+    await Promise.all(jsFiles.map(loadJS));
 
-  const evt = new Event('DOMContentLoaded');
-  document.dispatchEvent(evt);
-})();
-</script>
+    const evt = new Event('DOMContentLoaded');
+    document.dispatchEvent(evt);
+  })();
+  </script>
 </body>
 </html>
