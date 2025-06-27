@@ -1,13 +1,16 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // 动画控制变量
+  let currentAnimationId = null;
+  let cleanupAnimation = null;
 
   // 配置参数
   const CONFIG = {
     visibleCount: 8, // 显示的数量
     totalImages: 20, // 总图片数量
-    baseUrl: '/imgs/', // 图片路径
+    baseUrl: '/imgs/',
     formats: ['webp', 'avif', 'jpg', 'png', 'jpeg', 'gif'], // 图片格式
     scrollSpeed: 3, // 滚动速度(秒/图片)
-	  gap: 15 // 图片间距
+    gap: 15 // 图片间距
   };
 
   // 容器元素
@@ -52,6 +55,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 加载图片函数
   async function loadImages() {
+    // 停止当前动画
+    if (currentAnimationId) {
+      cancelAnimationFrame(currentAnimationId);
+      currentAnimationId = null;
+    }
+    if (cleanupAnimation) {
+      cleanupAnimation();
+      cleanupAnimation = null;
+    }
+
     loadingOverlay.style.display = 'flex';
     refreshBtn.disabled = true;
     refreshBtn.style.opacity = '0.6';
@@ -108,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
       gallery.appendChild(item);
     }));
 
-    setupAnimation();
+    cleanupAnimation = setupAnimation();
     refreshBtn.disabled = false;
     refreshBtn.style.opacity = '1';
     loadingOverlay.style.display = 'none';
@@ -150,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 
     // 使用requestAnimationFrame实现平滑过渡
-    let animationId;
     let startTime;
     const duration = CONFIG.scrollSpeed * 1000; // 转换为毫秒
 
@@ -171,19 +183,20 @@ document.addEventListener('DOMContentLoaded', function() {
         gallery.style.transform = `translateX(-${moveDistance * progress}px)`;
       }
       
-      animationId = requestAnimationFrame(animate);
+      currentAnimationId = requestAnimationFrame(animate);
     }
 
     function startAnimation() {
-      cancelAnimationFrame(animationId);
+      cancelAnimationFrame(currentAnimationId);
       gallery.style.transform = 'translateX(0)';
       startTime = null;
-      animationId = requestAnimationFrame(animate);
+      currentAnimationId = requestAnimationFrame(animate);
     }
 
     // 鼠标悬停暂停
     galleryWrapper.addEventListener('mouseenter', () => {
-      cancelAnimationFrame(animationId);
+      cancelAnimationFrame(currentAnimationId);
+      currentAnimationId = null;
     });
 
     galleryWrapper.addEventListener('mouseleave', startAnimation);
@@ -199,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 清理函数
     return () => {
-      cancelAnimationFrame(animationId);
+      cancelAnimationFrame(currentAnimationId);
+      currentAnimationId = null;
       window.removeEventListener('resize', resizeHandler);
       galleryWrapper.removeEventListener('mouseenter', () => {});
       galleryWrapper.removeEventListener('mouseleave', startAnimation);
@@ -229,13 +243,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 事件监听
   refreshBtn.addEventListener('click', () => {
-    const cleanup = setupAnimation(); // 获取清理函数
-    if (cleanup) cleanup(); // 清理旧动画
+    if (cleanupAnimation) cleanupAnimation();
     loadImages();
   });
+
   window.addEventListener('resize', () => {
-    const cleanup = setupAnimation(); // 获取清理函数
-    if (cleanup) cleanup(); // 清理旧动画
+    if (cleanupAnimation) cleanupAnimation();
+    cleanupAnimation = setupAnimation();
   });
 
   // 初始加载
