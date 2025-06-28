@@ -180,29 +180,10 @@
       document.getElementById('wechatQr').style.display = 'none';
     }
   </script>
-
-  <!-- JavaScript -->
-<script>
-const AUTH_KEY = 'tX3$9mGz@7vLq#F!b2R';
-
-async function loadJS(url) {
-  const res = await fetch(url, {
-    headers: { 'X-Auth-Key': AUTH_KEY }
-  });
-  if (!res.ok) throw new Error(`${url} 加载失败`);
-  const code = await res.text();
-  const s = document.createElement('script');
-  s.textContent = code;
-  document.head.appendChild(s);
-}
-
-(async () => {
-  await loadJS('/js/floating-menu.js');
-  await loadJS('/js/main-header-notice-footer.js');
-
-  const evt = new Event('DOMContentLoaded');
-  document.dispatchEvent(evt);
-})();
-</script>
+  
+  <!-- 加载js脚本 -->
+  <script src="/js/floating-menu.js" defer></script>
+  <script src="/js/main-header-notice-footer.js"></script>
+  
 </body>
 </html>
