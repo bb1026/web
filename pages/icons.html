@@ -70,7 +70,11 @@
 
   async function fetchIcons() {
     try {
-      const res = await fetch("https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/metadata/icons.json");
+      const res = await fetch("/json/icons.json", {
+        headers: {
+          'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' 
+        }
+      });
       const data = await res.json();
 
       allIcons = Object.entries(data)
