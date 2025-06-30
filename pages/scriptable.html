@@ -154,6 +154,71 @@
     .modal-install:hover {
       background: #2563eb;
     }
+
+    /* New styles for the install modal */
+    .install-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(40, 40, 40, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .install-btn {
+      width: 80%;
+      max-width: 300px;
+      padding: 15px 20px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .install-btn i {
+      margin-bottom: 8px;
+      font-size: 1.5rem;
+    }
+
+    .install-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .install-btn-primary {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+
+    .install-btn-secondary {
+      background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+      color: #333;
+    }
+
+    .install-btn-close {
+      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+      color: white;
+    }
+
+    .install-tip {
+      font-size: 0.85rem;
+      color: white;
+      margin-top: 5px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -171,6 +236,24 @@
         <i class="fa-solid fa-plus-circle"></i> 安装
       </button>
     </div>
+  </div>
+
+  <!-- New install modal -->
+  <div id="installModal" class="install-modal" style="display:none;">
+    <button class="install-btn install-btn-primary" id="addLibraryBtn">
+      <i class="fa-solid fa-book"></i>
+      添加库文件
+      <span class="install-tip">未添加库文件请先添加此文件</span>
+    </button>
+    <button class="install-btn install-btn-secondary" id="addScriptBtn">
+      <i class="fa-solid fa-file-code"></i>
+      添加脚本文件
+      <span class="install-tip">已添加库文件请直接运行</span>
+    </button>
+    <button class="install-btn install-btn-close" id="closeInstallModalBtn">
+      <i class="fa-solid fa-times"></i>
+      关闭
+    </button>
   </div>
 
   <script>
@@ -214,7 +297,7 @@
               <div><strong>版本:</strong> ${tool.version}</div>
               <div class="tool-intro"><strong>简介：</strong>${tool.introduction || ""}</div>
             </div>
-            <div class="add-btn" onclick="event.stopPropagation(); if(confirm('是否安装「${tool.name}」？')) installScript('${tool.url}');">
+            <div class="add-btn" onclick="event.stopPropagation(); showInstallModal('${tool.ID}')">
               <i class="fa-solid fa-plus-circle"></i>安装
             </div>
           `;
@@ -259,7 +342,7 @@
 
     document.getElementById("modalInstallBtn").onclick = () => {
       if (currentTool) {
-        installScript(currentTool.url);
+        showInstallModal(currentTool.ID);
         closeModal();
       }
     };
@@ -269,6 +352,37 @@
       const fullUrl = base + jsPath;
       const encoded = encodeURIComponent(fullUrl);
       window.location.href = `scriptable:///open?url=${encoded}`;
+    }
+
+    // New functions for install modal
+    function showInstallModal(scriptId) {
+      document.getElementById("installModal").style.display = "flex";
+      document.getElementById("addScriptBtn").onclick = () => {
+        copyToClipboard(`"ID": "${scriptId}"`);
+        window.location.href = "scriptable:///run/Ku";
+      };
+    }
+
+    function closeInstallModal() {
+      document.getElementById("installModal").style.display = "none";
+    }
+
+    document.getElementById("closeInstallModalBtn").onclick = closeInstallModal;
+
+    document.getElementById("addLibraryBtn").onclick = () => {
+      const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\nconst data = await obtain.loadString();\neval(await obtain.loadString());\nawait Script.Installer();`;
+      copyToClipboard(libraryCode);
+      window.location.href = "scriptable:///add";
+    };
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      alert("已复制到剪贴板");
     }
 
     loadTools();
