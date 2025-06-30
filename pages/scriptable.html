@@ -272,7 +272,11 @@
       const toolUrl = "http://bing.0515364.xyz/js/Master.json";
 
       try {
-        const res = await fetch(toolUrl);
+        const res = await fetch(toolUrl, {
+      headers: {
+        'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' 
+      }
+    });
         const tools = await res.json();
         const container = document.getElementById("tool-list");
         container.innerHTML = "";
