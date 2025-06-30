@@ -347,13 +347,6 @@
       }
     };
 
-    function installScript(jsPath) {
-      const base = "https://bing.0515364.xyx/";
-      const fullUrl = base + jsPath;
-      const encoded = encodeURIComponent(fullUrl);
-      window.location.href = `scriptable:///open?url=${encoded}`;
-    }
-
     // New functions for install modal
     function showInstallModal(scriptId) {
       document.getElementById("installModal").style.display = "flex";
@@ -370,7 +363,7 @@
     document.getElementById("closeInstallModalBtn").onclick = closeInstallModal;
 
     document.getElementById("addLibraryBtn").onclick = () => {
-      const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\nconst data = await obtain.loadString();\neval(await obtain.loadString());\nawait Script.Installer();`;
+      const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\neval(await obtain.loadString());\nawait Script.Installer();`;
       copyToClipboard(libraryCode);
       window.location.href = "scriptable:///add";
     };
