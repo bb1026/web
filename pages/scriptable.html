@@ -269,7 +269,7 @@
     let currentTool = null;
 
     async function loadTools() {
-      const toolUrl = "https://raw.githubusercontent.com/bb1026/bing/refs/heads/main/js/Master.json";
+      const toolUrl = "http://bing.0515364.xyz/js/Master.json";
 
       try {
         const res = await fetch(toolUrl);
@@ -320,8 +320,8 @@
       document.getElementById("modalClose").style.color = closeColor;
 
       function mark(val) {
-        return val ? "✔" : "×";
-      }
+  return val ? '<i class="fa-solid fa-check" style="color: #4ade80;"></i>' : '<i class="fa-solid fa-times" style="color: #f87171;"></i>';
+}
 
       document.getElementById("modalContent").innerHTML = `
         <div class="modal-field"><b>版本：</b>${tool.version}</div>
@@ -330,7 +330,7 @@
         <div class="modal-field"><b>ID：</b>${tool.ID}</div>
         <div class="modal-field"><b>argsID：</b>${tool.argsID}</div>
         <div class="modal-field"><b>更新内容：</b>${tool.update || "无"}</div>
-        <div class="modal-field"><b>组件支持：</b>大${mark(tool.large)} 中${mark(tool.medium)} 小${mark(tool.small)}</div>
+        <div class="modal-field"><b>组件支持：</b>大 ${mark(tool.large)} 中 ${mark(tool.medium)} 小 ${mark(tool.small)}</div>
       `;
     }
 
@@ -348,7 +348,7 @@
     };
 
     function installScript(jsPath) {
-      const base = "https://raw.githubusercontent.com/bb1026/bing/refs/heads/main/";
+      const base = "https://bing.0515364.xyx/";
       const fullUrl = base + jsPath;
       const encoded = encodeURIComponent(fullUrl);
       window.location.href = `scriptable:///open?url=${encoded}`;
