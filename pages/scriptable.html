@@ -347,12 +347,16 @@
       }
     };
 
-    // New functions for install modal
     function showInstallModal(scriptId) {
       document.getElementById("installModal").style.display = "flex";
-      document.getElementById("addScriptBtn").onclick = () => {
-        await navigator.clipboard.writeText(scriptId);
-        window.location.href = "scriptable:///run/Ku";
+      document.getElementById("addScriptBtn").onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(scriptId);
+          window.location.href = "scriptable:///run/Ku";
+        } catch (err) {
+          console.error("复制失败:", err);
+          alert("复制失败:", err);
+        }
       };
     }
 
@@ -362,21 +366,16 @@
 
     document.getElementById("closeInstallModalBtn").onclick = closeInstallModal;
 
-    document.getElementById("addLibraryBtn").onclick = () => {
-      const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\neval(await obtain.loadString());\nawait Script.Installer();`;
-      await navigator.clipboard.writeText(libraryCode);
-      window.location.href = "scriptable:///add";
+    document.getElementById("addLibraryBtn").onclick = async () => {
+      try {
+        const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\neval(await obtain.loadString());\nawait Script.Installer();`;
+        await navigator.clipboard.writeText(libraryCode);
+        window.location.href = "scriptable:///add";
+      } catch (err) {
+        console.error("复制失败:", err);
+        alert("复制失败:", err);
+      }
     };
-
-    function copyToClipboard(text) {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      alert("已复制到剪贴板");
-    }
 
     loadTools();
   </script>
