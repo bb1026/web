@@ -4,9 +4,8 @@
   <meta charset="UTF-8">
   <title>Font Awesome 图标选择器</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Font Awesome 图标库 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/floating-menu.css">
+  <link rel="stylesheet" href="/css/floating-menu.css">
   <link rel="stylesheet" href="/css/style.css">
   <style>
     body {
@@ -76,7 +75,7 @@
     }
     .icon-box i {
       font-size: 24px;
-      transition: color 0.4s ease; /* 淡入动画 */
+      transition: color 0.4s ease;
     }
     .icon-name {
       font-size: 12px;
@@ -89,7 +88,6 @@
       font-size: 14px;
       text-align: center;
     }
-
     #topBtn {
       position: fixed;
       bottom: 30px;
@@ -112,8 +110,6 @@
       transition: color 0.3s ease;
       filter: brightness(1.3);
     }
-
-    /* yin-yang 按钮样式 */
     #randomColorBtn {
       position: fixed;
       top: 20px;
@@ -132,14 +128,64 @@
       transform: rotate(90deg);
       color: #000;
     }
-
-    /* 旋转动画类 */
     .rotate {
       animation: rotateOnce 0.6s ease;
     }
     @keyframes rotateOnce {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
+    }
+    .copy-notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      max-width: 300px;
+      border: 1px solid #eee;
+    }
+    .copy-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .copy-notification i {
+      font-size: 28px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    .copy-content {
+      flex-grow: 1;
+    }
+    .copy-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #333;
+    }
+    .copy-text {
+      font-size: 14px;
+      color: #666;
+      word-break: break-all;
+    }
+    .copy-close {
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 12px;
+      padding: 0;
+      line-height: 1;
+    }
+    .copy-close:hover {
+      color: #666;
     }
   </style>
 </head>
@@ -148,8 +194,7 @@
 <h2>Font Awesome 图标选择器</h2>
 <div class="status" id="status">正在加载图标，请稍候...</div>
 
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
+<div id="fm-container"></div>
 
 <div class="search-wrapper">
   <input type="text" id="iconSearch" placeholder="搜索图标名称，例如：rocket / code / file">
@@ -160,24 +205,32 @@
 
 <div class="icon-grid" id="iconGrid"></div>
 
-<!-- 返回顶部按钮 -->
 <button id="topBtn" title="返回顶部">
   <i class="fas fa-arrow-alt-circle-up"></i>
 </button>
 
-<!-- 随机变色按钮 -->
 <button id="randomColorBtn" title="随机更换所有图标颜色">
   <i class="fas fa-yin-yang"></i>
 </button>
 
+<div id="copyNotification" class="copy-notification">
+  <i id="copyIcon" class="fas"></i>
+  <div class="copy-content">
+    <div class="copy-title">已复制图标</div>
+    <div class="copy-text" id="copyText"></div>
+  </div>
+  <button class="copy-close" id="copyCloseBtn">
+    <i class="fas fa-times"></i>
+  </button>
+</div>
+
 <script>
   let allIcons = [];
+  let notificationTimer = null;
 
   async function fetchIcons() {
     try {
-      const res = await fetch('/json/icons.json', {
-        headers: { 'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' }
-      });
+      const res = await fetch('/json/icons.json');
       const data = await res.json();
 
       allIcons = Object.entries(data)
@@ -202,8 +255,30 @@
         <div class="icon-name">${name}</div>
       `;
       div.onclick = () => {
-        navigator.clipboard.writeText(name);
-        alert(`已复制 icon-glyph: "${name}"`);
+        const fullIconName = `fa-${name}`;
+        navigator.clipboard.writeText(fullIconName);
+        
+        const notification = document.getElementById("copyNotification");
+        const copyIcon = document.getElementById("copyIcon");
+        const copyText = document.getElementById("copyText");
+        
+        copyIcon.className = `fas fa-${name}`;
+        copyIcon.style.color = getRandomColor();
+        copyText.textContent = fullIconName;
+        
+        notification.classList.remove("show");
+        
+                requestAnimationFrame(() => {
+          notification.classList.add("show");
+          
+          if (notificationTimer) {
+            clearTimeout(notificationTimer);
+          }
+          
+          notificationTimer = setTimeout(() => {
+            notification.classList.remove("show");
+          }, 5000);
+        });
       };
       grid.appendChild(div);
     });
@@ -219,31 +294,56 @@
     if (clearIcon) {
       clearIcon.style.color = getRandomColor();
     }
-	const yinYangIcon = document.querySelector("#randomColorBtn i");
+    const yinYangIcon = document.querySelector("#randomColorBtn i");
     if (yinYangIcon) yinYangIcon.style.color = getRandomColor();
+    
+    document.getElementById("copyCloseBtn").addEventListener("click", () => {
+      document.getElementById("copyNotification").classList.remove("show");
+  if (notificationTimer) {
+        clearTimeout(notificationTimer);
+      }
+    });
   });
 
   const searchInput = document.getElementById("iconSearch");
   const clearBtn = document.getElementById("clearBtn");
 
-  searchInput.addEventListener("input", () => {
-    const keyword = searchInput.value.toLowerCase();
+  searchInput.addEventListener("input", function() {
+    let keyword = this.value.toLowerCase();
+    
+    // 智能处理fa-前缀
+    if (keyword.startsWith("fa-")) {
+      keyword = keyword.substring(3);
+    }
+    
     const filtered = allIcons.filter(name => name.includes(keyword));
     renderIcons(filtered);
-    document.getElementById("status").textContent = `匹配 ${filtered.length} 个图标`;
-
-    clearBtn.style.display = keyword ? "inline" : "none";
-
-    const clearIcon = document.querySelector("#clearBtn i");
-    if (clearIcon) clearIcon.style.color = getRandomColor();
+    updateStatus(filtered.length, keyword);
+    
+    clearBtn.style.display = this.value ? "block" : "none";
   });
 
-  clearBtn.addEventListener("click", () => {
+  function updateStatus(matchCount, keyword) {
+    const statusEl = document.getElementById("status");
+    if (!searchInput.value) {
+      statusEl.textContent = `共加载 ${allIcons.length} 个图标`;
+    } else {
+      statusEl.textContent = matchCount === 0 
+        ? "没有找到匹配的图标" 
+        : `找到 ${matchCount} 个匹配图标${searchInput.value.startsWith("fa-") ? " (已自动过滤'fa-'前缀)" : ""}`;
+    }
+  }
+
+  clearBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
     searchInput.value = '';
+    searchInput.focus();
     clearBtn.style.display = "none";
     renderIcons(allIcons);
-    document.getElementById("status").textContent = `共加载 ${allIcons.length} 个图标`;
-    searchInput.focus();
+    updateStatus(allIcons.length);
+    
+    const clearIcon = document.querySelector("#clearBtn i");
+    if (clearIcon) clearIcon.style.color = getRandomColor();
   });
 
   const topBtn = document.getElementById("topBtn");
@@ -262,9 +362,7 @@
     }
   }
 
-  // ☯️ 随机颜色按钮点击逻辑
   document.getElementById("randomColorBtn").addEventListener("click", () => {
-    // 更换所有图标颜色
     document.querySelectorAll(".icon-box i").forEach(icon => {
       icon.style.color = getRandomColor();
     });
