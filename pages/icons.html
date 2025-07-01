@@ -101,6 +101,13 @@
       z-index: 999;
       padding: 6px 10px;
       transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+    #randomColorBtn:active,
+    #randomColorBtn:focus {
+      background: none;
+      outline: none;
     }
     #topBtn:hover {
       background: none;
@@ -126,7 +133,7 @@
     }
     #randomColorBtn:hover i {
       transform: rotate(90deg);
-      color: #000;
+      color: none;
     }
     .rotate {
       animation: rotateOnce 0.6s ease;
