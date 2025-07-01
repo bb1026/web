@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     headerContent.innerHTML = `
       <div class="header-content">
         <a href="/">
-          <img src="/imgs/apple-touch-icon.png" alt="Logo" class="logo">
+          <i class="fas fa-dragon logo" style="font-size: 2rem; color: #ff5722;"></i>
         </a>
         <div class="title-container">
           <a href="/">
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
   }
+});
 
   // ==================== 公告栏部分 ====================
   const noticeContainer = document.getElementById('noticeContainer');
