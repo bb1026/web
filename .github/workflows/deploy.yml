@@ -1,8 +1,8 @@
-name: Deploy to Cloudflare Worker
+name: Deploy Cloudflare Worker
 
 on:
   push:
-    branches: [main]  # 按需修改分支
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -10,8 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
+      - name: Install Wrangler v2
+        run: npm install -g wrangler@2
+
+      - name: Publish Worker
+        run: wrangler publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
