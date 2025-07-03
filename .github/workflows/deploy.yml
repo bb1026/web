@@ -1,0 +1,13 @@
+name: Deploy to Cloudflare Workers
+on: [push]  # 代码 push 到仓库时触发自动部署
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # 使用 GitHub 的 Linux 虚拟机环境
+    steps:
+      - uses: actions/checkout@v4  # 拉取你的代码到虚拟机
+
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3  # 使用 Wrangler 官方 Action
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}  # 引用刚刚存的 Token
