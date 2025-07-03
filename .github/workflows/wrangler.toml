@@ -1,12 +1,6 @@
-name = "access"  # Worker名称（必须与访问地址一致）
-main = "worker.js"  # 入口文件路径
-compatibility_date = "2025-07-03"  # 兼容性日期
+name = "access"
+main = "worker.js"
+compatibility_date = "2025-07-03"
 
-# 账户和路由配置
 [access]
-account_id = "4796a78c1804791b739f97bb336bab79"  # 必填（在Dashboard右下角获取）
-zone_id = "df09b3a563bde936907cc7c4a710f942"  # 仅绑定自定义域名时需填写
-
-# 如需绑定自定义域名（示例）
-[[routes]]
-pattern = "0515364.xyz/*"  # 你的域名
+account_id = "4796a78c1804791b739f97bb336bab79"
