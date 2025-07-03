@@ -11,3 +11,4 @@ jobs:
         uses: cloudflare/wrangler-action@v3  # 使用 Wrangler 官方 Action
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}  # 引用刚刚存的 Token
+    wranglerVersion: "3.22.1"  # 指定版本
