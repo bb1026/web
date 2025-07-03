@@ -1,6 +1,6 @@
 addEventListener("fetch", event => {
   event.respondWith(
-    new Response("Cloudflare Worker 已部署成功！", {
+    new Response("Hello from Cloudflare Worker!", {
       headers: { "content-type": "text/plain" },
     })
   );
