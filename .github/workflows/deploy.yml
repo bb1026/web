@@ -1,14 +1,21 @@
-name: Deploy to Cloudflare Workers
-on: [push]  # 代码 push 到仓库时触发自动部署
+name: Deploy to Cloudflare Worker
+
+on:
+  push:
+    branches: [main] # 监听 main 分支，按需改为你常用分支
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # 使用 GitHub 的 Linux 虚拟机环境
-    steps:
-      - uses: actions/checkout@v4  # 拉取你的代码到虚拟机
+    runs-on: ubuntu-latest
 
-      - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3  # 使用 Wrangler 官方 Action
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}  # 引用刚刚存的 Token
-    wranglerVersion: "3.22.1"  # 指定版本
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Wrangler CLI
+        run: npm install -g wrangler
+
+      - name: Publish Worker
+        run: wrangler publish
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
