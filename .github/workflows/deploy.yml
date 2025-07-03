@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Worker
 
 on:
   push:
-    branches: [main]
+    branches: [main]  # 按需修改分支
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: cloudflare/wrangler-action@2
+      - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
