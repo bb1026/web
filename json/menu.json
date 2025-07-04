@@ -31,6 +31,8 @@
     ["华容道", "https://bing.0515364.xyz/game5.html"],
     ["井字游戏", "/pages/xogame.html"]
   ],
-  "scriptable": "/pages/scriptable.html",
+  "Scriptable":[
+    ["Scriptable代码", "/pages/scriptable.html"]
+  ],
   "关于": "/pages/about.html"
 }
