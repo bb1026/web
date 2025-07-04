@@ -6,6 +6,61 @@
   <title>工具列表</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+      .dragon-icon {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 2rem;
+      color: #ff5722;
+      cursor: pointer;
+      z-index: 1000;
+      transition: transform 0.2s;
+      transform: scaleX(-1); /* 左右反转 */
+    }
+    
+    .dragon-icon:hover {
+      transform: scaleX(-1) scale(1.1);
+    }
+    
+    /* 迷你菜单样式 */
+    .mini-menu {
+      position: fixed;
+      top: 70px;
+      right: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: none;
+      overflow: hidden;
+    }
+    
+    .mini-menu a {
+      display: flex;
+      flex-direction: row-reverse; /* 反转菜单项布局 */
+      justify-content: space-between;
+      padding: 10px 15px;
+      text-decoration: none;
+      color: #333;
+      transition: background 0.2s;
+    }
+    
+    .mini-menu a:hover {
+      background: #f0f0f0;
+    }
+    
+    .mini-menu a i {
+      width: 20px;
+      text-align: center;
+      margin-left: 8px; /* 调整图标位置 */
+      margin-right: 0;
+    }
+    
+    .clear-library {
+      color: #ff0000 !important;
+      font-weight: bold;
+    }
+    
     body {
       margin: 0;
       padding: 1rem;
@@ -222,6 +277,17 @@
   </style>
 </head>
 <body>
+
+    <!-- 新增的悬浮龙图标和迷你菜单 -->
+  <div class="dragon-icon" id="dragonIcon">
+    <i class="fas fa-dragon"></i>
+  </div>
+  <div class="mini-menu" id="miniMenu">
+    <a href="#" id="homeLink"><i class="fas fa-home"></i>首页</a>
+    <a href="#" id="clearLibrary"><i class="fas fa-trash"></i><span class="clear-library">清除库文件</span></a>
+    <a href="#" id="backToTop"><i class="fas fa-arrow-alt-circle-up"></i>回到顶部</a>
+  </div>
+
   <div id="tool-list">加载中...</div>
 
   <div id="modal" class="modal" style="display:none;">
@@ -233,17 +299,16 @@
       </div>
       <div id="modalContent"></div>
       <button class="modal-install" id="modalInstallBtn">
-        <i class="fa-solid fa-plus-circle"></i> 安装
+        <i class="fa-solid fa-plus-circle"></i> 添加
       </button>
     </div>
   </div>
 
-  <!-- New install modal -->
   <div id="installModal" class="install-modal" style="display:none;">
     <button class="install-btn install-btn-primary" id="addLibraryBtn">
       <i class="fa-solid fa-book"></i>
       添加库文件
-      <span class="install-tip">未添加库文件请先添加此文件</span>
+      <span class="install-tip">首次使用请添加此文件(粘贴后运行)</span>
     </button>
     <button class="install-btn install-btn-secondary" id="addScriptBtn">
       <i class="fa-solid fa-file-code"></i>
@@ -257,6 +322,64 @@
   </div>
 
   <script>
+    // 统一的操作处理函数
+    function handleAction(content, redirectUrl = "scriptable:///run/master") {
+      copyToClipboard(content);
+      window.location.href = redirectUrl;
+    }
+
+    // 使用现有的 getRandomColorPair 函数设置龙图标颜色
+    function setRandomDragonColor() {
+      const dragonIcon = document.querySelector('.dragon-icon i');
+      const colors = getRandomColorPair();
+      dragonIcon.style.color = colors[0];
+    }
+    
+    // 页面加载时设置随机颜色
+    setRandomDragonColor();
+  
+    // 新增的龙图标和迷你菜单功能
+    const dragonIcon = document.getElementById('dragonIcon');
+    const miniMenu = document.getElementById('miniMenu');
+    const backToTop = document.getElementById('backToTop');
+    
+    // 点击龙图标切换菜单显示
+    dragonIcon.addEventListener('click', function(e) {
+      e.stopPropagation();
+      setRandomDragonColor();
+      miniMenu.style.display = miniMenu.style.display === 'block' ? 'none' : 'block';
+    });
+    
+    // 点击页面其他地方关闭菜单
+    document.addEventListener('click', function() {
+      miniMenu.style.display = 'none';
+    });
+    
+    // 阻止菜单内部点击事件冒泡
+    miniMenu.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    
+    // 首页链接处理
+    document.getElementById('homeLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleAction('SG9tZUxpbms');
+    });
+    
+    // 清除库文件功能
+    document.getElementById('clearLibrary').addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleAction('Q2xlYW5LdQ');
+    });
+    
+    // 回到顶部功能
+    backToTop.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+  
     function getRandomColorPair() {
       let bg, icon;
       do {
@@ -270,45 +393,53 @@
 
     async function loadTools() {
       const toolUrl = "https://bing.0515364.xyz/js/Master.json";
+  try {
+    const res = await fetch(toolUrl);
+    const tools = await res.json();
+    const container = document.getElementById("tool-list");
+    container.innerHTML = "";
 
-      try {
-        const res = await fetch(toolUrl);
-        const tools = await res.json();
-        const container = document.getElementById("tool-list");
-        container.innerHTML = "";
+    for (const key in tools) {
+      const tool = tools[key];
+      const iconClass = tool.icon ? `fa-solid fa-${tool.icon}` : "fa-solid fa-toolbox";
+      const [bgColor, iconColor] = getRandomColorPair();
 
-        for (const key in tools) {
-          const tool = tools[key];
-          const iconClass = tool.icon ? `fa-solid fa-${tool.icon}` : "fa-solid fa-toolbox";
-          const [bgColor, iconColor] = getRandomColorPair();
+      const box = document.createElement("div");
+      box.className = "tool-box";
+      box.style.backgroundColor = bgColor;
 
-          const box = document.createElement("div");
-          box.className = "tool-box";
-          box.style.backgroundColor = bgColor;
+      // 点击整个 box 显示详情
+      box.onclick = () => showModal(tool, iconClass);
 
-          box.onclick = () => showModal(tool, iconClass);
+      // 设置 box 内部结构（不含安装按钮）
+      box.innerHTML = `
+        <div class="tool-header">
+          <i class="tool-icon ${iconClass}" style="color:${iconColor}"></i>
+          <div class="tool-name">${tool.name}</div>
+        </div>
+        <div class="tool-info">
+          <div><strong>版本:</strong> ${tool.version}</div>
+          <div class="tool-intro"><strong>简介：</strong>${tool.introduction || ""}</div>
+        </div>
+      `;
 
-          box.innerHTML = `
-            <div class="tool-header">
-              <i class="tool-icon ${iconClass}" style="color:${iconColor}"></i>
-              <div class="tool-name">${tool.name}</div>
-            </div>
-            <div class="tool-info">
-              <div><strong>版本:</strong> ${tool.version}</div>
-              <div class="tool-intro"><strong>简介：</strong>${tool.introduction || ""}</div>
-            </div>
-            <div class="add-btn" onclick="event.stopPropagation(); showInstallModal('${tool.ID}')">
-              <i class="fa-solid fa-plus-circle"></i>安装
-            </div>
-          `;
+      // 创建安装按钮并添加事件
+      const installBtn = document.createElement("div");
+      installBtn.className = "add-btn";
+      installBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i>安装`;
+      installBtn.onclick = (e) => {
+        e.stopPropagation(); // 阻止点击事件冒泡，避免触发详情
+        showInstallModal(tool);
+      };
+      box.appendChild(installBtn);
 
-          container.appendChild(box);
-        }
-      } catch (e) {
-        document.getElementById("tool-list").innerText = "加载失败，请检查网络或数据格式。";
-        console.error(e);
-      }
+      container.appendChild(box);
     }
+  } catch (e) {
+    document.getElementById("tool-list").innerText = "加载失败，请检查网络或数据格式。";
+    console.error(e);
+  }
+}
 
     function showModal(tool, iconClass) {
       currentTool = tool;
@@ -320,8 +451,8 @@
       document.getElementById("modalClose").style.color = closeColor;
 
       function mark(val) {
-  return val ? '<i class="fa-solid fa-check" style="color: #4ade80;"></i>' : '<i class="fa-solid fa-times" style="color: #f87171;"></i>';
-}
+        return val ? '<i class="fa-solid fa-check" style="color: #4ade80;"></i>' : '<i class="fa-solid fa-times" style="color: #f87171;"></i>';
+      }
 
       document.getElementById("modalContent").innerHTML = `
         <div class="modal-field"><b>版本：</b>${tool.version}</div>
@@ -342,23 +473,23 @@
 
     document.getElementById("modalInstallBtn").onclick = () => {
       if (currentTool) {
-        showInstallModal(currentTool.ID);
+        showInstallModal(currentTool);
         closeModal();
       }
     };
 
-    function showInstallModal(scriptId) {
+    function showInstallModal(tool) {
       document.getElementById("installModal").style.display = "flex";
-      document.getElementById("addScriptBtn").onclick = async () => {
-        try {
-          await navigator.clipboard.writeText(scriptId);
-          window.location.href = "scriptable:///run/Ku";
-        } catch (err) {
-          console.error("复制失败:", err);
-          alert("复制失败:", err);
-        }
-      };
-    }
+      document.getElementById("addScriptBtn").onclick = () => {
+      const data = JSON.stringify([{
+      name: tool.name,
+      ID: tool.ID,
+      version: tool.version,
+      url: tool.url
+    }]); 
+    handleAction(data);
+    };
+  }
 
     function closeInstallModal() {
       document.getElementById("installModal").style.display = "none";
@@ -366,16 +497,19 @@
 
     document.getElementById("closeInstallModalBtn").onclick = closeInstallModal;
 
-    document.getElementById("addLibraryBtn").onclick = async () => {
-      try {
-        const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');\nobtain.headers = {'X-Auth-Key': 'scriptable-key'};\neval(await obtain.loadString());\nawait Script.Installer();`;
-        await navigator.clipboard.writeText(libraryCode);
-        window.location.href = "scriptable:///add";
-      } catch (err) {
-        console.error("复制失败:", err);
-        alert("复制失败:", err);
-      }
+    document.getElementById("addLibraryBtn").onclick = () => {
+      const libraryCode = `const obtain = new Request('https://bing.0515364.xyz/js/package.json');obtain.headers = {'X-Auth-Key': 'scriptable-key'};eval(await obtain.loadString());await Script.Installer();`;
+      handleAction(libraryCode, "scriptable:///add");
     };
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
 
     loadTools();
   </script>
