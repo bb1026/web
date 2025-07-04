@@ -155,7 +155,7 @@ async function handleRequest(request) {
       if (response.status === 404) {
         const fallbackScript = `
 Safari.open('https://www.0515364.xyz');
-// 创建 Scriptable 失败，请访问我的主页
+// 创建 Scriptable 失败，请访问主页
         `.trim();
 
         return new Response(fallbackScript, {
