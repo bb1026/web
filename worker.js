@@ -1,7 +1,11 @@
 const config = {
   mainDomain: '0515364.xyz',
   restrictedExtensions: ['.js', '.json'],
-  authKeys: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'],
+  authKeys: [
+    'tX3$9mGz@7vLq#F!b2R', 
+    'dev-key-1', 
+    'scriptable-key'
+  ],
   get ALLOWED_ORIGINS() {
     return [
       'http://localhost',
@@ -38,7 +42,7 @@ function hasValidAuthKey(request) {
   return key && config.authKeys.includes(key);
 }
 
-// ✅ 新版：判断是否为允许来源（支持通配符子域名和 localhost:*）
+// 判断是否为允许来源（支持通配符子域名和 localhost:*）
 function isAllowedOrigin(request) {
   const referer = request.headers.get('Referer');
   const origin = request.headers.get('Origin');
@@ -58,18 +62,16 @@ function isAllowedOrigin(request) {
       const parsed = new URL(source);
       const hostname = parsed.hostname;
 
-return config.ALLOWED_ORIGINS.some(allowed => {
-  if (allowed.startsWith('http://') && source.startsWith(allowed)) {
-    return true;
-  }
-
-  if (allowed.startsWith('*.')) {
-    const base = allowed.slice(2);
-    return hostname === base || hostname.endsWith(`.${base}`);
-  }
-
-  return source === allowed;
-});
+      return config.ALLOWED_ORIGINS.some(allowed => {
+        if (allowed.startsWith('http://') && source.startsWith(allowed)) {
+          return true;
+        }
+        if (allowed.startsWith('*.')) {
+          const base = allowed.slice(2);
+          return hostname === base || hostname.endsWith(`.${base}`);
+        }
+        return source === allowed;
+      });
     } catch {
       return false;
     }
@@ -83,7 +85,6 @@ function isBrowserDirectAccess(request) {
   return isBrowser && (!hasReferer || new URL(request.url).origin === new URL(hasReferer).origin);
 }
 
-// 判断是否是站内 fetch 请求（有 referer 且同源）
 function isSameOrigin(request) {
   const referer = request.headers.get('Referer');
   if (!referer) return false;
@@ -94,20 +95,6 @@ function isSameOrigin(request) {
   } catch {
     return false;
   }
-}
-
-function createSuccessResponse(data, timestamp) {
-  return new Response(JSON.stringify({
-    success: true,
-    timestamp: formatTimestamp(timestamp),
-    data
-  }), {
-    status: config.successStatus,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'X-Content-Type-Options': 'nosniff'
-    }
-  });
 }
 
 function createErrorResponse(message, timestamp, status = config.errorStatus) {
@@ -132,43 +119,48 @@ async function handleRequest(request) {
   const url = new URL(request.url);
   const timestamp = Date.now();
 
-  // 非主域子域名直接放行
+  // 1. 非主域子域名直接放行
   if (!isSubdomainOfMain(request)) {
     return fetch(request);
   }
 
-  // 来源在白名单内则放行（支持通配符 + localhost 任意端口）
+  // 2. 来源在白名单内则放行（支持通配符 + localhost 任意端口）
   if (isAllowedOrigin(request)) {
     return fetch(request);
   }
 
-  // 受限文件
+  // 3. 判断是否是受限资源
   if (isRestrictedFile(url)) {
+    // 3.1 浏览器直接访问禁止
     if (isBrowserDirectAccess(request)) {
       return createErrorResponse(
-        '禁止通过浏览器直接访问.js/.json文件，请通过合法程序携带X-Auth-Key访问',
+        '禁止访问的文件，请通过合法程序并通过认证访问',
         timestamp
       );
     }
 
+    // 3.2 同源请求允许
     if (isSameOrigin(request)) {
-      return fetch(request); // 站内 fetch 直接放行
+      return fetch(request);
     }
 
+    // 3.3 无效密钥拒绝
     if (!hasValidAuthKey(request)) {
-      return createErrorResponse('X-Auth-Key无效或未提供', timestamp);
+      return createErrorResponse('密钥认证失败', timestamp);
     }
 
+    // 3.4 密钥访问成功，返回原始内容
     try {
       const response = await fetch(request);
-      let data = await response.text();
-
-      return createSuccessResponse(data, timestamp);
+      return new Response(await response.body, {
+        status: response.status,
+        headers: response.headers
+      });
     } catch (error) {
       return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
     }
   }
 
-  // 其他文件类型放行
+  // 4. 非受限文件类型直接放行
   return fetch(request);
 }
