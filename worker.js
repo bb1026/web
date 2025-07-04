@@ -21,7 +21,7 @@ const config = {
 
 // 格式化时间：YYYY-MM-DD HH:mm:ss
 function formatTimestamp(ts) {
-  const date = new Date(ts);
+  const date = new Date(ts + 8 * 60 * 60 * 1000); // 加8小时（毫秒）
   const pad = n => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
        + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
@@ -100,6 +100,7 @@ function isSameOrigin(request) {
 function createErrorResponse(message, timestamp, status = config.errorStatus) {
   return new Response(JSON.stringify({
     success: false,
+    code: status,
     timestamp: formatTimestamp(timestamp),
     error: message
   }), {
