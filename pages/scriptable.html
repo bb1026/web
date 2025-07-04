@@ -361,10 +361,8 @@
     });
     
     // 首页链接处理
-    document.getElementById('homeLink').addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      handleAction('SG9tZUxpbms');
+    document.getElementById('homeLink').addEventListener('click', function() {
+	location.href = '/';
     });
     
     // 清除库文件功能
