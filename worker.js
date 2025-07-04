@@ -2,8 +2,8 @@ const config = {
   mainDomain: '0515364.xyz',
   restrictedExtensions: ['.js', '.json'],
   authKeys: [
-    'tX3$9mGz@7vLq#F!b2R', 
-    'dev-key-1', 
+    'tX3$9mGz@7vLq#F!b2R',
+    'dev-key-1',
     'scriptable-key'
   ],
   get ALLOWED_ORIGINS() {
@@ -19,9 +19,8 @@ const config = {
   errorStatus: 403
 };
 
-// 格式化时间：YYYY-MM-DD HH:mm:ss
 function formatTimestamp(ts) {
-  const date = new Date(ts + 8 * 60 * 60 * 1000); // 加8小时（毫秒）
+  const date = new Date(ts + 8 * 60 * 60 * 1000);
   const pad = n => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} `
        + `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
@@ -42,7 +41,6 @@ function hasValidAuthKey(request) {
   return key && config.authKeys.includes(key);
 }
 
-// 判断是否为允许来源（支持通配符子域名和 localhost:*）
 function isAllowedOrigin(request) {
   const referer = request.headers.get('Referer');
   const origin = request.headers.get('Origin');
@@ -125,7 +123,7 @@ async function handleRequest(request) {
     return fetch(request);
   }
 
-  // 2. 来源在白名单内则放行（支持通配符 + localhost 任意端口）
+  // 2. 来源在白名单内则放行
   if (isAllowedOrigin(request)) {
     return fetch(request);
   }
@@ -150,13 +148,30 @@ async function handleRequest(request) {
       return createErrorResponse('密钥认证失败', timestamp);
     }
 
-    // 3.4 密钥访问成功，返回原始内容
+    // 3.4 密钥访问成功，处理文件获取
     try {
       const response = await fetch(request);
+
+      if (response.status === 404) {
+        const fallbackScript = `
+Safari.open('https://www.0515364.xyz');
+// 创建 Scriptable 失败，请访问我的主页
+        `.trim();
+
+        return new Response(fallbackScript, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'X-Fallback': 'true'
+          }
+        });
+      }
+
       return new Response(await response.body, {
         status: response.status,
         headers: response.headers
       });
+
     } catch (error) {
       return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
     }
