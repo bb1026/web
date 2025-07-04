@@ -163,9 +163,6 @@ async function handleRequest(request) {
       const response = await fetch(request);
       let data = await response.text();
 
-      // 移除 \n（防止干扰 json 展示）+ 保证中文可读
-      data = data.replace(/\n/g, '');
-
       return createSuccessResponse(data, timestamp);
     } catch (error) {
       return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
