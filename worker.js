@@ -16,59 +16,67 @@ const CONFIG = {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const ext = url.pathname.split('.').pop().toLowerCase();
+    const path = url.pathname;
+    const ext = path.split('.').pop().toLowerCase();
+    const isProtected = CONFIG.PROTECTED_EXTS.some(e => path.endsWith(e));
     const origin = request.headers.get('Origin');
     const method = request.method;
     const isOptions = method === 'OPTIONS';
     const now = Date.now();
+    const authKey = request.headers.get('X-Auth-Key');
 
-    const headers = {
+    const corsHeaders = {
       'Access-Control-Allow-Origin': origin && CONFIG.ALLOWED_ORIGINS.includes(origin) ? origin : '*',
       'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Key',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Content-Type': 'application/json; charset=utf-8',
     };
 
+    // 预检请求
     if (isOptions) {
-      return new Response(null, {
-        status: 204,
-        headers
-      });
+      return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 检查是否是受保护的资源
-    const isProtected = CONFIG.PROTECTED_EXTS.some(e => url.pathname.endsWith(e));
+    // 非受保护资源，正常返回
+    if (!isProtected) {
+      return fetch(request);
+    }
 
-    const authKey = request.headers.get('X-Auth-Key');
-
-    // 合法来源直接放行
+    // 验证条件
     const isAllowedOrigin = origin && CONFIG.ALLOWED_ORIGINS.includes(origin);
+    const isValidKey = CONFIG.AUTH_KEYS.includes(authKey);
 
-    // 合法来源访问：允许但不直接返回 .json/.js 内容（防止直接访问）
-    if (isProtected && !isAllowedOrigin && !CONFIG.AUTH_KEYS.includes(authKey)) {
+    if (!isAllowedOrigin && !isValidKey) {
       return new Response(JSON.stringify({
         code: 403,
-        error: 'Forbidden: Missing or invalid X-Auth-Key',
+        error: 'Forbidden: Unauthorized access to protected resource',
         ts: now
-      }), {
-        status: 403,
-        headers
-      });
+      }), { status: 403, headers: corsHeaders });
     }
 
-    // 如果带上 X-Auth-Key 且合法，返回 OK 信息
-    if (CONFIG.AUTH_KEYS.includes(authKey)) {
+    // 读取原始文件内容
+    try {
+      const originRes = await fetch(request);
+      const rawText = await originRes.text();
+
+      // 返回封装后的 JSON 响应
       return new Response(JSON.stringify({
         code: 200,
-        data: 'Access granted',
+        data: rawText,
         ts: now
       }), {
         status: 200,
-        headers
+        headers: corsHeaders
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({
+        code: 500,
+        error: 'Internal fetch error: ' + e.message,
+        ts: now
+      }), {
+        status: 500,
+        headers: corsHeaders
       });
     }
-
-    // 默认继续访问原始文件资源（例如，允许 ALLOWED_ORIGINS 访问）
-    return fetch(request);
   }
 };
