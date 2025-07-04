@@ -7,7 +7,7 @@ const config = {
   errorStatus: 403
 };
 
-// 时间戳格式化函数：转为 YYYY-MM-DD HH:mm:ss
+// 格式化时间：YYYY-MM-DD HH:mm:ss
 function formatTimestamp(ts) {
   const date = new Date(ts);
   const pad = n => String(n).padStart(2, '0');
@@ -43,15 +43,29 @@ function isBrowserDirectAccess(request) {
   return isBrowser && (!hasReferer || new URL(request.url).origin === new URL(hasReferer).origin);
 }
 
+// 判断是否是站内 fetch 请求（有 referer 且同源）
+function isSameOrigin(request) {
+  const referer = request.headers.get('Referer');
+  if (!referer) return false;
+  try {
+    const requestOrigin = new URL(request.url).origin;
+    const refererOrigin = new URL(referer).origin;
+    return requestOrigin === refererOrigin;
+  } catch {
+    return false;
+  }
+}
+
 function createSuccessResponse(data, timestamp) {
   return new Response(JSON.stringify({
     success: true,
+    version: "v3.2.0",
     timestamp: formatTimestamp(timestamp),
     data
   }), {
     status: config.successStatus,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       'X-Content-Type-Options': 'nosniff'
     }
   });
@@ -65,7 +79,7 @@ function createErrorResponse(message, timestamp, status = config.errorStatus) {
   }), {
     status,
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       'X-Content-Type-Options': 'nosniff'
     }
   });
@@ -95,13 +109,21 @@ async function handleRequest(request) {
       );
     }
 
+    if (isSameOrigin(request)) {
+      return fetch(request); // 同源请求，直接放行
+    }
+
     if (!hasValidAuthKey(request)) {
       return createErrorResponse('X-Auth-Key无效或未提供', timestamp);
     }
 
     try {
       const response = await fetch(request);
-      const data = await response.text();
+      let data = await response.text();
+
+      // 处理中文支持 & 去掉 \n
+      data = data.replace(/\n/g, '');
+
       return createSuccessResponse(data, timestamp);
     } catch (error) {
       return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
