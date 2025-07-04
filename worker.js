@@ -1,110 +1,117 @@
-const CONFIG = {
-  MAIN_DOMAIN: '0515364.xyz',
-
-  PROTECTED_EXTS: ['.json', '.js'],
-
-  AUTH_KEYS: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'],
-
-  get ALLOWED_ORIGINS() {
-    return [
-      'http://localhost',
-      'http://127.0.0.1',
-      'http://0.0.0.0',
-      `https://${this.MAIN_DOMAIN}`,
-      `*.${this.MAIN_DOMAIN}`
-    ];
-  }
+// 配置参数
+const config = {
+  mainDomain: '0515364.xyz',          // 主域名，匹配所有子域名
+  restrictedExtensions: ['.js', '.json'], // 受限文件类型
+  authKeys: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'], // 有效认证密钥
+  unrestrictedOrigins: ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0'], // 无限制访问域名
+  successStatus: 200,
+  errorStatus: 403
 };
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const origin = request.headers.get('Origin') || '';
-    const method = request.method;
+// 检查请求是否属于主域名的子域名
+function isSubdomainOfMain(request) {
+  const url = new URL(request.url);
+  return url.hostname.endsWith(`.${config.mainDomain}`);
+}
 
-    // 检查来源是否合法
-    const isAllowedOrigin = CONFIG.ALLOWED_ORIGINS.some(o => {
-      if (o.startsWith('*.')) {
-        return origin.endsWith(o.replace('*.', 'https://'));
-      }
-      return origin === o || origin.startsWith(`${o}:`);
-    });
+// 检查请求是否访问受限文件类型
+function isRestrictedFile(url) {
+  const pathname = url.pathname.toLowerCase();
+  return config.restrictedExtensions.some(ext => 
+    pathname.endsWith(ext)
+  );
+}
 
-    // 处理预检请求
-    if (method === 'OPTIONS') {
-      if (!isAllowedOrigin) {
-        return jsonError('Origin not allowed', 403);
-      }
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'X-Auth-Key',
-          'Access-Control-Max-Age': '86400',
-          'Vary': 'Origin'
-        }
-      });
-    }
+// 检查请求是否包含有效认证密钥
+function hasValidAuthKey(request) {
+  const authKey = request.headers.get('X-Auth-Key');
+  return authKey && config.authKeys.includes(authKey);
+}
 
-    // 是否是受保护文件
-    const fileExt = url.pathname.toLowerCase().match(/\.\w+$/)?.[0] || '';
-    const isProtected = CONFIG.PROTECTED_EXTS.includes(fileExt);
+// 检查是否为无限制访问域名
+function isUnrestrictedOrigin(request) {
+  const url = new URL(request.url);
+  const origin = url.origin.toLowerCase();
+  return config.unrestrictedOrigins.some(domain => 
+    origin === domain.toLowerCase()
+  );
+}
 
-    const authKey = request.headers.get('X-Auth-Key') || '';
-    const hasValidKey = CONFIG.AUTH_KEYS.includes(authKey);
+// 生成成功响应
+function createSuccessResponse(data, timestamp) {
+  return new Response(JSON.stringify({
+    success: true,
+    timestamp,
+    data
+  }), {
+    status: config.successStatus,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
 
-    if (isProtected && !hasValidKey) {
-      return jsonError('Invalid or missing X-Auth-Key', 403);
-    }
-
-    // 请求转发
-    const upstreamResponse = await fetch(request);
-    const contentType = upstreamResponse.headers.get('Content-Type') || '';
-    const headers = new Headers(upstreamResponse.headers);
-
-    if (isAllowedOrigin) {
-      headers.set('Access-Control-Allow-Origin', origin);
-      headers.set('Vary', 'Origin');
-    }
-
-    // 如果使用了密钥访问，返回包裹后的 JSON 数据
-    if (hasValidKey) {
-      const content = await upstreamResponse.text();
-
-      return new Response(JSON.stringify({
-        success: true,
-        timestamp: Date.now(),
-        contentType,
-        data: content
-      }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': origin,
-          'Vary': 'Origin'
-        }
-      });
-    }
-
-    // 非密钥访问，直接返回原始内容
-    return new Response(upstreamResponse.body, {
-      status: upstreamResponse.status,
-      headers
-    });
-  }
-};
-
-// 错误响应统一封装
-function jsonError(message, code) {
+// 生成错误响应
+function createErrorResponse(message, timestamp, status = config.errorStatus) {
   return new Response(JSON.stringify({
     success: false,
-    error: message,
-    code,
-    timestamp: Date.now()
+    timestamp,
+    error: message
   }), {
-    status: code,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    status,
+    headers: { 'Content-Type': 'application/json' }
   });
+}
+
+// 主处理函数
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request));
+});
+
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  const timestamp = Date.now();
+  
+  // 1. 检查是否属于主域名的子域名（如 a.0515364.xyz）
+  if (!isSubdomainOfMain(request)) {
+    return fetch(request); // 非子域名直接放行
+  }
+  
+  // 2. 无限制访问域名直接返回原始数据
+  if (isUnrestrictedOrigin(request)) {
+    return fetch(request);
+  }
+  
+  // 3. 检查是否访问受限文件类型（.js/.json）
+  if (isRestrictedFile(url)) {
+    // 禁止直接从地址栏访问（无X-Auth-Key的GET请求）
+    if (request.method === 'GET' && !hasValidAuthKey(request)) {
+      return createErrorResponse(
+        '禁止直接访问.js/.json文件，请通过X-Auth-Key认证', 
+        timestamp
+      );
+    }
+    
+    // 验证认证密钥
+    if (!hasValidAuthKey(request)) {
+      return createErrorResponse(
+        'X-Auth-Key无效或未提供', 
+        timestamp
+      );
+    }
+    
+    // 认证通过，获取并包装数据
+    try {
+      const response = await fetch(request);
+      const data = await response.text();
+      return createSuccessResponse(data, timestamp);
+    } catch (error) {
+      return createErrorResponse(
+        `资源获取失败: ${error.message}`, 
+        timestamp,
+        500
+      );
+    }
+  } else {
+    // 非受限文件类型直接放行
+    return fetch(request);
+  }
 }
