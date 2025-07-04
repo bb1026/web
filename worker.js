@@ -25,11 +25,12 @@ export default {
     const now = Date.now();
     const authKey = request.headers.get('X-Auth-Key');
 
+    const fetchDest = request.headers.get('Sec-Fetch-Dest'); // 检查是否 script 加载
+
     const corsHeaders = {
       'Access-Control-Allow-Origin': origin && CONFIG.ALLOWED_ORIGINS.includes(origin) ? origin : '*',
       'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Key',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Content-Type': 'application/json; charset=utf-8',
     };
 
     // 预检请求
@@ -37,55 +38,41 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 不受保护的资源直接放行
+    // 非受保护文件，正常放行
     if (!isProtected) {
       return fetch(request);
     }
 
-    // 拦截：无 Origin（即直接在浏览器地址栏访问）
-    if (!origin) {
-      return new Response(JSON.stringify({
-        code: 403,
-        error: 'Direct access forbidden: missing Origin header',
-        ts: now
-      }), { status: 403, headers: corsHeaders });
+    // ✅ 情况 1：通过 <script src=...> 加载的 JS 文件，放行
+    if (ext === 'js' && fetchDest === 'script') {
+      return fetch(request);
     }
 
-    // 是否来源合法
-    const isAllowedOrigin = CONFIG.ALLOWED_ORIGINS.includes(origin);
-    const isValidKey = CONFIG.AUTH_KEYS.includes(authKey);
-
-    // 拒绝非法来源且未带密钥
-    if (!isAllowedOrigin && !isValidKey) {
-      return new Response(JSON.stringify({
-        code: 403,
-        error: 'Forbidden: unauthorized origin or missing key',
-        ts: now
-      }), { status: 403, headers: corsHeaders });
-    }
-
-    // 合法访问：读取原始资源并返回为 JSON 包裹格式
-    try {
+    // ✅ 情况 2：带合法密钥的请求，放行原始内容（不包 JSON）
+    if (CONFIG.AUTH_KEYS.includes(authKey)) {
       const originRes = await fetch(request);
-      const rawText = await originRes.text();
+      const contentType = originRes.headers.get("Content-Type") || (ext === "js" ? "application/javascript" : "application/json");
 
-      return new Response(JSON.stringify({
-        code: 200,
-        data: rawText,
-        ts: now
-      }), {
+      return new Response(await originRes.body, {
         status: 200,
-        headers: corsHeaders
-      });
-    } catch (e) {
-      return new Response(JSON.stringify({
-        code: 500,
-        error: 'Fetch error: ' + e.message,
-        ts: now
-      }), {
-        status: 500,
-        headers: corsHeaders
+        headers: {
+          ...corsHeaders,
+          'Content-Type': contentType
+        }
       });
     }
+
+    // ❌ 其他所有情况 ➜ 拒绝访问
+    return new Response(JSON.stringify({
+      code: 403,
+      error: 'Access to this resource is restricted',
+      ts: now
+    }), {
+      status: 403,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json; charset=utf-8'
+      }
+    });
   }
 };
