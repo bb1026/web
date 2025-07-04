@@ -37,29 +37,38 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    // 非受保护资源，正常返回
+    // 不受保护的资源直接放行
     if (!isProtected) {
       return fetch(request);
     }
 
-    // 验证条件
-    const isAllowedOrigin = origin && CONFIG.ALLOWED_ORIGINS.includes(origin);
-    const isValidKey = CONFIG.AUTH_KEYS.includes(authKey);
-
-    if (!isAllowedOrigin && !isValidKey) {
+    // 拦截：无 Origin（即直接在浏览器地址栏访问）
+    if (!origin) {
       return new Response(JSON.stringify({
         code: 403,
-        error: 'Forbidden: Unauthorized access to protected resource',
+        error: 'Direct access forbidden: missing Origin header',
         ts: now
       }), { status: 403, headers: corsHeaders });
     }
 
-    // 读取原始文件内容
+    // 是否来源合法
+    const isAllowedOrigin = CONFIG.ALLOWED_ORIGINS.includes(origin);
+    const isValidKey = CONFIG.AUTH_KEYS.includes(authKey);
+
+    // 拒绝非法来源且未带密钥
+    if (!isAllowedOrigin && !isValidKey) {
+      return new Response(JSON.stringify({
+        code: 403,
+        error: 'Forbidden: unauthorized origin or missing key',
+        ts: now
+      }), { status: 403, headers: corsHeaders });
+    }
+
+    // 合法访问：读取原始资源并返回为 JSON 包裹格式
     try {
       const originRes = await fetch(request);
       const rawText = await originRes.text();
 
-      // 返回封装后的 JSON 响应
       return new Response(JSON.stringify({
         code: 200,
         data: rawText,
@@ -71,7 +80,7 @@ export default {
     } catch (e) {
       return new Response(JSON.stringify({
         code: 500,
-        error: 'Internal fetch error: ' + e.message,
+        error: 'Fetch error: ' + e.message,
         ts: now
       }), {
         status: 500,
