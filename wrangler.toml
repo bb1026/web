@@ -4,5 +4,5 @@ type = "javascript"
 account_id = "4796a78c1804791b739f97bb336bab79"
 compatibility_date = "2025-07-03"
 workers_dev = true
-routes = ["0515364.xyz/*"]
+routes = ["*.0515364.xyz/*"]
 zone_id = "df09b3a563bde936907cc7c4a710f942"
