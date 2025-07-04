@@ -30,10 +30,24 @@ function hasValidAuthKey(request) {
   return key && config.authKeys.includes(key);
 }
 
+// ✅ 修改后的：判断请求来源（Referer / Origin）是否在白名单
 function isUnrestrictedOrigin(request) {
-  const url = new URL(request.url);
-  const origin = url.origin.toLowerCase();
-  return config.unrestrictedOrigins.some(domain => origin === domain.toLowerCase());
+  const referer = request.headers.get('Referer');
+  const origin = request.headers.get('Origin');
+  const checkList = [];
+
+  if (referer) {
+    try {
+      checkList.push(new URL(referer).origin.toLowerCase());
+    } catch {}
+  }
+  if (origin) {
+    checkList.push(origin.toLowerCase());
+  }
+
+  return checkList.some(source =>
+    config.unrestrictedOrigins.includes(source)
+  );
 }
 
 function isBrowserDirectAccess(request) {
