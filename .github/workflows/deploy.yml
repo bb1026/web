@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'worker.js'
-      - 'wrangler.toml'
+      - 'Cloudflare/worker.js'
+      - 'Cloudflare/wrangler.toml'
   workflow_dispatch:
 
 jobs:
