@@ -1,18 +1,11 @@
 // 配置参数
 const config = {
-  mainDomain: '0515364.xyz',          // 主域名，匹配所有子域名
   restrictedExtensions: ['.js', '.json'], // 受限文件类型
   authKeys: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'], // 有效认证密钥
-  unrestrictedOrigins: ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0'], // 无限制访问域名
+  unrestrictedDomains: ['localhost', '127.0.0.1', '0.0.0.0'], // 无限制访问域名（不含协议）
   successStatus: 200,
   errorStatus: 403
 };
-
-// 检查请求是否属于主域名的子域名
-function isSubdomainOfMain(request) {
-  const url = new URL(request.url);
-  return url.hostname.endsWith(`.${config.mainDomain}`);
-}
 
 // 检查请求是否访问受限文件类型
 function isRestrictedFile(url) {
@@ -29,11 +22,9 @@ function hasValidAuthKey(request) {
 }
 
 // 检查是否为无限制访问域名
-function isUnrestrictedOrigin(request) {
-  const url = new URL(request.url);
-  const origin = url.origin.toLowerCase();
-  return config.unrestrictedOrigins.some(domain => 
-    origin === domain.toLowerCase()
+function isUnrestrictedDomain(host) {
+  return config.unrestrictedDomains.some(domain => 
+    host === domain || host.endsWith(`.${domain}`)
   );
 }
 
@@ -68,21 +59,17 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request) {
   const url = new URL(request.url);
+  const host = url.hostname;
   const timestamp = Date.now();
   
-  // 1. 检查是否属于主域名的子域名（如 a.0515364.xyz）
-  if (!isSubdomainOfMain(request)) {
-    return fetch(request); // 非子域名直接放行
-  }
-  
-  // 2. 无限制访问域名直接返回原始数据
-  if (isUnrestrictedOrigin(request)) {
-    return fetch(request);
-  }
-  
-  // 3. 检查是否访问受限文件类型（.js/.json）
+  // 1. 检查是否访问受限文件类型（.js/.json）
   if (isRestrictedFile(url)) {
-    // 禁止直接从地址栏访问（无X-Auth-Key的GET请求）
+    // 2. 检查是否为无限制访问域名
+    if (isUnrestrictedDomain(host)) {
+      return fetch(request); // 无限制域名直接放行
+    }
+    
+    // 3. 禁止直接从地址栏访问（无X-Auth-Key的GET请求）
     if (request.method === 'GET' && !hasValidAuthKey(request)) {
       return createErrorResponse(
         '禁止直接访问.js/.json文件，请通过X-Auth-Key认证', 
@@ -90,7 +77,7 @@ async function handleRequest(request) {
       );
     }
     
-    // 验证认证密钥
+    // 4. 验证认证密钥
     if (!hasValidAuthKey(request)) {
       return createErrorResponse(
         'X-Auth-Key无效或未提供', 
@@ -98,7 +85,7 @@ async function handleRequest(request) {
       );
     }
     
-    // 认证通过，获取并包装数据
+    // 5. 认证通过，获取并包装数据
     try {
       const response = await fetch(request);
       const data = await response.text();
