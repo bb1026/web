@@ -1,78 +1,125 @@
-const CONFIG = {
-  MAIN_DOMAIN: '0515364.xyz',
-  PROTECTED_EXTS: ['.json', '.js'],
-  AUTH_KEYS: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'],
-  get ALLOWED_ORIGINS() {
-    return [
-      'http://localhost',
-      'http://127.0.0.1',
-      'http://0.0.0.0',
-      `https://${this.MAIN_DOMAIN}`,
-      `http://${this.MAIN_DOMAIN}`,
-    ];
-  }
+// 配置参数
+const config = {
+  mainDomain: '0515364.xyz',
+  restrictedExtensions: ['.json', '.js'],
+  authKeys: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'],
+  unrestrictedDomains: ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0'],
+  successStatusCode: 200,
+  errorStatusCode: 403
 };
 
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const ext = path.split('.').pop().toLowerCase();
-    const isProtected = CONFIG.PROTECTED_EXTS.some(e => path.endsWith(e));
-    const origin = request.headers.get('Origin');
-    const method = request.method;
-    const isOptions = method === 'OPTIONS';
-    const now = Date.now();
-    const authKey = request.headers.get('X-Auth-Key');
+// 检查请求是否来自无限制访问域名
+function isUnrestrictedDomain(request) {
+  const url = new URL(request.url);
+  const origin = url.origin.toLowerCase();
+  
+  return config.unrestrictedDomains.some(domain => 
+    origin === domain.toLowerCase()
+  );
+}
 
-    const fetchDest = request.headers.get('Sec-Fetch-Dest'); // 检查是否 script 加载
+// 检查请求是否访问受限文件类型
+function isRestrictedFile(url) {
+  const pathname = url.pathname.toLowerCase();
+  return config.restrictedExtensions.some(ext => 
+    pathname.endsWith(ext)
+  );
+}
 
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': origin && CONFIG.ALLOWED_ORIGINS.includes(origin) ? origin : '*',
-      'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Key',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    };
+// 检查请求是否包含有效认证密钥
+function hasValidAuthKey(request) {
+  const authKey = request.headers.get('X-Auth-Key');
+  if (!authKey) return false;
+  
+  return config.authKeys.some(key => key === authKey);
+}
 
-    // 预检请求
-    if (isOptions) {
-      return new Response(null, { status: 204, headers: corsHeaders });
+// 生成成功响应
+function createSuccessResponse(data, timestamp) {
+  const responseBody = {
+    success: true,
+    timestamp: timestamp,
+    data: data
+  };
+  
+  return new Response(JSON.stringify(responseBody), {
+    status: config.successStatusCode,
+    headers: {
+      'Content-Type': 'application/json'
     }
+  });
+}
 
-    // 非受保护文件，正常放行
-    if (!isProtected) {
-      return fetch(request);
+// 生成错误响应
+function createErrorResponse(message, timestamp, statusCode) {
+  const responseBody = {
+    success: false,
+    timestamp: timestamp,
+    error: message
+  };
+  
+  return new Response(JSON.stringify(responseBody), {
+    status: statusCode || config.errorStatusCode,
+    headers: {
+      'Content-Type': 'application/json'
     }
+  });
+}
 
-    // ✅ 情况 1：通过 <script src=...> 加载的 JS 文件，放行
-    if (ext === 'js' && fetchDest === 'script') {
-      return fetch(request);
-    }
+// 主处理函数
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request));
+});
 
-    // ✅ 情况 2：带合法密钥的请求，放行原始内容（不包 JSON）
-    if (CONFIG.AUTH_KEYS.includes(authKey)) {
-      const originRes = await fetch(request);
-      const contentType = originRes.headers.get("Content-Type") || (ext === "js" ? "application/javascript" : "application/json");
-
-      return new Response(await originRes.body, {
-        status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': contentType
-        }
-      });
-    }
-
-    // ❌ 其他所有情况 ➜ 拒绝访问
-    return new Response(JSON.stringify({
-      code: 403,
-      error: 'Access to this resource is restricted',
-      ts: now
-    }), {
-      status: 403,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json; charset=utf-8'
-      }
-    });
+async function handleRequest(request) {
+  const url = new URL(request.url);
+  const host = url.hostname.toLowerCase();
+  const timestamp = Date.now();
+  
+  // 检查是否为主域名
+  if (!host.endsWith(config.mainDomain)) {
+    // 非主域名直接放行
+    return fetch(request);
   }
-};
+  
+  // 检查是否为无限制访问域名
+  if (isUnrestrictedDomain(request)) {
+    // 无限制域名直接返回原始数据
+    return fetch(request);
+  }
+  
+  // 检查是否访问受限文件类型
+  if (isRestrictedFile(url)) {
+    // 检查是否通过地址栏直接访问（GET请求且无认证头）
+    if (request.method === 'GET' && !hasValidAuthKey(request)) {
+      return createErrorResponse(
+        '禁止直接从地址栏访问受限文件类型', 
+        timestamp
+      );
+    }
+    
+    // 检查认证密钥
+    if (!hasValidAuthKey(request)) {
+      return createErrorResponse(
+        '认证密钥无效或未提供', 
+        timestamp
+      );
+    }
+    
+    // 有效认证，处理请求
+    try {
+      const response = await fetch(request);
+      const data = await response.text();
+      return createSuccessResponse(data, timestamp);
+    } catch (error) {
+      return createErrorResponse(
+        `获取数据失败: ${error.message}`, 
+        timestamp,
+        500
+      );
+    }
+  } else {
+    // 非受限文件类型直接放行
+    return fetch(request);
+  }
+}
