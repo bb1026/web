@@ -2,7 +2,15 @@ const config = {
   mainDomain: '0515364.xyz',
   restrictedExtensions: ['.js', '.json'],
   authKeys: ['tX3$9mGz@7vLq#F!b2R', 'dev-key-1', 'scriptable-key'],
-  unrestrictedOrigins: ['http://localhost', 'http://127.0.0.1', 'http://0.0.0.0'],
+  get ALLOWED_ORIGINS() {
+    return [
+      'http://localhost',
+      'http://127.0.0.1',
+      'http://0.0.0.0',
+      `https://${this.mainDomain}`,
+      `*.${this.mainDomain}`
+    ];
+  },
   successStatus: 200,
   errorStatus: 403
 };
@@ -30,24 +38,42 @@ function hasValidAuthKey(request) {
   return key && config.authKeys.includes(key);
 }
 
-// ✅ 修改后的：判断请求来源（Referer / Origin）是否在白名单
-function isUnrestrictedOrigin(request) {
+// ✅ 新版：判断是否为允许来源（支持通配符子域名和 localhost:*）
+function isAllowedOrigin(request) {
   const referer = request.headers.get('Referer');
   const origin = request.headers.get('Origin');
-  const checkList = [];
+  const sources = [];
 
   if (referer) {
     try {
-      checkList.push(new URL(referer).origin.toLowerCase());
+      sources.push(new URL(referer).origin.toLowerCase());
     } catch {}
   }
   if (origin) {
-    checkList.push(origin.toLowerCase());
+    sources.push(origin.toLowerCase());
   }
 
-  return checkList.some(source =>
-    config.unrestrictedOrigins.includes(source)
-  );
+  return sources.some(source => {
+    try {
+      const parsed = new URL(source);
+      const hostname = parsed.hostname;
+
+return config.ALLOWED_ORIGINS.some(allowed => {
+  if (allowed.startsWith('http://') && source.startsWith(allowed)) {
+    return true;
+  }
+
+  if (allowed.startsWith('*.')) {
+    const base = allowed.slice(2);
+    return hostname === base || hostname.endsWith(`.${base}`);
+  }
+
+  return source === allowed;
+});
+    } catch {
+      return false;
+    }
+  });
 }
 
 function isBrowserDirectAccess(request) {
@@ -73,7 +99,6 @@ function isSameOrigin(request) {
 function createSuccessResponse(data, timestamp) {
   return new Response(JSON.stringify({
     success: true,
-    version: "v3.2.0",
     timestamp: formatTimestamp(timestamp),
     data
   }), {
@@ -107,14 +132,17 @@ async function handleRequest(request) {
   const url = new URL(request.url);
   const timestamp = Date.now();
 
+  // 非主域子域名直接放行
   if (!isSubdomainOfMain(request)) {
     return fetch(request);
   }
 
-  if (isUnrestrictedOrigin(request)) {
+  // 来源在白名单内则放行（支持通配符 + localhost 任意端口）
+  if (isAllowedOrigin(request)) {
     return fetch(request);
   }
 
+  // 受限文件
   if (isRestrictedFile(url)) {
     if (isBrowserDirectAccess(request)) {
       return createErrorResponse(
@@ -124,7 +152,7 @@ async function handleRequest(request) {
     }
 
     if (isSameOrigin(request)) {
-      return fetch(request); // 同源请求，直接放行
+      return fetch(request); // 站内 fetch 直接放行
     }
 
     if (!hasValidAuthKey(request)) {
@@ -135,7 +163,7 @@ async function handleRequest(request) {
       const response = await fetch(request);
       let data = await response.text();
 
-      // 处理中文支持 & 去掉 \n
+      // 移除 \n（防止干扰 json 展示）+ 保证中文可读
       data = data.replace(/\n/g, '');
 
       return createSuccessResponse(data, timestamp);
@@ -144,5 +172,6 @@ async function handleRequest(request) {
     }
   }
 
+  // 其他文件类型放行
   return fetch(request);
 }
