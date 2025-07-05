@@ -409,7 +409,7 @@
       // 点击整个 box 显示详情
       box.onclick = () => showModal(tool, iconClass);
 
-      // 设置 box 内部结构（不含安装按钮）
+      // 设置 box 内部结构（不含添加按钮）
       box.innerHTML = `
         <div class="tool-header">
           <i class="tool-icon ${iconClass}" style="color:${iconColor}"></i>
@@ -421,10 +421,10 @@
         </div>
       `;
 
-      // 创建安装按钮并添加事件
+      // 创建添加按钮并添加事件
       const installBtn = document.createElement("div");
       installBtn.className = "add-btn";
-      installBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i>安装`;
+      installBtn.innerHTML = `<i class="fa-solid fa-plus-circle"></i>添加`;
       installBtn.onclick = (e) => {
         e.stopPropagation(); // 阻止点击事件冒泡，避免触发详情
         showInstallModal(tool);
