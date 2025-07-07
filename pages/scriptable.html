@@ -284,7 +284,6 @@
   </div>
   <div class="mini-menu" id="miniMenu">
     <a href="#" id="homeLink"><i class="fas fa-home"></i>首页</a>
-    <a href="#" id="clearLibrary"><i class="fas fa-trash"></i><span class="clear-library">清除库文件</span></a>
     <a href="#" id="backToTop"><i class="fas fa-arrow-alt-circle-up"></i>回到顶部</a>
   </div>
 
@@ -363,13 +362,6 @@
     // 首页链接处理
     document.getElementById('homeLink').addEventListener('click', function() {
 	location.href = '/';
-    });
-    
-    // 清除库文件功能
-    document.getElementById('clearLibrary').addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      handleAction('Q2xlYW5LdQ');
     });
     
     // 回到顶部功能
@@ -469,7 +461,8 @@
 
     document.getElementById("modalClose").onclick = closeModal;
 
-    document.getElementById("modalInstallBtn").onclick = () => {
+
+document.getElementById("modalInstallBtn").onclick = () => {
       if (currentTool) {
         showInstallModal(currentTool);
         closeModal();
@@ -478,16 +471,19 @@
 
     function showInstallModal(tool) {
       document.getElementById("installModal").style.display = "flex";
-      document.getElementById("addScriptBtn").onclick = () => {
-      const data = JSON.stringify([{
-      name: tool.name,
-      ID: tool.ID,
-      version: tool.version,
-      url: tool.url
-    }]); 
-    handleAction(data);
-    };
-  }
+    document.getElementById("addScriptBtn").onclick = () => {
+        const data = JSON.stringify({
+          type: "install-tool",
+          Data: {
+          name: tool.name,
+          ID: tool.ID,
+          version: tool.version,
+          url: tool.url
+          }
+        });
+        handleAction(data);
+      };
+    }
 
     function closeInstallModal() {
       document.getElementById("installModal").style.display = "none";
