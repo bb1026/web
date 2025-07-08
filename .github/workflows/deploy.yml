@@ -13,7 +13,6 @@ on:
 
 jobs:
   deploy-pan-worker:
-    if: contains(github.event.head_commit.message, 'worker-pan.js') || contains(github.event.head_commit.message, 'wrangler-pan.toml')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,7 +25,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
 
   deploy-worker:
-    if: contains(github.event.head_commit.message, 'worker.js') || contains(github.event.head_commit.message, 'wrangler.toml')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -39,7 +37,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
 
   upload-access:
-    if: contains(github.event.head_commit.message, 'access.json')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
