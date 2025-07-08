@@ -1,0 +1,24 @@
+name: Upload access.json to R2
+
+on:
+  push:
+    paths:
+      - 'Cloudflare/access.json'
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Wrangler
+        run: npm install -g wrangler@2
+
+      - name: Upload access.json to R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          echo "🧩 Uploading access.json..."
+          wrangler r2 object put __config__/access.json --file=access.json --bucket=mypan
