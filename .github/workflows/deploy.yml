@@ -45,10 +45,9 @@ jobs:
         run: npm install -g wrangler@2
 
       - name: Copy wrangler-access.toml to wrangler.toml
-        run: cp Cloudflare/wrangler-access.toml Cloudflare/wrangler.toml
+        run: cp Cloudflare/wrangler-access.toml wrangler.toml
 
       - name: Upload access.json to R2
-        working-directory: Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
