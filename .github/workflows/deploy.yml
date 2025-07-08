@@ -1,26 +1,53 @@
-name: Deploy Cloudflare Worker
+name: Cloudflare Pan Worker CI/CD
 
 on:
   push:
     branches: [main]
     paths:
+      - 'Cloudflare/worker-pan.js'
+      - 'Cloudflare/wrangler-pan.toml'
       - 'Cloudflare/worker.js'
       - 'Cloudflare/wrangler.toml'
+      - 'Cloudflare/access.json'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy-pan-worker:
+    if: contains(github.event.head_commit.message, 'worker-pan.js') || contains(github.event.head_commit.message, 'wrangler-pan.toml')
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
+      - uses: actions/checkout@v3
       - name: Install Wrangler v2
         run: npm install -g wrangler@2
-
-      - name: Publish Worker
-        working-directory: Cloudflare #toml文件存放的内置,worker的位置在toml配置
-        run: wrangler publish
+      - name: Publish pan-worker to Cloudflare
+        working-directory: Cloudflare
+        run: wrangler publish --config wrangler-pan.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+
+  deploy-worker:
+    if: contains(github.event.head_commit.message, 'worker.js') || contains(github.event.head_commit.message, 'wrangler.toml')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Wrangler v2
+        run: npm install -g wrangler@2
+      - name: Publish Worker
+        working-directory: Cloudflare
+        run: wrangler publish --config wrangler.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+
+  upload-access:
+    if: contains(github.event.head_commit.message, 'access.json')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Wrangler v2
+        run: npm install -g wrangler@2
+      - name: Upload access.json to R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          echo "🧩 Uploading access.json..."
+          wrangler r2 object put __config__/access.json --file=Cloudflare/access.json --bucket=mypan --config=Cloudflare/wrangler-access.toml
