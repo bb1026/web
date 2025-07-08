@@ -7,16 +7,24 @@ async function login() {
     headers: { "Content-Type": "text/plain" },
     body: auth
   })
-  const json = await res.json()
+  
   if (json.role) {
-    role = json.role
-    document.getElementById("login-box").classList.add("hidden")
-    document.getElementById("main-panel").classList.remove("hidden")
-    document.getElementById("role").textContent = role
-    loadFiles()
-    if (role === "admin") {
-      document.getElementById("trash-panel").classList.remove("hidden")
-      loadTrash()
+  role = json.role
+  document.getElementById("login-box").classList.add("hidden")
+  document.getElementById("main-panel").classList.remove("hidden")
+  document.getElementById("role").textContent = role
+
+  if (role === "readonly") {
+    // 隐藏所有非只读控件
+    document.querySelectorAll(".toolbar button").forEach(btn => {
+      if (!btn.textContent.includes("刷新")) btn.style.display = "none"
+    })
+  }
+
+  loadFiles()
+  if (role === "admin") {
+    document.getElementById("trash-panel").classList.remove("hidden")
+    loadTrash()
     }
   } else {
     alert("❌ 密码错误")
