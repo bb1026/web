@@ -1,106 +1,97 @@
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url)
-    const pathname = decodeURIComponent(url.pathname.slice(1))
+    const path = url.pathname.replace(/^\/+/, '')
+    const accessMap = Object.fromEntries(env.ACCESS_KEYS.split(',').map(pair => {
+      const [k, v] = pair.split(':').map(s=>s.trim()); return [k, v]
+    }))
+    const key = (request.method === "POST") ? await request.text().catch(_ => '') : url.searchParams.get('key') || ''
+    const role = accessMap[key] || ''
 
-    // 工具：解析权限映射
-    function parseAccessKeys(str) {
-      return str.split(",").reduce((acc, pair) => {
-        const [key, role] = pair.split(":").map(s => s.trim())
-        acc[key] = role
-        return acc
-      }, {})
+    if (path === "whoami" && request.method === "POST") {
+      return Response.json({ role })
     }
 
-    const accessMap = parseAccessKeys(env.ACCESS_KEYS)
-    const method = request.method
-
-    // 首页：上传 + 文件列表页面
-    if (method === 'GET' && pathname === '') {
-      return new Response(`
-        <html><head><meta name="viewport" content="width=device-width, initial-scale=1" /></head><body>
-          <h2>📁 网盘 - pan.0515364.xyz</h2>
-          <form method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" /><br/><br/>
-            <input type="password" name="key" placeholder="访问密码" />
-            <button type="submit">上传</button>
-          </form>
-          <hr/>
-          <ul id="list">加载中...</ul>
-          <script>
-            const urlParams = new URLSearchParams(location.search)
-            const key = urlParams.get("key") || ""
-            fetch('/list?key=' + key)
-              .then(r => r.json())
-              .then(data => {
-                list.innerHTML = data.map(f => 
-                  \`<li>\${f} <a href="/\${f}?key=\${key}" target="_blank">下载</a> \${key && f ? '[<a href="/delete?file=' + f + '&key=' + key + '">删除</a>]' : ''}</li>\`
-                ).join('')
-              })
-          </script>
-        </body></html>
-      `, { headers: { "content-type": "text/html; charset=utf-8" } })
+    if (path === "list" && request.method === "GET" && role) {
+      const all = await env.BUCKET.list({ include: ["customMetadata"] })
+      const visible = all.objects.filter(o => o.customMetadata?.visible !== "false")
+      const data = visible.map(o=>({
+        name: o.key, uploader: o.customMetadata?.uploader
+      }))
+      return Response.json(data)
     }
 
-    // 文件列表接口
-    if (method === 'GET' && pathname === 'list') {
-      const key = url.searchParams.get('key') || ''
-      const role = accessMap[key]
-      if (!role) return Response.json([])
-
-      const list = await env.BUCKET.list()
-      return Response.json(list.objects.map(obj => obj.key))
-    }
-
-    // 文件下载
-    if (method === 'GET' && pathname && pathname !== 'delete' && pathname !== 'list') {
-      const key = url.searchParams.get('key') || ''
-      const role = accessMap[key]
-      if (!role) return new Response("❌ 没有下载权限", { status: 403 })
-
-      const object = await env.BUCKET.get(pathname)
-      if (!object) return new Response('Not found', { status: 404 })
-
-      return new Response(object.body, {
-        headers: {
-          "content-type": object.httpMetadata?.contentType || 'application/octet-stream',
-          "content-disposition": \`inline; filename="\${pathname}"\`
-        }
+    if (path === "download" && request.method === "GET" && role) {
+      const fn = url.searchParams.get('file')
+      const obj = await env.BUCKET.get(fn)
+      if (!obj) return new Response("Not found", { status: 404 })
+      return new Response(obj.body, {
+        headers: { "content-type": obj.httpMetadata?.contentType, "content-disposition": `attachment; filename="${fn}"` }
       })
     }
 
-    // 上传接口
-    if (method === 'POST') {
+    if (path === "upload" && request.method === "POST" && (role === "upload" || role==="admin")) {
       const form = await request.formData()
       const file = form.get('file')
-      const key = form.get('key') || ''
-      const role = accessMap[key]
-
-      if (!role || (role !== 'upload' && role !== 'admin')) {
-        return new Response("❌ 没有上传权限", { status: 403 })
-      }
-
       await env.BUCKET.put(file.name, file.stream(), {
-        httpMetadata: { contentType: file.type }
+        httpMetadata: { contentType: file.type },
+        customMetadata: { uploader: key, visible: "true" }
       })
-
       return new Response("✅ 上传成功")
     }
 
-    // 删除接口（只限 admin）
-    if (method === 'GET' && pathname === 'delete') {
-      const filename = url.searchParams.get('file')
-      const key = url.searchParams.get('key') || ''
-      const role = accessMap[key]
-
-      if (role !== 'admin') {
-        return new Response("❌ 没有删除权限", { status: 403 })
-      }
-
-      await env.BUCKET.delete(filename)
-      return new Response("✅ 已删除：" + filename)
+    if (path === "delete" && request.method === "GET" && (role==="admin" || role==="upload")) {
+      const fn = url.searchParams.get('file')
+      const obj = await env.BUCKET.get(fn, { include: ["customMetadata"] })
+      if (!obj) return new Response("Not found", { status: 404 })
+      const owner = obj.customMetadata?.uploader
+      if (role==="upload" && owner !== key) return new Response("❌ 无权限删除该文件", { status: 403 })
+      const ts = Date.now().toString()
+      await env.BUCKET.put(`__trash__/${fn}__${ts}`, obj.body, { customMetadata: { ...obj.customMetadata, deletedAt: ts } })
+      await env.BUCKET.delete(fn)
+      return new Response("✅ 删除成功，已移入回收站")
     }
 
-    return new Response('❌ 不支持的请求', { status: 405 })
+    if (path === "batchdel" && request.method === "POST" && (role==="admin"||role==="upload")) {
+      const list = await env.BUCKET.list({ include: ["customMetadata"] })
+      const tasks = list.objects.map(async o => {
+        const md = o.customMetadata || {}
+        if (role==="upload" && md.uploader !== key) return
+        const ts = Date.now().toString()
+        const obj = await env.BUCKET.get(o.key)
+        await env.BUCKET.put(`__trash__/${o.key}__${ts}`, obj.body, { customMetadata: { ...md, deletedAt: ts } })
+        await env.BUCKET.delete(o.key)
+      })
+      await Promise.all(tasks)
+      return new Response("✅ 批量删除完成")
+    }
+
+    if (path === "mkdir" && request.method === "POST" && (role==="admin"||role==="upload")) {
+      let { name } = await request.json()
+      if (!name) return new Response("名称不能为空", { status: 400 })
+      if (!name.endsWith('/')) name += '/'
+      await env.BUCKET.put(name, '', { customMetadata: { uploader:key, visible:"true" } })
+      return new Response("✅ 已新建：" + name)
+    }
+
+    if (path === "trash/list" && request.method === "GET" && role==="admin") {
+      const list = await env.BUCKET.list({ prefix: "__trash__/", include:["customMetadata"] })
+      const out = list.objects.map(o => ({
+        name: o.key.replace(/^__trash__\//,''), deletedAt: o.customMetadata?.deletedAt
+      }))
+      return Response.json(out)
+    }
+
+    // 自动回收策略（每次访问触发，也可定时）
+    const allTrash = await env.BUCKET.list({ prefix:"__trash__/", include:["customMetadata"] })
+    const now = Date.now()
+    for (const o of allTrash.objects) {
+      const ts = parseInt(o.customMetadata?.deletedAt || 0)
+      if (now - ts > 7*24*3600*1000) {
+        await env.BUCKET.delete(o.key)
+      }
+    }
+
+    return new Response("❌ 不支持该请求", { status: 405 })
   }
 }
