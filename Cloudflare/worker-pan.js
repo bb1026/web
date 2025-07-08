@@ -5,34 +5,46 @@ export default {
     const accessMap = Object.fromEntries(env.ACCESS_KEYS.split(',').map(pair => {
       const [k, v] = pair.split(':').map(s=>s.trim()); return [k, v]
     }))
-    const key = (request.method === "POST") ? await request.text().catch(_ => '') : url.searchParams.get('key') || ''
-    const role = accessMap[key] || ''
 
-    if (path === "whoami" && request.method === "POST") {
-      return Response.json({ role })
-    }
-
-    if (path === "list" && request.method === "GET" && role) {
-      const all = await env.BUCKET.list({ include: ["customMetadata"] })
-      const visible = all.objects.filter(o => o.customMetadata?.visible !== "false")
-      const data = visible.map(o=>({
-        name: o.key, uploader: o.customMetadata?.uploader
-      }))
-      return Response.json(data)
-    }
-
-    if (path === "download" && request.method === "GET" && role) {
-      const fn = url.searchParams.get('file')
-      const obj = await env.BUCKET.get(fn)
-      if (!obj) return new Response("Not found", { status: 404 })
-      return new Response(obj.body, {
-        headers: { "content-type": obj.httpMetadata?.contentType, "content-disposition": `attachment; filename="${fn}"` }
+    // 获取密码
+    let key = url.searchParams.get('key') || ''
+    if (request.method === "POST" && path === "whoami") {
+      const contentType = request.headers.get("content-type") || ""
+      if (contentType.includes("application/json")) {
+        const body = await request.json().catch(() => ({}))
+        key = body.key || ''
+      } else {
+        key = await request.text()
+      }
+      const role = accessMap[key.trim()] || ''
+      return new Response(JSON.stringify({ role }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       })
     }
 
-    if (path === "upload" && request.method === "POST" && (role === "upload" || role==="admin")) {
+    const role = accessMap[key.trim()] || ''
+
+    if (path === "list" && role) {
+      const all = await env.BUCKET.list({ include: ["customMetadata"] })
+      const files = all.objects.filter(o => o.customMetadata?.visible !== "false")
+      return Response.json(files.map(f => ({ name: f.key, uploader: f.customMetadata?.uploader })))
+    }
+
+    if (path === "download" && role) {
+      const fn = url.searchParams.get('file')
+      const obj = await env.BUCKET.get(fn)
+      if (!obj) return new Response("Not Found", { status: 404 })
+      return new Response(obj.body, {
+        headers: {
+          "content-type": obj.httpMetadata?.contentType || "application/octet-stream",
+          "content-disposition": `attachment; filename="${fn}"`
+        }
+      })
+    }
+
+    if (path === "upload" && (role === "upload" || role === "admin")) {
       const form = await request.formData()
-      const file = form.get('file')
+      const file = form.get("file")
       await env.BUCKET.put(file.name, file.stream(), {
         httpMetadata: { contentType: file.type },
         customMetadata: { uploader: key, visible: "true" }
@@ -40,58 +52,65 @@ export default {
       return new Response("✅ 上传成功")
     }
 
-    if (path === "delete" && request.method === "GET" && (role==="admin" || role==="upload")) {
-      const fn = url.searchParams.get('file')
+    if (path === "delete" && (role === "admin" || role === "upload")) {
+      const fn = url.searchParams.get("file")
       const obj = await env.BUCKET.get(fn, { include: ["customMetadata"] })
-      if (!obj) return new Response("Not found", { status: 404 })
+      if (!obj) return new Response("文件不存在")
       const owner = obj.customMetadata?.uploader
-      if (role==="upload" && owner !== key) return new Response("❌ 无权限删除该文件", { status: 403 })
-      const ts = Date.now().toString()
-      await env.BUCKET.put(`__trash__/${fn}__${ts}`, obj.body, { customMetadata: { ...obj.customMetadata, deletedAt: ts } })
+      if (role === "upload" && owner !== key) return new Response("❌ 无权删除")
+      const ts = Date.now()
+      await env.BUCKET.put(`__trash__/${fn}__${ts}`, obj.body, {
+        customMetadata: { ...obj.customMetadata, deletedAt: ts.toString() }
+      })
       await env.BUCKET.delete(fn)
-      return new Response("✅ 删除成功，已移入回收站")
+      return new Response("✅ 已移入回收站")
     }
 
-    if (path === "batchdel" && request.method === "POST" && (role==="admin"||role==="upload")) {
+    if (path === "batchdel" && (role === "admin" || role === "upload")) {
       const list = await env.BUCKET.list({ include: ["customMetadata"] })
-      const tasks = list.objects.map(async o => {
-        const md = o.customMetadata || {}
-        if (role==="upload" && md.uploader !== key) return
-        const ts = Date.now().toString()
-        const obj = await env.BUCKET.get(o.key)
-        await env.BUCKET.put(`__trash__/${o.key}__${ts}`, obj.body, { customMetadata: { ...md, deletedAt: ts } })
-        await env.BUCKET.delete(o.key)
-      })
-      await Promise.all(tasks)
+      const now = Date.now()
+      await Promise.all(list.objects.map(async f => {
+        const md = f.customMetadata || {}
+        if (role === "upload" && md.uploader !== key) return
+        const obj = await env.BUCKET.get(f.key)
+        await env.BUCKET.put(`__trash__/${f.key}__${now}`, obj.body, {
+          customMetadata: { ...md, deletedAt: now.toString() }
+        })
+        await env.BUCKET.delete(f.key)
+      }))
       return new Response("✅ 批量删除完成")
     }
 
-    if (path === "mkdir" && request.method === "POST" && (role==="admin"||role==="upload")) {
-      let { name } = await request.json()
-      if (!name) return new Response("名称不能为空", { status: 400 })
+    if (path === "mkdir" && (role === "admin" || role === "upload")) {
+      const body = await request.json().catch(()=>({}))
+      let name = (body.name || '').trim()
+      if (!name) return new Response("❌ 名称不能为空")
       if (!name.endsWith('/')) name += '/'
-      await env.BUCKET.put(name, '', { customMetadata: { uploader:key, visible:"true" } })
-      return new Response("✅ 已新建：" + name)
+      await env.BUCKET.put(name, '', {
+        customMetadata: { uploader: key, visible: "true" }
+      })
+      return new Response("✅ 已添加文件夹：" + name)
     }
 
-    if (path === "trash/list" && request.method === "GET" && role==="admin") {
-      const list = await env.BUCKET.list({ prefix: "__trash__/", include:["customMetadata"] })
-      const out = list.objects.map(o => ({
-        name: o.key.replace(/^__trash__\//,''), deletedAt: o.customMetadata?.deletedAt
+    if (path === "trash/list" && role === "admin") {
+      const trash = await env.BUCKET.list({ prefix: "__trash__/", include: ["customMetadata"] })
+      const out = trash.objects.map(o => ({
+        name: o.key.replace(/^__trash__\//, ''),
+        deletedAt: o.customMetadata?.deletedAt
       }))
       return Response.json(out)
     }
 
-    // 自动回收策略（每次访问触发，也可定时）
-    const allTrash = await env.BUCKET.list({ prefix:"__trash__/", include:["customMetadata"] })
+    // 自动清理回收站（7 天）
+    const trash = await env.BUCKET.list({ prefix: "__trash__/", include: ["customMetadata"] })
     const now = Date.now()
-    for (const o of allTrash.objects) {
-      const ts = parseInt(o.customMetadata?.deletedAt || 0)
-      if (now - ts > 7*24*3600*1000) {
+    for (const o of trash.objects) {
+      const t = parseInt(o.customMetadata?.deletedAt || "0")
+      if (now - t > 7 * 24 * 3600 * 1000) {
         await env.BUCKET.delete(o.key)
       }
     }
 
-    return new Response("❌ 不支持该请求", { status: 405 })
+    return new Response("❌ 请求未处理", { status: 405 })
   }
 }
