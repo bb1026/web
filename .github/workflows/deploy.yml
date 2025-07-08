@@ -50,7 +50,7 @@ jobs:
       - name: Upload access.json to R2
         working-directory: Cloudflare
         env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
-          echo "🧩 Uploading access.json..."
+          echo "🧩 Uploading access.json to R2..."
           wrangler r2 object put access.json --file=access.json --bucket=mypan
