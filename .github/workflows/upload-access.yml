@@ -25,4 +25,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
         run: |
           echo "🧩 Uploading access.json..."
-          wrangler r2 object put __config__/access.json --file=access.json --bucket=mypan
+          wrangler r2 object put mypan/__config__/access.json --file=access.json
