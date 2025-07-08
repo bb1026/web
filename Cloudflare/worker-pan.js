@@ -2,32 +2,31 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
     const path = url.pathname.replace(/^\/+/, '')
-    const accessMap = Object.fromEntries(env.ACCESS_KEYS.split(',').map(pair => {
-      const [k, v] = pair.split(':').map(s=>s.trim()); return [k, v]
-    }))
 
-    // 获取密码
+    // 权限解析
+    const accessMap = Object.fromEntries(env.ACCESS_KEYS.split(',').map(p => {
+      const [k, v] = p.trim().split(':'); return [k, v]
+    }))
     let key = url.searchParams.get('key') || ''
+    let role = accessMap[key] || ''
+
+    // whoami
     if (request.method === "POST" && path === "whoami") {
-      const contentType = request.headers.get("content-type") || ""
-      if (contentType.includes("application/json")) {
-        const body = await request.json().catch(() => ({}))
-        key = body.key || ''
-      } else {
-        key = await request.text()
-      }
-      const role = accessMap[key.trim()] || ''
+      key = await request.text()
+      role = accessMap[key.trim()] || ''
       return new Response(JSON.stringify({ role }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
       })
     }
 
-    const role = accessMap[key.trim()] || ''
-
+    // === 文件功能 ===
     if (path === "list" && role) {
-      const all = await env.BUCKET.list({ include: ["customMetadata"] })
-      const files = all.objects.filter(o => o.customMetadata?.visible !== "false")
-      return Response.json(files.map(f => ({ name: f.key, uploader: f.customMetadata?.uploader })))
+      const list = await env.BUCKET.list({ include: ["customMetadata"] })
+      const visible = list.objects.filter(o => o.customMetadata?.visible !== "false")
+      return Response.json(visible.map(f => ({
+        name: f.key,
+        uploader: f.customMetadata?.uploader
+      })))
     }
 
     if (path === "download" && role) {
@@ -37,7 +36,7 @@ export default {
       return new Response(obj.body, {
         headers: {
           "content-type": obj.httpMetadata?.contentType || "application/octet-stream",
-          "content-disposition": `attachment; filename="${fn}"`
+          "content-disposition": `attachment; filename="${fn.split('/').pop()}"`
         }
       })
     }
@@ -101,16 +100,100 @@ export default {
       return Response.json(out)
     }
 
-    // 自动清理回收站（7 天）
-    const trash = await env.BUCKET.list({ prefix: "__trash__/", include: ["customMetadata"] })
-    const now = Date.now()
-    for (const o of trash.objects) {
-      const t = parseInt(o.customMetadata?.deletedAt || "0")
-      if (now - t > 7 * 24 * 3600 * 1000) {
-        await env.BUCKET.delete(o.key)
+    // === 分享功能 ===
+
+    // 生成分享
+    if (path === "share/create" && request.method === "POST" && (role === "admin" || role === "upload")) {
+      const { name, password, duration } = await request.json()
+      if (!password) return Response.json({ error: "密码不能为空" })
+      const shareId = crypto.randomUUID().slice(0, 8)
+      const expiresAt = duration > 0 ? Date.now() + duration * 60000 : 0
+
+      let files = []
+      if (name.endsWith("/")) {
+        const list = await env.BUCKET.list({ prefix: name })
+        files = list.objects.map(o => ({ key: o.key, name: o.key }))
+      } else {
+        const obj = await env.BUCKET.head(name)
+        if (!obj) return Response.json({ error: "文件不存在" })
+        files = [{ key: name, name }]
+      }
+
+      const meta = { id: shareId, password, expiresAt, files, name }
+      await env.BUCKET.put(`__share__/${shareId}`, JSON.stringify(meta), {
+        httpMetadata: { contentType: "application/json" },
+        customMetadata: { owner: key }
+      })
+      return Response.json({ id: shareId })
+    }
+
+    // 访问分享
+    if (path.startsWith("share/") && request.method === "POST") {
+      const id = path.split("/")[1]
+      const obj = await env.BUCKET.get(`__share__/${id}`)
+      if (!obj) return Response.json({ error: "分享不存在" })
+      const data = JSON.parse(await obj.text())
+      const { password } = await request.json()
+      if (data.expiresAt && Date.now() > data.expiresAt)
+        return Response.json({ error: "分享已过期" })
+      if (data.password !== password)
+        return Response.json({ error: "密码错误" })
+      return Response.json({
+        name: data.name,
+        files: data.files,
+        accessToken: "read456" // 临时 token（实际中可替换为 jwt）
+      })
+    }
+
+    // 查看我分享的文件
+    if (path === "share/list" && role) {
+      const list = await env.BUCKET.list({ prefix: "__share__/", include: ["customMetadata"] })
+      const userShares = list.objects.filter(o => o.customMetadata?.owner === key)
+      const shares = await Promise.all(userShares.map(async s => {
+        const obj = await env.BUCKET.get(s.key)
+        const meta = JSON.parse(await obj.text())
+        return {
+          id: meta.id,
+          name: meta.name,
+          password: meta.password,
+          expiresAt: meta.expiresAt
+        }
+      }))
+      return Response.json(shares)
+    }
+
+    // 取消分享
+    if (path === "share/cancel" && role) {
+      const id = url.searchParams.get("id")
+      const obj = await env.BUCKET.get(`__share__/${id}`, { include: ["customMetadata"] })
+      if (!obj) return new Response("分享不存在")
+      const owner = obj.customMetadata?.owner
+      if (owner !== key && role !== "admin") return new Response("❌ 无权取消")
+      await env.BUCKET.delete(`__share__/${id}`)
+      return new Response("✅ 分享已取消")
+    }
+
+    // === 自动清理回收站 + 过期分享 ===
+    {
+      const trash = await env.BUCKET.list({ prefix: "__trash__/", include: ["customMetadata"] })
+      const now = Date.now()
+      for (const o of trash.objects) {
+        const t = parseInt(o.customMetadata?.deletedAt || "0")
+        if (now - t > 7 * 24 * 3600 * 1000) {
+          await env.BUCKET.delete(o.key)
+        }
+      }
+
+      const shares = await env.BUCKET.list({ prefix: "__share__/" })
+      for (const o of shares.objects) {
+        const obj = await env.BUCKET.get(o.key)
+        const meta = JSON.parse(await obj.text().catch(() => "{}"))
+        if (meta.expiresAt && now > meta.expiresAt) {
+          await env.BUCKET.delete(o.key)
+        }
       }
     }
 
-    return new Response("❌ 请求未处理", { status: 405 })
+    return new Response("❌ 未知请求", { status: 404 })
   }
 }
