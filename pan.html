@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   <title>个人网盘</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: sans-serif; margin: 1rem; }
+    body { font-family: sans-serif; padding: 1rem; }
     #panel { display: none; }
-    #fileList li { margin: .5em 0; }
-    button { margin-right: .5em; }
+    ul li { margin: .4em 0; }
   </style>
 </head>
 <body>
@@ -19,28 +18,29 @@
   </div>
 
   <div id="panel">
-    <p>当前角色：<b id="role"></b></p>
+    <p>当前权限：<span id="role"></span></p>
     <input type="file" id="fileInput" multiple />
     <button onclick="upload()">上传</button>
     <button onclick="batchDelete()">批量删除</button>
     <button onclick="newDir()">添加文件夹</button>
-    <button onclick="loadFiles()">刷新列表</button>
-    <h3>文件 / 文件夹</h3>
+    <button onclick="loadFiles()">刷新</button>
     <ul id="fileList"></ul>
-    <h3>回收站（管理员）</h3>
+
+    <h3>回收站（仅管理员）</h3>
     <ul id="trashList"></ul>
   </div>
 
   <script>
-    let auth = ''
-    let role = ''
+    let auth = '', role = ''
 
     async function login() {
       auth = document.getElementById("pwd").value.trim()
       const res = await fetch("https://pan.0515364.xyz/whoami", {
         method: "POST",
+        headers: { "Content-Type": "text/plain" },
         body: auth
       })
+
       const json = await res.json()
       if (json.role) {
         role = json.role
@@ -48,9 +48,9 @@
         document.getElementById("panel").style.display = "block"
         document.getElementById("role").textContent = role
         loadFiles()
-        if (role === 'admin') loadTrash()
+        if (role === "admin") loadTrash()
       } else {
-        alert("密码错误")
+        alert("❌ 密码错误")
       }
       document.getElementById("pwd").value = ''
     }
@@ -68,11 +68,11 @@
         dl.textContent = " 下载"
         dl.target = "_blank"
         li.append(dl)
-        if ((role === 'admin') || (role === 'upload' && f.uploader === auth)) {
+        if (role === 'admin' || (role === 'upload' && f.uploader === auth)) {
           const del = document.createElement('button')
-          del.textContent = "删除"
+          del.textContent = ' 删除'
           del.onclick = () => {
-            if (confirm("确认删除 " + f.name + " 吗？")) deleteFile(f.name)
+            if (confirm("确认删除该文件？")) deleteFile(f.name)
           }
           li.append(del)
         }
@@ -82,41 +82,38 @@
 
     async function upload() {
       const files = document.getElementById("fileInput").files
-      if (files.length === 0) return alert("请先选择文件")
+      if (!files.length) return alert("请选择文件")
       for (const file of files) {
-        const form = new FormData()
-        form.append('file', file)
-        form.append('key', auth)
-        const res = await fetch('https://pan.0515364.xyz/upload', {
-          method: "POST",
-          body: form
+        const fd = new FormData()
+        fd.append("file", file)
+        fd.append("key", auth)
+        const res = await fetch("https://pan.0515364.xyz/upload", {
+          method: "POST", body: fd
         })
-        const txt = await res.text()
-        alert(txt)
+        alert(await res.text())
       }
       loadFiles()
     }
 
     async function deleteFile(name) {
-      await fetch(`https://pan.0515364.xyz/delete?file=${encodeURIComponent(name)}&key=${auth}`, {
-        method: "GET"
-      })
+      const res = await fetch(`https://pan.0515364.xyz/delete?file=${encodeURIComponent(name)}&key=${auth}`)
+      alert(await res.text())
       loadFiles()
-      if (role === 'admin') loadTrash()
+      if (role === "admin") loadTrash()
     }
 
     async function batchDelete() {
-      if (!confirm("确认批量删除所有可见文件吗？")) return
+      if (!confirm("确认批量删除？")) return
       const res = await fetch(`https://pan.0515364.xyz/batchdel?key=${auth}`, { method: "POST" })
       alert(await res.text())
       loadFiles()
-      if (role === 'admin') loadTrash()
+      if (role === "admin") loadTrash()
     }
 
     async function newDir() {
-      const name = prompt("新建文件夹名：")
+      const name = prompt("请输入文件夹名")
       if (!name) return
-      const res = await fetch('https://pan.0515364.xyz/mkdir', {
+      const res = await fetch("https://pan.0515364.xyz/mkdir", {
         method: "POST",
         body: JSON.stringify({ name, key: auth })
       })
@@ -126,12 +123,12 @@
 
     async function loadTrash() {
       const res = await fetch(`https://pan.0515364.xyz/trash/list?key=${auth}`)
-      const trs = await res.json()
+      const files = await res.json()
       const ul = document.getElementById("trashList")
       ul.innerHTML = ''
-      trs.forEach(f => {
-        const li = document.createElement('li')
-        li.textContent = f.name + ` (删除时间: ${new Date(f.deletedAt).toLocaleString()})`
+      files.forEach(f => {
+        const li = document.createElement("li")
+        li.textContent = `${f.name}（删除于 ${new Date(+f.deletedAt).toLocaleString()}）`
         ul.append(li)
       })
     }
