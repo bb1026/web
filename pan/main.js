@@ -98,10 +98,35 @@ async function loadTrash() {
   })
 }
 
-function openShareManager() {
-  alert("🚧 我的分享功能即将上线！")
+async function openShareManager() {
+  const res = await fetch(`https://pan.0515364.xyz/share/list?key=${auth}`)
+  const list = await res.json()
+  let html = '分享链接：\n'
+  list.forEach(s => {
+    html += `${s.id}: ${s.name} [${s.password ? '🔐' : '🔓'}, 有效至 ${new Date(+s.expiresAt).toLocaleString()}]\n`
+  })
+  html += '\n输入要取消的分享ID：'
+  const id = prompt(html)
+  if (id) {
+    const r = await fetch(`https://pan.0515364.xyz/share/cancel?id=${encodeURIComponent(id)}&key=${auth}`)
+    alert(await r.text())
+    loadFiles()
+  }
 }
 
-function shareFile(name) {
-  alert("🚧 文件分享功能将在下一步实现！")
+async function shareFile(name) {
+  const pass = prompt("设置分享密码（必填）：")
+  if (!pass) return alert("密码必填")
+  const dur = prompt("有效期（分钟数，如60，1440=24h，留空=永久）：")
+  const res = await fetch(`https://pan.0515364.xyz/share/create`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key: auth, name, password: pass, duration: dur ? +dur : 0 })
+  })
+  const data = await res.json()
+  if (data.id) {
+    alert(`分享成功！链接: https://pan.0515364.xyz/share/${data.id}`)
+  } else {
+    alert(data.error || '失败')
+  }
 }
