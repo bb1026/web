@@ -97,14 +97,21 @@ async function batchDelete() {
 }
 
 async function newDir() {
-  const name = prompt("请输入文件夹名称")
-  if (!name) return
-  const res = await fetch("https://pan.0515364.xyz/mkdir", {
-    method: "POST",
-    body: JSON.stringify({ name, key: auth })
-  })
-  alert(await res.text())
-  loadFiles()
+  const name = prompt("📂 请输入文件夹名称")
+  if (!name || name.includes("/")) return alert("❌ 名称不能为空或包含 /")
+
+  try {
+    const res = await fetch("https://pan.0515364.xyz/mkdir", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name.trim(), key: auth })
+    })
+    const msg = await res.text()
+    alert(msg)
+    loadFiles()
+  } catch (e) {
+    alert("❌ 创建失败")
+  }
 }
 
 async function loadTrash() {
