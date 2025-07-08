@@ -24,7 +24,6 @@
       <button onclick="document.getElementById('fileInput').click()" class="btn-upload">📤 上传文件</button>
       <button onclick="newDir()">📁 新建文件夹</button>
       <button onclick="batchDelete()">🗑 批量删除</button>
-      <button onclick="openShareManager()">🔗 分享管理</button>
       <button onclick="loadFiles()">🔄 刷新</button>
       <button id="userBtn" onclick="openUserModal()" style="display:none;">👥 用户管理</button>
     </div>
@@ -40,6 +39,7 @@
     </div>
   </div>
 
+  <!-- 用户管理模态框 -->
   <div class="modal hidden" id="userModal">
     <div class="modal-content">
       <h3>👥 用户权限管理</h3>
@@ -48,7 +48,7 @@
         <tbody></tbody>
       </table>
       <div class="modal-actions">
-        <input type="text" id="newUserKey" placeholder="密码">
+        <input type="text" id="newUserKey" placeholder="设置密码">
         <select id="newUserRole">
           <option value="admin">admin</option>
           <option value="upload">upload</option>
