@@ -1,7 +1,7 @@
 {
-  "users": [
-    { "key": "admin999", "role": "admin" },
-    { "key": "upload123", "role": "upload" },
-    { "key": "readonly", "role": "readonly" }
-  ]
+  "accessKeys": {
+    "admin999": "admin",
+    "upload123": "upload",
+    "readonly": "readonly"
+  }
 }
