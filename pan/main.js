@@ -46,16 +46,37 @@ function canDelete(file) {
   return role === 'admin' || (role === 'upload' && file.uploader === auth)
 }
 
+const MAX_SIZE_MB = 50
+
 async function upload() {
-  const files = document.getElementById("fileInput").files
+  const input = document.getElementById("fileInput")
+  const files = input.files
   if (!files.length) return alert("请选择文件")
+
   for (const file of files) {
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`❌ 文件 "${file.name}" 超过 ${MAX_SIZE_MB}MB 限制，已跳过`)
+      continue
+    }
+
     const fd = new FormData()
     fd.append("file", file)
     fd.append("key", auth)
-    const res = await fetch("https://pan.0515364.xyz/upload", { method: "POST", body: fd })
-    alert(await res.text())
+
+    try {
+      const res = await fetch("https://pan.0515364.xyz/upload", {
+        method: "POST",
+        body: fd
+      })
+      const text = await res.text()
+      console.log(text)
+    } catch (e) {
+      alert(`❌ 上传失败: ${file.name}`)
+    }
   }
+
+  alert("✅ 批量上传完成")
+  input.value = ''
   loadFiles()
 }
 
