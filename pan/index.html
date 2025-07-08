@@ -2,36 +2,60 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>个人网盘</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>📁 个人网盘</h2>
+  <div class="top-bar">
+    <div class="user-role" id="role">未登录</div>
+    <div class="logout-btn hidden" onclick="logout()">退出</div>
+  </div>
 
-    <div id="login-box">
-      <input type="password" id="pwd" placeholder="请输入密码" />
-      <button onclick="login()">登录</button>
+  <div class="login-box" id="login-box">
+    <h2>个人网盘</h2>
+    <input type="password" id="pwd" placeholder="输入密码" />
+    <button onclick="login()">登录</button>
+  </div>
+
+  <div class="main-panel hidden" id="main-panel">
+    <div class="toolbar">
+      <input type="file" id="fileInput" multiple hidden onchange="upload()" />
+      <button onclick="document.getElementById('fileInput').click()" class="btn-upload">📤 上传文件</button>
+      <button onclick="newDir()">📁 新建文件夹</button>
+      <button onclick="batchDelete()">🗑 批量删除</button>
+      <button onclick="openShareManager()">🔗 分享管理</button>
+      <button onclick="loadFiles()">🔄 刷新</button>
+      <button id="userBtn" onclick="openUserModal()" style="display:none;">👥 用户管理</button>
     </div>
 
-    <div id="main-panel" class="hidden">
-      <p>当前身份：<span id="role"></span></p>
-      <div class="toolbar">
-        <input type="file" id="fileInput" multiple />
-        <button onclick="upload()">上传</button>
-        <button onclick="newDir()">新建文件夹</button>
-        <button onclick="batchDelete()">批量删除</button>
-        <button onclick="loadFiles()">刷新</button>
-        <button onclick="openShareManager()">我的分享</button>
-      </div>
-
-      <h3>📄 文件列表</h3>
+    <div class="section">
+      <h3>📂 文件列表</h3>
       <ul id="fileList" class="file-list"></ul>
+    </div>
 
-      <div id="trash-panel" class="hidden">
-        <h3>🗑️ 回收站（仅管理员）</h3>
-        <ul id="trashList" class="file-list"></ul>
+    <div class="section hidden" id="trash-panel">
+      <h3>🗑 回收站（7天自动清理）</h3>
+      <ul id="trashList" class="file-list"></ul>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="userModal">
+    <div class="modal-content">
+      <h3>👥 用户权限管理</h3>
+      <table id="userTable">
+        <thead><tr><th>密码</th><th>角色</th><th>操作</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="modal-actions">
+        <input type="text" id="newUserKey" placeholder="密码">
+        <select id="newUserRole">
+          <option value="admin">admin</option>
+          <option value="upload">upload</option>
+          <option value="readonly">readonly</option>
+        </select>
+        <button onclick="addUser()">添加用户</button>
+        <button onclick="closeUserModal()">关闭</button>
       </div>
     </div>
   </div>

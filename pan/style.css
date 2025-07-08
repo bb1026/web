@@ -1,86 +1,63 @@
 body {
-  font-family: "Helvetica Neue", sans-serif;
-  background: #f6f7fb;
-  color: #333;
-  margin: 0;
-  padding: 1rem;
+  font-family: system-ui, sans-serif;
+  background: #f5f5f5;
+  margin: 0; padding: 0;
 }
-
-.container {
-  max-width: 600px;
-  margin: auto;
-  background: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-input[type="password"], input[type="text"], input[type="file"] {
-  width: 100%;
-  padding: .6rem;
-  margin-bottom: .5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-}
-
-button {
-  background: #007bff;
-  color: white;
-  padding: .6rem 1rem;
-  margin: .3rem 0;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #0056b3;
-}
-
-.hidden {
-  display: none;
-}
-
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  margin-bottom: 1rem;
-}
-
-.file-list {
-  list-style: none;
-  padding-left: 0;
-}
-
-.file-list li {
-  background: #f1f1f1;
-  margin: .3rem 0;
-  padding: .5rem;
-  border-radius: 6px;
+.top-bar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  background: #333;
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 14px;
 }
-
-.file-list a {
-  color: #007bff;
-  text-decoration: none;
-  margin-left: .5rem;
+.user-role { font-weight: bold; }
+.logout-btn { cursor: pointer; color: #f66; }
+.logout-btn:hover { text-decoration: underline; }
+.login-box {
+  max-width: 300px; margin: 100px auto;
+  background: #fff; padding: 30px;
+  border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  text-align: center;
 }
-
-@media (max-width: 600px) {
-  .toolbar {
-    flex-direction: column;
-  }
-
-  button, input[type="file"] {
-    width: 100%;
-  }
+.login-box input {
+  width: 90%; padding: 10px; margin-bottom: 15px;
 }
+.login-box button { padding: 10px 20px; font-size: 15px; }
+.main-panel { padding: 10px 20px; }
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;
+}
+.toolbar button {
+  padding: 8px 12px; font-size: 14px; border: none;
+  background: #0066cc; color: #fff; border-radius: 5px; cursor: pointer;
+}
+.toolbar button:hover { background: #0052a3; }
+.section h3 { margin-top: 20px; margin-bottom: 10px; }
+.file-list { list-style: none; padding: 0; }
+.file-list li {
+  background: #fff; padding: 8px 12px; margin-bottom: 6px;
+  border-radius: 6px; display: flex; justify-content: space-between; align-items: center;
+}
+.file-list span button { margin-left: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+.hidden { display: none; }
+@media screen and (max-width: 600px) {
+  .toolbar { flex-direction: column; }
+  .toolbar button { width: 100%; }
+}
+.modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 99;
+}
+.modal-content {
+  background: #fff; padding: 20px; width: 90%; max-width: 500px;
+  border-radius: 8px;
+}
+.modal-content h3 { margin-top: 0; }
+.modal-actions { margin-top: 10px; }
+.modal-actions input, .modal-actions select {
+  padding: 6px; margin-right: 8px;
+}
+.modal-actions button { padding: 6px 12px; }
