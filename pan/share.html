@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>文件分享</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>🔗 分享页面</h2>
+    <div id="auth-area">
+      <input type="password" id="spass" placeholder="输入分享密码" />
+      <button onclick="access()">确定</button>
+      <p id="msg"></p>
+    </div>
+    <div id="content" class="hidden">
+      <h3 id="share-name"></h3>
+      <ul id="share-list" class="file-list"></ul>
+    </div>
+  </div>
+
+  <script src="share.js"></script>
+</body>
+</html>
