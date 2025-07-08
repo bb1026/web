@@ -11,4 +11,4 @@ binding = "BUCKET"
 bucket_name = "mypan"
 
 [observability.logs]
-enabled = false
+enabled = true
