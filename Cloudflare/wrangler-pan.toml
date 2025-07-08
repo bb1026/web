@@ -9,7 +9,7 @@ workers_dev = true
 routes = ["pan.0515364.xyz/*"]
 
 [vars]
-ACCESS_KEYS = "admin999:admin,upload123:upload,down456:readonly"
+ACCESS_KEYS = "admin999:9894432,540154897:upload,123456:readonly"
 
 [[r2_buckets]]
 binding = "BUCKET"
