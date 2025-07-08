@@ -1,0 +1,20 @@
+name = "pan-worker"
+main = "worker-pan.js"
+type = "javascript"
+account_id = "4796a78c1804791b739f97bb336bab79"
+zone_id = "df09b3a563bde936907cc7c4a710f942"
+compatibility_date = "2025-07-08"
+
+workers_dev = true
+routes = ["pan.0515364.xyz/*"]
+
+[vars]
+UPLOAD_KEY = "123456"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "mypan"
+preview_bucket_name = "mypan"
+
+[observability.logs]
+enabled = true
