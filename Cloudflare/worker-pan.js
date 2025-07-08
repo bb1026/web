@@ -1,3 +1,4 @@
+import { createShare, getShare, listShares, cancelShare } from './share.js';
 export default {
   async fetch(request, env) {
     try {
