@@ -1,81 +1,32 @@
-// share.js - 处理临时分享逻辑
+document.getElementById("accessBtn").addEventListener("click", async () => {
+  const id = document.getElementById("shareId").value.trim().replace(/.*\/([^/]+)$/, '$1');
+  const pwd = document.getElementById("sharePwd").value.trim();
+  const result = document.getElementById("result");
 
-const SHARE_PREFIX = '__share__'; // 存储在 R2 中的分享前缀
-const SHARE_TTL = {
-  '60m': 60 * 60,
-  '24h': 24 * 60 * 60,
-  'forever': 10 * 365 * 24 * 60 * 60 // 10年
-};
+  if (!id || !pwd) {
+    result.textContent = "❗️请填写分享ID和密码";
+    return;
+  }
 
-// 创建分享
-async function createShare(BUCKET, item, password, expire, uploader) {
-  const id = crypto.randomUUID();
-  const data = {
-    id,
-    item,
-    password,
-    uploader,
-    created: Date.now(),
-    expire: SHARE_TTL[expire] || SHARE_TTL['24h']
-  };
-  const key = `${SHARE_PREFIX}/${id}.json`;
-  await BUCKET.put(key, JSON.stringify(data), {
-    httpMetadata: { contentType: 'application/json' },
-    customMetadata: { uploader }
-  });
-  return data;
-}
+  result.textContent = "⏳ 正在验证分享信息...";
 
-// 获取分享详情
-async function getShare(BUCKET, id) {
-  const key = `${SHARE_PREFIX}/${id}.json`;
-  const obj = await BUCKET.get(key);
-  if (!obj) return null;
   try {
-    const json = await obj.json();
-    const now = Date.now();
-    if (now > json.created + json.expire * 1000) {
-      await BUCKET.delete(key); // 自动清理过期
-      return null;
+    const res = await fetch(`/api/share/${id}?pwd=${encodeURIComponent(pwd)}`);
+    const data = await res.json();
+
+    if (res.ok && data && data.item) {
+      result.innerHTML = `
+        ✅ 分享内容：<br/>
+        类型：${data.item.type}<br/>
+        路径：<code>${data.item.path}</code><br/>
+        上传者：${data.uploader}<br/>
+        <br/>
+        <a href="/api/download?path=${encodeURIComponent(data.item.path)}" target="_blank">⬇️ 下载链接</a>
+      `;
+    } else {
+      result.textContent = data?.error || "分享不存在或密码错误。";
     }
-    return json;
-  } catch {
-    return null;
+  } catch (err) {
+    result.textContent = "请求失败，请稍后重试。";
   }
-}
-
-// 获取当前用户所有分享
-async function listShares(BUCKET, uploader) {
-  const list = await BUCKET.list({ prefix: SHARE_PREFIX + '/', limit: 1000 });
-  const result = [];
-  for (const obj of list.objects) {
-    try {
-      const data = await BUCKET.get(obj.key);
-      if (!data) continue;
-      const json = await data.json();
-      if (json.uploader === uploader) {
-        const expired = Date.now() > json.created + json.expire * 1000;
-        result.push({
-          id: json.id,
-          item: json.item,
-          expired,
-          expireAt: json.created + json.expire * 1000
-        });
-      }
-    } catch {}
-  }
-  return result;
-}
-
-// 删除分享
-async function cancelShare(BUCKET, id, uploader) {
-  const key = `${SHARE_PREFIX}/${id}.json`;
-  const obj = await BUCKET.get(key);
-  if (!obj) return false;
-  const json = await obj.json();
-  if (json.uploader !== uploader) return false;
-  await BUCKET.delete(key);
-  return true;
-}
-
-export { createShare, getShare, listShares, cancelShare };
+});
