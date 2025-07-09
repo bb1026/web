@@ -23,7 +23,6 @@ body {
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
 }
 
 .user-role {
@@ -139,13 +138,21 @@ body {
 }
 
 .file-list li {
-  padding: 12px 15px;
+  padding: 6px 10px;
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
+  justify-content: space-between;
 }
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+
 
 .file-list li:hover {
   background-color: #fafafa;

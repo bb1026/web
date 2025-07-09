@@ -13,7 +13,6 @@ const roleNames = {
   readonly: '普通用户'
 };
 
-// API endpoints
 const api = {
   whoami: "https://pan.0515364.xyz/whoami",
   list: "https://pan.0515364.xyz/list",
@@ -31,18 +30,16 @@ const api = {
   }
 };
 
-// Helper functions
 const helpers = {
   showAlert: (message, isError = true) => {
     alert(`${isError ? '❌' : '✅'} ${message}`);
   },
-  
+
   fetchWithAuth: async (url, options = {}) => {
     if (!auth) {
       helpers.showAlert('请先登录');
       return null;
     }
-    
     try {
       const fullUrl = url.includes('?') ? `${url}&key=${auth}` : `${url}?key=${auth}`;
       const res = await fetch(fullUrl, options);
@@ -53,7 +50,7 @@ const helpers = {
       return null;
     }
   },
-  
+
   createButton: (text, icon, className, onClick) => {
     const btn = document.createElement('button');
     btn.className = className;
@@ -63,7 +60,6 @@ const helpers = {
   }
 };
 
-// Main functions
 const authFunctions = {
   login: async () => {
     const pwd = pwdInput.value.trim();
@@ -87,7 +83,6 @@ const authFunctions = {
         roleElement.textContent = `当前角色：${roleNames[role] || role}`;
         roleElement.classList.remove("hidden");
 
-        // Create logout button
         const logoutBtn = helpers.createButton('退出', 'sign-out-alt', 'logout-btn', authFunctions.logout);
         document.querySelector(".top-bar").appendChild(logoutBtn);
 
@@ -111,10 +106,10 @@ const authFunctions = {
     loginBox.classList.remove("hidden");
     roleElement.textContent = "";
     roleElement.classList.add("hidden");
-    
+
     const logoutBtn = document.querySelector(".logout-btn");
     if (logoutBtn) logoutBtn.remove();
-    
+
     dynamicContainer.innerHTML = "";
   }
 };
@@ -154,7 +149,7 @@ const fileFunctions = {
   loadFiles: async () => {
     const res = await helpers.fetchWithAuth(api.list);
     if (!res) return;
-    
+
     fileList = await res.json();
     fileFunctions.renderFileList();
   },
@@ -162,7 +157,7 @@ const fileFunctions = {
   renderFileList: () => {
     const ul = document.getElementById("fileList");
     ul.innerHTML = '';
-    
+
     if (fileList.length === 0) {
       ul.innerHTML = '<li class="empty-state">暂无文件</li>';
       return;
@@ -170,38 +165,49 @@ const fileFunctions = {
 
     fileList.forEach(file => {
       const li = document.createElement("li");
-      
+
+      const leftPart = document.createElement("div");
+      leftPart.style.display = "flex";
+      leftPart.style.alignItems = "center";
+      leftPart.style.gap = "8px";
+
       if (role === 'admin' || role === 'upload') {
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.onchange = () => {
-          if (checkbox.checked) {
-            selectedFiles.add(file.name);
-          } else {
-            selectedFiles.delete(file.name);
-          }
+          if (checkbox.checked) selectedFiles.add(file.name);
+          else selectedFiles.delete(file.name);
         };
-        li.appendChild(checkbox);
+        leftPart.appendChild(checkbox);
       }
 
       const nameSpan = document.createElement("span");
       nameSpan.textContent = file.name;
-      li.appendChild(nameSpan);
+      leftPart.appendChild(nameSpan);
 
-      li.appendChild(helpers.createButton('下载', 'download', 'download-btn', () => fileFunctions.downloadFile(file.name)));
+      const rightPart = document.createElement("div");
+      rightPart.className = "file-actions";
+
+      rightPart.appendChild(
+        helpers.createButton('下载', 'download', 'download-btn', () => fileFunctions.downloadFile(file.name))
+      );
 
       if (role === "admin" || (role === "upload" && file.uploader === auth)) {
-        li.appendChild(helpers.createButton('删除', 'trash', 'delete-btn', () => fileFunctions.deleteFile(file.name)));
+        rightPart.appendChild(
+          helpers.createButton('删除', 'trash', 'delete-btn', () => fileFunctions.deleteFile(file.name))
+        );
       }
 
+      li.appendChild(leftPart);
+      li.appendChild(rightPart);
       ul.appendChild(li);
     });
   },
 
   downloadFile: async (name) => {
-    const res = await helpers.fetchWithAuth(`${api.download}&file=${encodeURIComponent(name)}`);
+    const res = await helpers.fetchWithAuth(`${api.download}?file=${encodeURIComponent(name)}`);
     if (!res) return;
-    
+
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -215,10 +221,11 @@ const fileFunctions = {
 
   deleteFile: async (name) => {
     if (!confirm(`确认删除 ${name}？`)) return;
-    
-    const res = await helpers.fetchWithAuth(`${api.delete}&file=${encodeURIComponent(name)}`, { method: "POST" });
+
+    const url = `${api.delete}?file=${encodeURIComponent(name)}`;
+    const res = await helpers.fetchWithAuth(url, { method: "POST" });
     if (!res) return;
-    
+
     fileFunctions.loadFiles();
     if (role === 'admin') fileFunctions.loadTrash();
   },
@@ -246,14 +253,17 @@ const fileFunctions = {
     const name = prompt("请输入文件夹名称：");
     if (!name) return;
 
-    const res = await helpers.fetchWithAuth(api.mkdir, {
+    const url = api.mkdir;
+    const res = await helpers.fetchWithAuth(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name })
     });
+
     if (!res) return;
-    
-    helpers.showAlert(await res.text(), false);
+
+    const text = await res.text();
+    helpers.showAlert(text, false);
     fileFunctions.loadFiles();
   },
 
@@ -284,11 +294,11 @@ const fileFunctions = {
   loadTrash: async () => {
     const res = await helpers.fetchWithAuth(api.trash.list);
     if (!res) return;
-    
+
     const trash = await res.json();
     const ul = document.getElementById("trashList");
     ul.innerHTML = '';
-    
+
     if (trash.length === 0) {
       ul.innerHTML = '<li class="empty-state">回收站为空</li>';
       return;
@@ -305,20 +315,22 @@ const fileFunctions = {
 
   restoreTrash: async (name) => {
     if (!confirm(`确认还原 ${name}？`)) return;
-    
-    const res = await helpers.fetchWithAuth(`${api.trash.restore}&file=${encodeURIComponent(name)}`, { method: "POST" });
+
+    const url = `${api.trash.restore}?file=${encodeURIComponent(name)}`;
+    const res = await helpers.fetchWithAuth(url, { method: "POST" });
     if (!res) return;
-    
+
     fileFunctions.loadTrash();
     fileFunctions.loadFiles();
   },
 
   deleteTrash: async (name) => {
     if (!confirm(`确认彻底删除 ${name}？`)) return;
-    
-    const res = await helpers.fetchWithAuth(`${api.trash.delete}&file=${encodeURIComponent(name)}`, { method: "POST" });
+
+    const url = `${api.trash.delete}?file=${encodeURIComponent(name)}`;
+    const res = await helpers.fetchWithAuth(url, { method: "POST" });
     if (!res) return;
-    
+
     fileFunctions.loadTrash();
   }
 };
@@ -327,7 +339,7 @@ const userFunctions = {
   openUserModal: async () => {
     const res = await helpers.fetchWithAuth(api.auth.manage);
     if (!res) return;
-    
+
     const users = await res.json();
     const modal = document.createElement("div");
     modal.className = "modal";
@@ -335,13 +347,7 @@ const userFunctions = {
       <div class="modal-content">
         <h3><i class="fas fa-users-cog"></i> 用户管理</h3>
         <table border="1">
-          <thead>
-            <tr>
-              <th>密码</th>
-              <th>角色</th>
-              <th>操作</th>
-            </tr>
-          </thead>
+          <thead><tr><th>密码</th><th>角色</th><th>操作</th></tr></thead>
           <tbody id="userTableBody">
             ${users.users.map(user => `
               <tr>
@@ -361,9 +367,7 @@ const userFunctions = {
         <div class="add-user-form">
           <input id="newUserKey" placeholder="输入新用户密码" type="password">
           <select id="newUserRole">
-            ${Object.entries(roleNames).map(([value, text]) => `
-              <option value="${value}">${text}</option>
-            `).join('')}
+            ${Object.entries(roleNames).map(([value, text]) => `<option value="${value}">${text}</option>`).join('')}
           </select>
           <button onclick="userFunctions.addUser()">
             <i class="fas fa-user-plus"></i> 添加用户
@@ -388,7 +392,7 @@ const userFunctions = {
       body: JSON.stringify({ action: "add", user: { key, role: roleVal }, key: auth })
     });
     if (!res) return;
-    
+
     helpers.showAlert("添加成功", false);
     document.querySelector(".modal").remove();
     userFunctions.openUserModal();
@@ -396,21 +400,20 @@ const userFunctions = {
 
   deleteUser: async (keyToDelete) => {
     if (!confirm(`确认删除用户 ${keyToDelete}？此操作不可撤销！`)) return;
-    
+
     const res = await helpers.fetchWithAuth(api.auth.manage, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "delete", user: { key: keyToDelete }, key: auth })
     });
     if (!res) return;
-    
+
     helpers.showAlert("删除成功", false);
     document.querySelector(".modal").remove();
     userFunctions.openUserModal();
   }
 };
 
-// Global exports
 window.login = authFunctions.login;
 window.logout = authFunctions.logout;
 window.upload = fileFunctions.upload;
