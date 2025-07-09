@@ -7,7 +7,6 @@ const loginBox = document.getElementById('login-box');
 const pwdInput = document.getElementById('pwd');
 const roleElement = document.getElementById('role');
 
-// Role display names
 const roleNames = {
   admin: '管理员',
   upload: '高级用户',
