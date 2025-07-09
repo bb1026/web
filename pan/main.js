@@ -73,7 +73,6 @@ function renderMainPanel() {
 
 async function loadFiles() {
   if (!auth) return;
-
   try {
     const res = await fetch(`https://pan.0515364.xyz/list?key=${auth}`);
     if (!res.ok) throw new Error("加载失败");
@@ -128,8 +127,23 @@ function toggleSelect(name, checked) {
 
 async function downloadFile(name) {
   if (!auth) return alert("请先登录");
-  const url = `https://pan.0515364.xyz/download?key=${auth}&file=${encodeURIComponent(name)}`;
-  window.open(url, "_blank");
+
+  try {
+    const res = await fetch(`https://pan.0515364.xyz/download?key=${auth}&file=${encodeURIComponent(name)}`);
+    if (!res.ok) throw new Error("下载失败");
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name.split("/").pop();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("下载失败：" + err.message);
+  }
 }
 
 async function deleteFile(name) {
@@ -137,7 +151,9 @@ async function deleteFile(name) {
   if (!confirm(`确认删除 ${name}？`)) return;
 
   try {
-    const res = await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
+    const res = await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, {
+      method: "POST"
+    });
     if (!res.ok) throw new Error("删除失败");
     loadFiles();
   } catch (err) {
@@ -150,7 +166,9 @@ async function batchDelete() {
   if (!confirm(`确认删除 ${selectedFiles.size} 个文件？`)) return;
 
   for (const name of selectedFiles) {
-    await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
+    await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, {
+      method: "POST"
+    });
   }
 
   alert("批量删除完成");
@@ -230,7 +248,9 @@ async function loadTrash() {
 
 async function restoreTrash(name) {
   if (!confirm(`确认还原 ${name}？`)) return;
-  const res = await fetch(`https://pan.0515364.xyz/trash/restore?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
+  const res = await fetch(`https://pan.0515364.xyz/trash/restore?key=${auth}&file=${encodeURIComponent(name)}`, {
+    method: "POST"
+  });
   if (res.ok) {
     loadTrash();
     loadFiles();
@@ -239,7 +259,9 @@ async function restoreTrash(name) {
 
 async function deleteTrash(name) {
   if (!confirm(`确认彻底删除 ${name}？`)) return;
-  const res = await fetch(`https://pan.0515364.xyz/trash/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
+  const res = await fetch(`https://pan.0515364.xyz/trash/delete?key=${auth}&file=${encodeURIComponent(name)}`, {
+    method: "POST"
+  });
   if (res.ok) loadTrash();
 }
 
@@ -263,7 +285,6 @@ async function openUserModal() {
       <button onclick="this.parentNode.parentNode.remove()">关闭</button>
     </div>
   `;
-
   document.body.appendChild(modal);
 }
 
@@ -309,6 +330,3 @@ window.deleteFile = deleteFile;
 window.restoreTrash = restoreTrash;
 window.deleteTrash = deleteTrash;
 window.toggleSelect = toggleSelect;
-
-// ✅ 确保按钮点击绑定（兼容非 onClick 写法）
-document.getElementById("loginBtn").onclick = login;
