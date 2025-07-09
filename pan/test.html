@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>个人网盘</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <div class="user-role" id="role">未登录</div>
+    <div class="logout-btn hidden" onclick="logout()">退出</div>
+  </div>
+  <div class="login-box" id="login-box">
+    <h2>个人网盘</h2>
+    <input type="password" id="pwd" placeholder="输入密码" />
+    <button onclick="login()">登录</button>
+  </div>
+  <div id="dynamic-container"></div>
+
+  <!-- ✅ 手动加载 main.js 的按钮 -->
+  <div style="margin-top:20px;text-align:center;">
+    <button onclick="loadMainJS()">📦 加载功能脚本 main.js</button>
+    <div id="js-status" style="color:gray;margin-top:5px;">main.js 未加载</div>
+  </div>
+
+  <!-- ✅ 添加动态加载 main.js 的函数 -->
+  <script>
+    function loadMainJS() {
+      const statusEl = document.getElementById("js-status");
+      const script = document.createElement("script");
+      script.src = "main.js";
+      script.onload = () => {
+        statusEl.textContent = "✅ main.js 已成功加载";
+        statusEl.style.color = "green";
+      };
+      script.onerror = () => {
+        statusEl.textContent = "❌ 加载失败，请检查路径或权限";
+        statusEl.style.color = "red";
+      };
+      document.body.appendChild(script);
+      statusEl.textContent = "⏳ 正在加载 main.js...";
+      statusEl.style.color = "gray";
+    }
+  </script>
+</body>
+</html>
