@@ -2,46 +2,53 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>个人网盘</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>测试登录</title>
 </head>
 <body>
-  <div class="top-bar">
-    <div class="user-role" id="role">未登录</div>
-    <div class="logout-btn hidden" onclick="logout()">退出</div>
-  </div>
-  <div class="login-box" id="login-box">
-    <h2>个人网盘</h2>
-    <input type="password" id="pwd" placeholder="输入密码" />
-    <button onclick="login()">登录</button>
-  </div>
-  <div id="dynamic-container"></div>
+  <h2>测试登录面板</h2>
+  <input type="password" id="pwd" placeholder="输入密码">
+  <button onclick="login()">登录</button>
+  <div id="result" style="margin-top:1em;color:gray">等待登录...</div>
 
-  <!-- ✅ 手动加载 main.js 的按钮 -->
-  <div style="margin-top:20px;text-align:center;">
-    <button onclick="loadMainJS()">📦 加载功能脚本 main.js</button>
-    <div id="js-status" style="color:gray;margin-top:5px;">main.js 未加载</div>
-  </div>
-
-  <!-- ✅ 添加动态加载 main.js 的函数 -->
   <script>
-    function loadMainJS() {
-      const statusEl = document.getElementById("js-status");
-      const script = document.createElement("script");
-      script.src = "main.js";
-      script.onload = () => {
-        statusEl.textContent = "✅ main.js 已成功加载";
-        statusEl.style.color = "green";
-      };
-      script.onerror = () => {
-        statusEl.textContent = "❌ 加载失败，请检查路径或权限";
-        statusEl.style.color = "red";
-      };
-      document.body.appendChild(script);
-      statusEl.textContent = "⏳ 正在加载 main.js...";
-      statusEl.style.color = "gray";
+    async function login() {
+      const pwd = document.getElementById("pwd").value.trim();
+      const result = document.getElementById("result");
+
+      console.log("login() 被调用，输入密码 =", pwd);
+      if (!pwd) {
+        result.textContent = "❌ 请输入密码";
+        result.style.color = "red";
+        return;
+      }
+
+      try {
+        const res = await fetch("https://pan.0515364.xyz/whoami", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: pwd
+        });
+
+        if (!res.ok) throw new Error("网络错误：" + res.status);
+        const data = await res.json();
+        console.log("返回结果 =", data);
+
+        if (data.role) {
+          result.textContent = `✅ 登录成功，角色：${data.role}`;
+          result.style.color = "green";
+        } else {
+          result.textContent = "❌ 密码错误";
+          result.style.color = "red";
+        }
+      } catch (err) {
+        console.error("登录异常：", err);
+        result.textContent = "❌ 异常：" + err.message;
+        result.style.color = "red";
+      }
     }
+
+    // 明确挂载
+    window.login = login;
   </script>
 </body>
 </html>
