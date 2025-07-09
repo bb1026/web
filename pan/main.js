@@ -292,3 +292,10 @@ async function deleteUser(keyToDelete) {
   document.querySelector(".modal").remove();
   openUserModal();
 }
+// 👇 将函数显式挂载到全局 window 对象
+window.login = login;
+window.logout = logout;
+window.upload = upload;
+window.newDir = newDir;
+window.batchDelete = batchDelete;
+window.openUserModal = openUserModal;
