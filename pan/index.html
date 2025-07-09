@@ -11,13 +11,16 @@
     <div class="user-role" id="role">未登录</div>
     <div class="logout-btn hidden" onclick="logout()">退出</div>
   </div>
+
   <div class="login-box" id="login-box">
     <h2>个人网盘</h2>
     <input type="password" id="pwd" placeholder="输入密码" />
-    <button onclick="login()">登录</button>
+    <button id="loginBtn">登录</button>
   </div>
+
   <div id="dynamic-container"></div>
-  
+
+  <!-- ✅ 主逻辑脚本，必须在最后 -->
   <script src="main.js"></script>
 </body>
 </html>
