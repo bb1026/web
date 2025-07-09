@@ -4,6 +4,7 @@ let fileList = [];
 let selectedFiles = new Set();
 const dynamicContainer = document.getElementById('dynamic-container');
 
+// 登录功能
 async function login() {
   const pwd = document.getElementById("pwd").value.trim();
   if (!pwd) return alert("请输入密码");
@@ -18,7 +19,6 @@ async function login() {
     if (!res.ok) throw new Error("网络请求失败");
 
     const data = await res.json();
-
     if (data.role) {
       auth = pwd;
       role = data.role;
@@ -75,9 +75,8 @@ async function loadFiles() {
   if (!auth) return;
 
   try {
-    const res = await fetch(\`https://pan.0515364.xyz/list?key=\${auth}\`);
+    const res = await fetch(`https://pan.0515364.xyz/list?key=${auth}`);
     if (!res.ok) throw new Error("加载失败");
-
     fileList = await res.json();
     renderFileList();
   } catch (err) {
@@ -129,16 +128,16 @@ function toggleSelect(name, checked) {
 
 async function downloadFile(name) {
   if (!auth) return alert("请先登录");
-  const url = \`https://pan.0515364.xyz/download?key=\${auth}&file=\${encodeURIComponent(name)}\`;
+  const url = `https://pan.0515364.xyz/download?key=${auth}&file=${encodeURIComponent(name)}`;
   window.open(url, "_blank");
 }
 
 async function deleteFile(name) {
   if (!auth) return;
-  if (!confirm(\`确认删除 \${name}？\`)) return;
+  if (!confirm(`确认删除 ${name}？`)) return;
 
   try {
-    const res = await fetch(\`https://pan.0515364.xyz/delete?key=\${auth}&file=\${encodeURIComponent(name)}\`, { method: "POST" });
+    const res = await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
     if (!res.ok) throw new Error("删除失败");
     loadFiles();
   } catch (err) {
@@ -148,10 +147,10 @@ async function deleteFile(name) {
 
 async function batchDelete() {
   if (selectedFiles.size === 0) return alert("请选择文件");
-  if (!confirm(\`确认删除 \${selectedFiles.size} 个文件？\`)) return;
+  if (!confirm(`确认删除 ${selectedFiles.size} 个文件？`)) return;
 
   for (const name of selectedFiles) {
-    await fetch(\`https://pan.0515364.xyz/delete?key=\${auth}&file=\${encodeURIComponent(name)}\`, { method: "POST" });
+    await fetch(`https://pan.0515364.xyz/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
   }
 
   alert("批量删除完成");
@@ -166,7 +165,7 @@ async function newDir() {
   if (!name) return;
 
   try {
-    const res = await fetch(\`https://pan.0515364.xyz/mkdir?key=\${auth}\`, {
+    const res = await fetch(`https://pan.0515364.xyz/mkdir?key=${auth}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name })
@@ -188,12 +187,12 @@ async function upload() {
     const form = new FormData();
     form.append("file", file);
 
-    const res = await fetch(\`https://pan.0515364.xyz/upload?key=\${auth}\`, {
+    const res = await fetch(`https://pan.0515364.xyz/upload?key=${auth}`, {
       method: "POST",
       body: form
     });
 
-    if (!res.ok) alert(\`\${file.name} 上传失败\`);
+    if (!res.ok) alert(`${file.name} 上传失败`);
   }
 
   input.value = "";
@@ -202,7 +201,7 @@ async function upload() {
 
 async function loadTrash() {
   try {
-    const res = await fetch(\`https://pan.0515364.xyz/trash/list?key=\${auth}\`);
+    const res = await fetch(`https://pan.0515364.xyz/trash/list?key=${auth}`);
     if (!res.ok) throw new Error("获取失败");
     const trash = await res.json();
 
@@ -230,37 +229,40 @@ async function loadTrash() {
 }
 
 async function restoreTrash(name) {
-  if (!confirm(\`确认还原 \${name}？\`)) return;
-  const res = await fetch(\`https://pan.0515364.xyz/trash/restore?key=\${auth}&file=\${encodeURIComponent(name)}\`, { method: "POST" });
-  if (res.ok) loadTrash();
+  if (!confirm(`确认还原 ${name}？`)) return;
+  const res = await fetch(`https://pan.0515364.xyz/trash/restore?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
+  if (res.ok) {
+    loadTrash();
+    loadFiles();
+  }
 }
 
 async function deleteTrash(name) {
-  if (!confirm(\`确认彻底删除 \${name}？\`)) return;
-  const res = await fetch(\`https://pan.0515364.xyz/trash/delete?key=\${auth}&file=\${encodeURIComponent(name)}\`, { method: "POST" });
+  if (!confirm(`确认彻底删除 ${name}？`)) return;
+  const res = await fetch(`https://pan.0515364.xyz/trash/delete?key=${auth}&file=${encodeURIComponent(name)}`, { method: "POST" });
   if (res.ok) loadTrash();
 }
 
 async function openUserModal() {
   if (role !== 'admin') return;
 
-  const users = await fetch(\`https://pan.0515364.xyz/auth/manage?key=\${auth}\`).then(r => r.json());
+  const users = await fetch(`https://pan.0515364.xyz/auth/manage?key=${auth}`).then(r => r.json());
   const list = users.users.map(user =>
-    \`<tr><td>\${user.key}</td><td>\${user.role}</td><td>\${user.key !== auth ? '<button onclick="deleteUser(\'\${user.key}\')">删除</button>' : '-'}</td></tr>\`
+    `<tr><td>${user.key}</td><td>${user.role}</td><td>${user.key !== auth ? '<button onclick="deleteUser(\'' + user.key + '\')">删除</button>' : '-'}</td></tr>`
   ).join("");
 
   const modal = document.createElement("div");
   modal.className = "modal";
-  modal.innerHTML = \`
+  modal.innerHTML = `
     <div class="modal-content">
       <h3>用户管理</h3>
-      <table border="1"><thead><tr><th>密码</th><th>角色</th><th>操作</th></tr></thead><tbody>\${list}</tbody></table>
+      <table border="1"><thead><tr><th>密码</th><th>角色</th><th>操作</th></tr></thead><tbody>${list}</tbody></table>
       <input id="newUserKey" placeholder="密码">
       <select id="newUserRole"><option value="admin">admin</option><option value="upload">upload</option><option value="readonly">readonly</option></select>
       <button onclick="addUser()">添加用户</button>
       <button onclick="this.parentNode.parentNode.remove()">关闭</button>
     </div>
-  \`;
+  `;
 
   document.body.appendChild(modal);
 }
@@ -282,7 +284,7 @@ async function addUser() {
 }
 
 async function deleteUser(keyToDelete) {
-  if (!confirm(\`确认删除用户 \${keyToDelete}？\`)) return;
+  if (!confirm(`确认删除用户 ${keyToDelete}？`)) return;
   await fetch("https://pan.0515364.xyz/auth/manage", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -292,7 +294,8 @@ async function deleteUser(keyToDelete) {
   document.querySelector(".modal").remove();
   openUserModal();
 }
-// 👇 将函数显式挂载到全局 window 对象
+
+// ✅ 全局绑定
 window.login = login;
 window.logout = logout;
 window.upload = upload;
@@ -306,3 +309,6 @@ window.deleteFile = deleteFile;
 window.restoreTrash = restoreTrash;
 window.deleteTrash = deleteTrash;
 window.toggleSelect = toggleSelect;
+
+// ✅ 确保按钮点击绑定（兼容非 onClick 写法）
+document.getElementById("loginBtn").onclick = login;
