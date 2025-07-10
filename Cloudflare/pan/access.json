@@ -20,6 +20,10 @@
       {
         "password": "456789",
         "remark": "只读用户"
+      },
+      {
+        "password": "111111",
+        "remark": "只读用户ABC"
       }
     ]
   },
