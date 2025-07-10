@@ -16,57 +16,45 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname.replace(/^\/+/, '');
 
-      // === 权限配置：从 R2 读取 __config__/access.json ===
+      // 权限配置
       let accessMap = {};
       try {
         const configObj = await env.BUCKET.get('__config__/access.json');
         if (configObj) {
           const config = JSON.parse(await configObj.text());
-          accessMap = config.accessKeys || {}; // 格式：{ "密钥": "角色" }
+          accessMap = config.accessKeys || {};
         }
       } catch (err) {
-        console.error('读取权限配置失败:', err);
-        return new Response('权限配置错误', {
-          status: 500,
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        });
+        return new Response('权限配置错误', { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } });
       }
 
-      // 解析请求中的密钥
       let key = url.searchParams.get('key') || '';
       let role = accessMap[key] || '';
 
-      // === 1. 身份验证接口 ===
+      // 身份验证
       if (request.method === 'POST' && path === 'whoami') {
         key = (await request.text()).trim();
         role = accessMap[key] || '';
         return jsonResponse({ role });
       }
 
-      // === 2. 文件操作接口 ===
+      // 文件列表
       if (path === 'list' && role) {
-  const prefix = url.searchParams.get('path') || '';
-  const list = await env.BUCKET.list({
-    prefix: prefix ? `${prefix.replace(/^\/+|\/+$/g, '')}/` : '',
-    include: ['customMetadata']
-  });
+        const list = await env.BUCKET.list({ include: ['customMetadata'] });
+        const visibleFiles = list.objects.filter(o =>
+          o.customMetadata?.visible !== 'false' &&
+          !o.key.startsWith('__config__/') &&
+          !o.key.startsWith('__trash__/') &&
+          !o.key.startsWith('__share__/')
+        );
+        return jsonResponse(visibleFiles.map(file => ({
+          name: file.key,
+          uploader: file.customMetadata?.uploader || 'system',
+          size: file.size
+        })));
+      }
 
-  const visibleFiles = list.objects.filter(o =>
-    o.customMetadata?.visible !== 'false' &&
-    !o.key.startsWith('__config__/') &&
-    !o.key.startsWith('__trash__/') &&
-    !o.key.startsWith('__share__/') &&
-    o.key !== prefix // 排除当前文件夹自己
-  );
-
-  return jsonResponse(visibleFiles.map(file => ({
-    name: file.key.replace(prefix ? prefix + '/' : '', ''), // 显示相对路径
-    isDirectory: file.key.endsWith('/'),
-    uploader: file.customMetadata?.uploader || 'system',
-    size: file.size
-  })));
-}
-
+      // 下载
       if (path === 'download' && role) {
         const fileName = url.searchParams.get('file');
         const file = await env.BUCKET.get(fileName);
@@ -79,13 +67,12 @@ export default {
         });
       }
 
+      // 上传（单文件）
       if (path === 'upload' && (role === 'upload' || role === 'admin')) {
         const form = await request.formData();
         const file = form.get('file');
         if (!file) return new Response('未找到文件', { status: 400 });
-        const fullName = pathParam ? pathParam + '/' + file.name : file.name;
-await env.BUCKET.put(fullName, file.stream(), 
-  {
+        await env.BUCKET.put(file.name, file.stream(), {
           httpMetadata: { contentType: file.type },
           customMetadata: { uploader: key, visible: 'true' }
         });
@@ -94,6 +81,7 @@ await env.BUCKET.put(fullName, file.stream(),
         });
       }
 
+      // 删除文件（移入回收站）
       if (path === 'delete' && (role === 'admin' || role === 'upload')) {
         const fileName = url.searchParams.get('file');
         const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
@@ -110,65 +98,8 @@ await env.BUCKET.put(fullName, file.stream(),
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
       }
-      
-      if (path === 'mkdir') {
-  // CORS 预检请求处理
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      }
-    });
-  }
 
-  if (role !== 'admin' && role !== 'upload') {
-    return new Response('⛔ 无权限', {
-      status: 403,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  let name = '';
-  const contentType = request.headers.get('Content-Type') || '';
-
-  try {
-    if (contentType.includes('application/json')) {
-      const body = await request.json();
-      name = (body.name || '').trim();
-    } else if (contentType.includes('text/plain')) {
-      name = (await request.text()).trim();
-    }
-  } catch {
-    return new Response('❌ 无法解析请求体', {
-      status: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  if (!name) {
-    return new Response('❌ 名称不能为空', {
-      status: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  if (!name.endsWith('/')) name += '/';
-
-  await env.BUCKET.put(name, '', {
-    customMetadata: { uploader: key, visible: 'true' }
-  });
-
-  return new Response(`✅ 已添加文件夹：${name}`, {
-    headers: {
-      'Access-Control-Allow-Origin': '*'
-    }
-  });
-}
-
-      // === 3. 回收站接口 ===
+      // 回收站：列出
       if (path === 'trash/list' && role === 'admin') {
         const trash = await env.BUCKET.list({ prefix: '__trash__/', include: ['customMetadata'] });
         return jsonResponse(trash.objects.map(o => ({
@@ -177,6 +108,7 @@ await env.BUCKET.put(fullName, file.stream(),
         })));
       }
 
+      // 回收站：还原
       if (path === 'trash/restore' && role === 'admin') {
         const name = url.searchParams.get('file');
         const file = await env.BUCKET.get(`__trash__/${name}`);
@@ -191,6 +123,7 @@ await env.BUCKET.put(fullName, file.stream(),
         });
       }
 
+      // 回收站：彻底删除
       if (path === 'trash/delete' && role === 'admin') {
         const name = url.searchParams.get('file');
         await env.BUCKET.delete(`__trash__/${name}`);
@@ -198,59 +131,8 @@ await env.BUCKET.put(fullName, file.stream(),
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
       }
-      
-      // === 文件移动功能 ===
-if (path === 'move' && (role === 'admin' || role === 'upload')) {
-  if (request.method !== 'POST') {
-    return new Response('仅支持 POST', {
-      status: 405,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
 
-  let body = {};
-  try {
-    body = await request.json();
-  } catch {
-    return new Response('❌ 无法解析请求体', {
-      status: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  const { items, target, key: requestKey } = body;
-  if (!Array.isArray(items) || !target || accessMap[requestKey] !== role) {
-    return new Response('❌ 参数错误或权限验证失败', {
-      status: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  for (const oldKey of items) {
-    const obj = await env.BUCKET.get(oldKey, { include: ['customMetadata'] });
-    if (!obj) continue;
-
-    if (role === 'upload' && obj.customMetadata?.uploader !== requestKey) {
-      continue; // 无权移动他人文件
-    }
-
-    const fileName = oldKey.split('/').pop();
-    const newKey = `${target.replace(/\/+$/, '')}/${fileName}`;
-
-    await env.BUCKET.put(newKey, obj.body, {
-      httpMetadata: obj.httpMetadata,
-      customMetadata: obj.customMetadata
-    });
-
-    await env.BUCKET.delete(oldKey);
-  }
-
-  return new Response('✅ 移动成功', {
-    headers: { 'Access-Control-Allow-Origin': '*' }
-  });
-}
-
-      // === 4. 用户管理接口（仅 admin 可用） ===
+      // 用户管理
       if (path === 'auth/manage') {
         if (role !== 'admin') return new Response('无权限', {
           status: 403,
@@ -279,7 +161,7 @@ if (path === 'move' && (role === 'admin' || role === 'upload')) {
         }
       }
 
-      // === 5. 自动清理 ===
+      // 自动清理回收站（7 天）
       if (Math.random() < 0.1) {
         const now = Date.now();
         const trash = await env.BUCKET.list({ prefix: '__trash__/' });
@@ -294,7 +176,6 @@ if (path === 'move' && (role === 'admin' || role === 'upload')) {
         headers: { 'Access-Control-Allow-Origin': '*' }
       });
     } catch (err) {
-      console.error('错误:', err);
       return new Response(`服务器错误: ${err.message}`, {
         status: 500,
         headers: { 'Access-Control-Allow-Origin': '*' }
