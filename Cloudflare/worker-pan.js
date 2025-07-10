@@ -83,7 +83,9 @@ export default {
         const form = await request.formData();
         const file = form.get('file');
         if (!file) return new Response('未找到文件', { status: 400 });
-        await env.BUCKET.put(file.name, file.stream(), {
+        const fullName = pathParam ? pathParam + '/' + file.name : file.name;
+await env.BUCKET.put(fullName, file.stream(), 
+  {
           httpMetadata: { contentType: file.type },
           customMetadata: { uploader: key, visible: 'true' }
         });
