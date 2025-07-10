@@ -100,19 +100,63 @@ export default {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
       }
-
-      if (path === 'mkdir' && (role === 'admin' || role === 'upload')) {
-        const body = await request.json().catch(() => ({}));
-        let name = (body.name || '').trim();
-        if (!name) return new Response('❌ 名称不能为空');
-        if (!name.endsWith('/')) name += '/';
-        await env.BUCKET.put(name, '', {
-          customMetadata: { uploader: key, visible: 'true' }
-        });
-        return new Response(`✅ 已添加文件夹：${name}`, {
-          headers: { 'Access-Control-Allow-Origin': '*' }
-        });
+      
+      if (path === 'mkdir') {
+  // CORS 预检请求处理
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
       }
+    });
+  }
+
+  if (role !== 'admin' && role !== 'upload') {
+    return new Response('⛔ 无权限', {
+      status: 403,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  let name = '';
+  const contentType = request.headers.get('Content-Type') || '';
+
+  try {
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      name = (body.name || '').trim();
+    } else if (contentType.includes('text/plain')) {
+      name = (await request.text()).trim();
+    }
+  } catch {
+    return new Response('❌ 无法解析请求体', {
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  if (!name) {
+    return new Response('❌ 名称不能为空', {
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  if (!name.endsWith('/')) name += '/';
+
+  await env.BUCKET.put(name, '', {
+    customMetadata: { uploader: key, visible: 'true' }
+  });
+
+  return new Response(`✅ 已添加文件夹：${name}`, {
+    headers: {
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
 
       // === 3. 回收站接口 ===
       if (path === 'trash/list' && role === 'admin') {
