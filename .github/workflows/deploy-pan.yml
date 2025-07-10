@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Cloudflare/pan/*.js'  # 只监控.js文件的变化
-      - 'Cloudflare/pan/wrangler-pan.toml'  # 配置文件变化也要触发
+      - 'Cloudflare/pan/worker-pan.js'
+      - 'Cloudflare/pan/wrangler-pan.toml'
   workflow_dispatch:
 
 jobs:
