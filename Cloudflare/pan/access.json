@@ -1,0 +1,7 @@
+{
+  "accessKeys": {
+    "9894432": {"password": "admin", "remark": "管理员"},
+    "upload123": {"password": "upload", "remark": "upload用户"},
+    "readonly": {"password": "readonly", "remark": "readonly用户"}
+  }
+}
