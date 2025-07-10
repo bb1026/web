@@ -45,19 +45,27 @@ export default {
 
       // === 2. 文件操作接口 ===
       if (path === 'list' && role) {
-        const list = await env.BUCKET.list({ include: ['customMetadata'] });
-        const visibleFiles = list.objects.filter(o =>
-          o.customMetadata?.visible !== 'false' &&
-          !o.key.startsWith('__config__/') &&
-          !o.key.startsWith('__trash__/') &&
-          !o.key.startsWith('__share__/')
-        );
-        return jsonResponse(visibleFiles.map(file => ({
-          name: file.key,
-          uploader: file.customMetadata?.uploader || 'system',
-          size: file.size
-        })));
-      }
+  const prefix = url.searchParams.get('path') || '';
+  const list = await env.BUCKET.list({
+    prefix: prefix ? `${prefix.replace(/^\/+|\/+$/g, '')}/` : '',
+    include: ['customMetadata']
+  });
+
+  const visibleFiles = list.objects.filter(o =>
+    o.customMetadata?.visible !== 'false' &&
+    !o.key.startsWith('__config__/') &&
+    !o.key.startsWith('__trash__/') &&
+    !o.key.startsWith('__share__/') &&
+    o.key !== prefix // 排除当前文件夹自己
+  );
+
+  return jsonResponse(visibleFiles.map(file => ({
+    name: file.key.replace(prefix ? prefix + '/' : '', ''), // 显示相对路径
+    isDirectory: file.key.endsWith('/'),
+    uploader: file.customMetadata?.uploader || 'system',
+    size: file.size
+  })));
+}
 
       if (path === 'download' && role) {
         const fileName = url.searchParams.get('file');
