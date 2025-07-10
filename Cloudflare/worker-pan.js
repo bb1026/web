@@ -188,6 +188,57 @@ export default {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
       }
+      
+      // === 文件移动功能 ===
+if (path === 'move' && (role === 'admin' || role === 'upload')) {
+  if (request.method !== 'POST') {
+    return new Response('仅支持 POST', {
+      status: 405,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  let body = {};
+  try {
+    body = await request.json();
+  } catch {
+    return new Response('❌ 无法解析请求体', {
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  const { items, target, key: requestKey } = body;
+  if (!Array.isArray(items) || !target || accessMap[requestKey] !== role) {
+    return new Response('❌ 参数错误或权限验证失败', {
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  for (const oldKey of items) {
+    const obj = await env.BUCKET.get(oldKey, { include: ['customMetadata'] });
+    if (!obj) continue;
+
+    if (role === 'upload' && obj.customMetadata?.uploader !== requestKey) {
+      continue; // 无权移动他人文件
+    }
+
+    const fileName = oldKey.split('/').pop();
+    const newKey = `${target.replace(/\/+$/, '')}/${fileName}`;
+
+    await env.BUCKET.put(newKey, obj.body, {
+      httpMetadata: obj.httpMetadata,
+      customMetadata: obj.customMetadata
+    });
+
+    await env.BUCKET.delete(oldKey);
+  }
+
+  return new Response('✅ 移动成功', {
+    headers: { 'Access-Control-Allow-Origin': '*' }
+  });
+}
 
       // === 4. 用户管理接口（仅 admin 可用） ===
       if (path === 'auth/manage') {
