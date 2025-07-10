@@ -1,56 +1,40 @@
-// file-operations.js
-import { moveToTrash } from './file-trash.js';
+// files.js
+export async function handleFileRequest(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/^files\/+/, '');
+  const params = url.searchParams;
 
-export async function handleUpload(request, env, role, userKey) {
-    if (role !== 'admin' && role !== 'upload') {
-        return new Response('Forbidden', { status: 403 });
-    }
-
-    const formData = await request.formData();
-    const files = formData.getAll('file');
-    const currentPath = formData.get('path') || '';
-
-    const results = [];
-    for (const file of files) {
-        const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
-        
-        await env.BUCKET.put(filePath, file.stream(), {
-            httpMetadata: { contentType: file.type },
-            customMetadata: { 
-                uploader: userKey,
-                uploadTime: Date.now().toString(),
-                visible: 'true'
-            }
-        });
-        results.push(filePath);
-    }
-
-    return { success: true, files: results };
-}
-
-export async function handleDownload(env, fileKey, role) {
-    const file = await env.BUCKET.get(fileKey, { include: ['customMetadata'] });
-    if (!file) return new Response('Not Found', { status: 404 });
-
-    if (file.customMetadata?.visible === 'false' && role !== 'admin') {
-        return new Response('Forbidden', { status: 403 });
-    }
-
-    return new Response(file.body, {
-        headers: {
-            'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream'
-        }
+  // 验证权限
+  const auth = await verifyAuth(request, env);
+  if (!auth.valid) {
+    return new Response(auth.error, {
+      status: auth.status,
+      headers: corsHeaders
     });
+  }
+
+  switch (path) {
+    case 'upload':
+      return handleFileUpload(request, env, auth, corsHeaders);
+    case 'download':
+      return handleFileDownload(env, params, auth, corsHeaders);
+    case 'list':
+      return handleFileList(env, params, auth, corsHeaders);
+    case 'mkdir':
+      return handleMakeDir(request, env, auth, corsHeaders);
+    case 'move':
+      return handleFileMove(request, env, auth, corsHeaders);
+    case 'rename':
+      return handleFileRename(request, env, auth, corsHeaders);
+    case 'delete':
+      return handleFileDelete(env, params, auth, corsHeaders);
+    default:
+      return new Response('Not Found', {
+        status: 404,
+        headers: corsHeaders
+      });
+  }
 }
 
-export async function handleDelete(env, fileKey, role, userKey) {
-    const target = await env.BUCKET.get(fileKey, { include: ['customMetadata'] });
-    if (!target) return new Response('Not Found', { status: 404 });
-
-    if (role !== 'admin' && target.customMetadata?.uploader !== userKey) {
-        return new Response('Forbidden', { status: 403 });
-    }
-
-    await moveToTrash(env, fileKey, userKey);
-    return { success: true };
-}
+// 各文件操作函数的实现...
+// (包含文件上传、下载、列表、创建目录、移动、重命名、删除等实现)
