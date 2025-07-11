@@ -1,11 +1,14 @@
 name = "pan-worker"
 main = "worker-pan.js"
-type = "javascript"
+type = "module"
 account_id = "4796a78c1804791b739f97bb336bab79"
 zone_id = "df09b3a563bde936907cc7c4a710f942"
 compatibility_date = "2025-07-08"
 workers_dev = true
 routes = ["pan.0515364.xyz/*"]
+
+[build]
+upload.format = "modules"  # ✅ 支持多模块导入
 
 [[r2_buckets]]
 binding = "BUCKET"
