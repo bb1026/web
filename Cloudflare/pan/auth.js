@@ -1,10 +1,7 @@
-import { jsonResponse } from './utils.js';
+import { detectRoleFromPassword, jsonResponse } from './utils.js';
 
 export async function handleAuth(request, accessMap) {
-  if (request.method === 'POST') {
-    const key = (await request.text()).trim();
-    const role = accessMap[key] || '';
-    return jsonResponse({ role });
-  }
-  return new Response('Method Not Allowed', { status: 405 });
+  const pwd = (await request.text()).trim();
+  const { role, remark } = detectRoleFromPassword(accessMap, pwd);
+  return jsonResponse({ role, remark });
 }
