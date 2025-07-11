@@ -1,117 +1,116 @@
-// files.js
-import { corsHeaders, verifyAuth, getConfig, jsonResponse } from './utils.js';
+import { jsonResponse } from './utils.js';
 
-export async function handleFileRequest(request, env) {
+export async function handleFileOps(path, request, env, key, role, accessMap) {
   const url = new URL(request.url);
-  const path = url.pathname.replace(/^files\/+/, '');
-  const params = url.searchParams;
 
-  // 验证权限
-  const auth = await verifyAuth(request, env);
-  if (!auth.valid) {
-    return jsonResponse({ error: auth.error }, auth.status);
+  // 文件列表
+  if (path === 'list' && role) {
+    const list = await env.BUCKET.list({ include: ['customMetadata'] });
+    const visible = list.objects.filter(o =>
+      o.customMetadata?.visible !== 'false' &&
+      !o.key.startsWith('__config__/') &&
+      !o.key.startsWith('__trash__/') &&
+      !o.key.startsWith('__share__/')
+    );
+    return jsonResponse(visible.map(f => ({
+      name: f.key,
+      uploader: f.customMetadata?.uploader || 'system',
+      size: f.size
+    })));
   }
 
-  // 处理预检请求
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  // 下载
+  if (path === 'download' && role) {
+    const fileName = url.searchParams.get('file');
+    const file = await env.BUCKET.get(fileName);
+    if (!file) return new Response('文件不存在', { status: 404 });
+    return new Response(file.body, {
+      headers: {
+        'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName.split('/').pop())}"`
+      }
+    });
   }
 
-  try {
-    switch (path) {
-      case 'upload':
-        return handleFileUpload(request, env, auth);
-      case 'download':
-        return handleFileDownload(env, params, auth);
-      case 'list':
-        return handleFileList(env, auth);
-      case 'mkdir':
-        return handleMakeDir(request, env, auth);
-      default:
-        return new Response('Not Found', { 
-          status: 404,
-          headers: corsHeaders
-        });
+  // 上传
+  if (path === 'upload' && (role === 'admin' || role === 'upload')) {
+    const form = await request.formData();
+    const file = form.get('file');
+    if (!file) return new Response('未找到文件', { status: 400 });
+    await env.BUCKET.put(file.name, file.stream(), {
+      httpMetadata: { contentType: file.type },
+      customMetadata: { uploader: key, visible: 'true' }
+    });
+    return new Response('✅ 上传成功', {
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // 删除
+  if (path === 'delete' && (role === 'admin' || role === 'upload')) {
+    const fileName = url.searchParams.get('file');
+    const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
+    if (!file) return new Response('文件不存在', { status: 404 });
+    if (role === 'upload' && file.customMetadata?.uploader !== key)
+      return new Response('❌ 无权删除', { status: 403 });
+
+    const ts = Date.now();
+    await env.BUCKET.put(`__trash__/${fileName}__${ts}`, file.body, {
+      customMetadata: { ...file.customMetadata, deletedAt: ts.toString() }
+    });
+    await env.BUCKET.delete(fileName);
+    return new Response('✅ 已移入回收站', {
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // 新建文件夹
+  if (path === 'mkdir' && (role === 'admin' || role === 'upload')) {
+    const contentType = request.headers.get('Content-Type') || '';
+    let name = '';
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      name = body.name?.trim();
+    } else {
+      name = (await request.text()).trim();
     }
-  } catch (error) {
-    console.error('文件操作错误:', error);
-    return jsonResponse({ error: '服务器错误' }, 500);
-  }
-}
 
-async function handleFileUpload(request, env, auth) {
-  if (auth.role !== 'admin' && auth.role !== 'upload') {
-    return jsonResponse({ error: '无上传权限' }, 403);
-  }
+    if (!name) return new Response('❌ 名称不能为空', { status: 400 });
+    if (!name.endsWith('/')) name += '/';
 
-  const formData = await request.formData();
-  const file = formData.get('file');
-  if (!file) {
-    return jsonResponse({ error: '未选择文件' }, 400);
+    await env.BUCKET.put(name, '', {
+      customMetadata: { uploader: key, visible: 'true' }
+    });
+
+    return new Response(`✅ 已添加文件夹：${name}`, {
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   }
 
-  await env.BUCKET.put(file.name, file.stream(), {
-    httpMetadata: { contentType: file.type },
-    customMetadata: { 
-      uploader: auth.key,
-      uploadTime: new Date().toISOString()
+  // 移动文件
+  if (path === 'move' && (role === 'admin' || role === 'upload') && request.method === 'POST') {
+    const { items, target, key: requestKey } = await request.json();
+    if (!Array.isArray(items) || !target || accessMap[requestKey] !== role)
+      return new Response('❌ 参数错误或权限验证失败', { status: 400 });
+
+    for (const oldKey of items) {
+      const obj = await env.BUCKET.get(oldKey, { include: ['customMetadata'] });
+      if (!obj) continue;
+      if (role === 'upload' && obj.customMetadata?.uploader !== requestKey) continue;
+
+      const fileName = oldKey.split('/').pop();
+      const newKey = `${target.replace(/\/+$/, '')}/${fileName}`;
+      await env.BUCKET.put(newKey, obj.body, {
+        httpMetadata: obj.httpMetadata,
+        customMetadata: obj.customMetadata
+      });
+      await env.BUCKET.delete(oldKey);
     }
-  });
 
-  return jsonResponse({ 
-    success: true,
-    filename: file.name,
-    size: file.size
-  });
-}
-
-async function handleFileDownload(env, params, auth) {
-  const fileKey = params.get('key');
-  if (!fileKey) {
-    return jsonResponse({ error: '缺少文件参数' }, 400);
+    return new Response('✅ 移动成功', {
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   }
 
-  const file = await env.BUCKET.get(fileKey);
-  if (!file) {
-    return new Response('Not Found', { status: 404 });
-  }
-
-  return new Response(file.body, {
-    headers: {
-      'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
-      ...corsHeaders
-    }
-  });
-}
-
-async function handleFileList(env, auth) {
-  const files = await env.BUCKET.list();
-  return jsonResponse({
-    files: files.objects.map(file => ({
-      name: file.key,
-      size: file.size,
-      uploadTime: file.uploaded
-    }))
-  });
-}
-
-async function handleMakeDir(request, env, auth) {
-  if (auth.role !== 'admin' && auth.role !== 'upload') {
-    return jsonResponse({ error: '无权限创建目录' }, 403);
-  }
-
-  const { path } = await request.json();
-  if (!path) {
-    return jsonResponse({ error: '缺少路径参数' }, 400);
-  }
-
-  const dirPath = path.endsWith('/') ? path : `${path}/`;
-  await env.BUCKET.put(dirPath, new Uint8Array(), {
-    customMetadata: {
-      isDirectory: 'true',
-      creator: auth.key
-    }
-  });
-
-  return jsonResponse({ success: true });
+  return new Response('❌ 未知文件操作', { status: 404 });
 }
