@@ -1,35 +1,7 @@
 {
   "accessKeys": {
-    "admin": [
-      {
-        "password": "9894432",
-        "remark": "管理员"
-      },
-      {
-        "password": "admin",
-        "remark": "用户BB"
-      }
-    ],
-    "upload": [
-      {
-        "password": "123456",
-        "remark": "上传人员"
-      }
-    ],
-    "readonly": [
-      {
-        "password": "456789",
-        "remark": "只读用户"
-      },
-      {
-        "password": "111111",
-        "remark": "只读用户ABC"
-      }
-    ]
-  },
-  "blacklist": [
-    "111111",
-    "password",
-    "123123"
-  ]
+    "admin999": "admin",
+    "upload123": "upload",
+    "readonly": "readonly"
+  }
 }
