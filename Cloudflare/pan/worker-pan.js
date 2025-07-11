@@ -1,38 +1,39 @@
-// worker-pan.js
 import { handleAuth } from './auth.js';
-import { handleFileRequest } from './files.js';
-import { handleTrashRequest } from './trash.js';
-import { handleUserRequest } from './users.js';
-import { handleShareRequest } from './sharing.js';
+import { handleFileOps } from './files.js';
+import { handleTrash } from './trash.js';
+import { handleUserManage } from './users.js';
+import { handleShare } from './sharing.js';
+import { jsonResponse, corsOptions } from './utils.js';
 
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-    const path = url.pathname.replace(/^\/+/, '');
-    
     try {
-      // 路由分发
-      if (path.startsWith('auth/')) {
-        return handleAuth(request, env);
-      }
-      else if (path.startsWith('files/')) {
-        return handleFileRequest(request, env);
-      }
-      else if (path.startsWith('trash/')) {
-        return handleTrashRequest(request, env);
-      }
-      else if (path.startsWith('users/')) {
-        return handleUserRequest(request, env);
-      }
-      else if (path.startsWith('share/')) {
-        return handleShareRequest(request, env);
-      }
-      
-      // 默认路由
-      return new Response('Not Found', { status: 404 });
-    } catch (error) {
-      console.error('请求处理错误:', error);
-      return new Response('Internal Server Error', { status: 500 });
+      const url = new URL(request.url);
+      const path = url.pathname.replace(/^\/+/, '');
+      const method = request.method;
+
+      // 全局权限读取
+      const configObj = await env.BUCKET.get('__config__/access.json');
+      const accessMap = configObj ? (JSON.parse(await configObj.text())).accessKeys || {} : {};
+      const key = url.searchParams.get('key') || '';
+      const role = accessMap[key] || '';
+
+      // OPTIONS 预检
+      if (method === 'OPTIONS') return corsOptions();
+
+      // 分发
+      if (path === 'whoami') return handleAuth(request, accessMap);
+      if (path.startsWith('trash/')) return handleTrash(path, request, env, key, role, accessMap);
+      if (path.startsWith('auth/')) return handleUserManage(path, request, env, role, accessMap);
+      if (path.startsWith('share/')) return handleShare(path, request, env, key, role, accessMap);
+      return await handleFileOps(path, request, env, key, role, accessMap);
+
+    } catch (err) {
+      console.error('错误:', err);
+      return new Response(`服务器错误: ${err.message}`, {
+        status: 500,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
   }
 };
