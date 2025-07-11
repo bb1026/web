@@ -3,7 +3,7 @@ import { handleFileOps } from './files.js';
 import { handleTrash } from './trash.js';
 import { handleUserManage } from './users.js';
 import { handleShare } from './sharing.js';
-import { jsonResponse, corsOptions } from './utils.js';
+import { detectRoleFromPassword, jsonResponse, corsOptions } from './utils.js';
 
 export default {
   async fetch(request, env) {
@@ -12,16 +12,20 @@ export default {
       const path = url.pathname.replace(/^\/+/, '');
       const method = request.method;
 
-      // 全局权限读取
+      // 加载 access.json
       const configObj = await env.BUCKET.get('__config__/access.json');
-      const accessMap = configObj ? (JSON.parse(await configObj.text())).accessKeys || {} : {};
-      const key = url.searchParams.get('key') || '';
-      const role = accessMap[key] || '';
+      const fullConfig = configObj ? JSON.parse(await configObj.text()) : {};
+      const accessMap = fullConfig.accessKeys || {};
+      const blacklist = fullConfig.blacklist || [];
 
       // OPTIONS 预检
       if (method === 'OPTIONS') return corsOptions();
 
-      // 分发
+      // 获取 key（用户输入的密码）
+      const key = url.searchParams.get('key') || '';
+      const { role, remark } = detectRoleFromPassword(accessMap, key);
+
+      // 分发各个接口
       if (path === 'whoami') return handleAuth(request, accessMap);
       if (path.startsWith('trash/')) return handleTrash(path, request, env, key, role, accessMap);
       if (path.startsWith('auth/')) return handleUserManage(path, request, env, role, accessMap);
