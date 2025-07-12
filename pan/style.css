@@ -6,17 +6,6 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.file-list button.share-btn {
-  background-color: #faad14;
-  color: white;
-  border: 1px solid #faad14;
-}
-
-.file-list button.share-btn:hover {
-  background-color: #d48806;
-  border-color: #d48806;
-}
-
 body {
   max-width: 1000px;
   margin: 0 auto;

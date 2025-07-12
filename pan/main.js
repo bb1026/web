@@ -195,20 +195,16 @@ const fileFunctions = {
       left.appendChild(meta);
 
       const right = document.createElement('div');
-right.className = 'file-actions';
-right.style.display = 'flex';
-right.style.flexDirection = 'row';
-right.style.gap = '6px';
+      right.className = 'right';
 
       if (!showTrash) {
-  right.appendChild(helpers.createButton('', 'download', 'download-btn', () => downloadFile(file.name)));
-  if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
-    right.appendChild(helpers.createButton('', 'trash', 'delete-btn', () => deleteFile(file.name)));
-    right.appendChild(helpers.createButton('', 'share-alt', 'share-btn', () => shareFile(file.name)));
-  }
-} else {
-        right.appendChild(helpers.createButton('', 'undo', 'btn', () => restoreTrash(file.name)));
-        right.appendChild(helpers.createButton('', 'trash', 'btn', () => deleteTrash(file.name)));
+        right.appendChild(helpers.createButton('下载', 'download', 'btn', () => downloadFile(file.name)));
+        if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
+          right.appendChild(helpers.createButton('删除', 'trash', 'btn', () => deleteFile(file.name)));
+        }
+      } else {
+        right.appendChild(helpers.createButton('还原', 'undo', 'btn', () => restoreTrash(file.name)));
+        right.appendChild(helpers.createButton('彻底删除', 'times', 'btn', () => deleteTrash(file.name)));
       }
 
       li.appendChild(left);
@@ -312,25 +308,4 @@ window.deleteTrash = async (name) => {
   if (!confirm(`确认彻底删除 ${name}？`)) return;
   const res = await helpers.fetchWithAuth(`${api.trash.delete}?file=${encodeURIComponent(name)}`, { method: 'POST' });
   if (res) fileFunctions.loadTrash();
-};
-
-window.shareFile = async (file) => {
-  const days = prompt("请输入过期天数（默认3天）：", "3");
-  const expireIn = parseInt(days || "3") * 24 * 3600 * 1000;
-
-  const res = await fetch("https://pan.0515364.xyz/share/create?key=" + auth, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ file, expireIn })
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    helpers.showAlert("分享失败：" + errText);
-  } else {
-    const token = await res.text();
-    const shareLink = `${location.origin}/share.html?token=${token}`;
-    navigator.clipboard.writeText(shareLink);
-    helpers.showAlert("✅ 分享链接已复制到剪贴板：\n" + shareLink, false);
-  }
 };
