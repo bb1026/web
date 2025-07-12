@@ -8,12 +8,16 @@ workers_dev = true
 routes = ["pan.0515364.xyz/*"]
 
 [build]
-upload.format = "modules"  # ✅ 支持多模块导入
+upload.format = "modules"
 
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "mypan"
 preview_bucket_name = "mypan"
+
+[[kv_namespaces]]
+binding = "SHARE"
+id = "a30c3ece82e0421eab27bf575b64da1a"
 
 [observability.logs]
 enabled = true
