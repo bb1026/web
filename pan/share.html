@@ -2,29 +2,19 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>文件分享 - 网盘</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>文件分享</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="share.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>🔗 文件分享</h2>
-
-    <div class="form-group">
-      <label for="shareId">分享链接ID:</label>
-      <input type="text" id="shareId" placeholder="输入分享ID或URL" />
+  <div class="share-container">
+    <h2><i class="fas fa-share-alt"></i> 文件分享</h2>
+    <div id="share-content" class="share-content">
+      加载中...
     </div>
-
-    <div class="form-group">
-      <label for="sharePwd">访问密码:</label>
-      <input type="password" id="sharePwd" placeholder="请输入密码" />
-    </div>
-
-    <button id="accessBtn">访问分享</button>
-
-    <div id="result" class="result"></div>
   </div>
 
-  <script src="share.js"></script>
+  <script src="sharing.js"></script>
 </body>
 </html>

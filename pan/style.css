@@ -1,8 +1,20 @@
-*{
+/* 全局样式 */
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.file-list button.share-btn {
+  background-color: #faad14;
+  color: white;
+  border: 1px solid #faad14;
+}
+
+.file-list button.share-btn:hover {
+  background-color: #d48806;
+  border-color: #d48806;
 }
 
 body {
@@ -17,6 +29,7 @@ body {
   display: none !important;
 }
 
+/* 顶部栏样式 */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -31,6 +44,7 @@ body {
   font-size: 14px;
 }
 
+/* 登录按钮样式 */
 .logout-btn {
   padding: 6px 12px;
   background-color: #ff4d4f;
@@ -49,6 +63,7 @@ body {
   background-color: #d9363e;
 }
 
+/* 登录框样式 */
 .login-box {
   text-align: center;
   margin: 80px auto 0;
@@ -99,6 +114,7 @@ body {
   background-color: #096dd9;
 }
 
+/* 工具栏样式 */
 .toolbar {
   display: flex;
   gap: 10px;
@@ -124,9 +140,10 @@ body {
   border-color: #ccc;
 }
 
+/* 文件区域样式 */
 .file-section, .trash-section {
   background-color: white;
-  padding: 20px;
+  padding: 4px;
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -142,22 +159,28 @@ body {
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   font-size: 14px;
   justify-content: space-between;
 }
-
-.file-actions {
-  display: flex;
-  gap: 8px;
-}
-
-
 
 .file-list li:hover {
   background-color: #fafafa;
 }
 
+.file-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.meta-info {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* 按钮样式 */
 .file-list button {
   padding: 6px 10px;
   border-radius: 4px;
@@ -203,6 +226,7 @@ body {
   border-color: #389e0d;
 }
 
+/* 空状态提示 */
 .empty-state {
   color: #999;
   font-style: italic;
@@ -210,115 +234,21 @@ body {
   text-align: center;
 }
 
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+/* 图标颜色 */
+.fa-folder {
+  color: #4a89dc;
 }
 
-.modal-content {
-  background-color: white;
-  padding: 25px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.fa-file {
+  color: #656565;
 }
 
-.modal-content h3 {
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* 路径导航 */
+.path-nav a {
+  color: #1890ff;
+  text-decoration: none;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-}
-
-th {
-  background-color: #fafafa;
-  font-weight: 500;
-}
-
-.add-user-form {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
-
-.add-user-form input {
-  flex: 1;
-  min-width: 150px;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.add-user-form select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.add-user-form button, .modal-actions button {
-  padding: 8px 16px;
-  background-color: #1890ff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s;
-}
-
-.add-user-form button {
-  background-color: #52c41a;
-}
-
-.add-user-form button:hover {
-  background-color: #389e0d;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.modal-actions button:last-child {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.modal-actions button:hover:not(:last-child) {
-  background-color: #096dd9;
-}
-
-.modal-actions button:last-child:hover {
-  background-color: #e6e6e6;
+.path-nav a:hover {
+  text-decoration: underline;
 }

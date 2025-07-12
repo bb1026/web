@@ -1,32 +1,36 @@
-document.getElementById("accessBtn").addEventListener("click", async () => {
-  const id = document.getElementById("shareId").value.trim().replace(/.*\/([^/]+)$/, '$1');
-  const pwd = document.getElementById("sharePwd").value.trim();
-  const result = document.getElementById("result");
+const apiBase = "https://pan.0515364.xyz";
 
-  if (!id || !pwd) {
-    result.textContent = "❗️请填写分享ID和密码";
-    return;
-  }
+function getShareId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("id");
+}
 
-  result.textContent = "⏳ 正在验证分享信息...";
+function showError(message) {
+  document.getElementById("share-content").innerHTML = `<p class="error">❌ ${message}</p>`;
+}
+
+async function loadSharedFile() {
+  const id = getShareId();
+  if (!id) return showError("无效的分享链接");
 
   try {
-    const res = await fetch(`/api/share/${id}?pwd=${encodeURIComponent(pwd)}`);
-    const data = await res.json();
+    const res = await fetch(`${apiBase}/share/get?token=${encodeURIComponent(id)}`);
+    if (!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
 
-    if (res.ok && data && data.item) {
-      result.innerHTML = `
-        ✅ 分享内容：<br/>
-        类型：${data.item.type}<br/>
-        路径：<code>${data.item.path}</code><br/>
-        上传者：${data.uploader}<br/>
-        <br/>
-        <a href="/api/download?path=${encodeURIComponent(data.item.path)}" target="_blank">⬇️ 下载链接</a>
-      `;
-    } else {
-      result.textContent = data?.error || "分享不存在或密码错误。";
-    }
+    const filename = decodeURIComponent(res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'download');
+
+    const url = URL.createObjectURL(blob);
+    const container = document.getElementById("share-content");
+    container.innerHTML = `
+      <p>文件名：<strong>${filename}</strong></p>
+      <a href="${url}" class="download-btn" download="${filename}">
+        <i class="fas fa-download"></i> 点击下载
+      </a>
+    `;
   } catch (err) {
-    result.textContent = "请求失败，请稍后重试。";
+    showError(err.message);
   }
-});
+}
+
+loadSharedFile();
