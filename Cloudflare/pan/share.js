@@ -103,6 +103,32 @@ export default {
       await env.BUCKET.delete(`__share__/${id}`);
       return jsonResponse({ message: '✅ 已取消分享' });
     }
+    
+    
+    // 检查分享
+    if (pathname === '/share/list' && method === 'GET') {
+  const key = url.searchParams.get('key');
+  if (!key) return new Response('Missing key', { status: 400 });
+
+  const list = await SHARE.list(); // Cloudflare KV 存储
+
+  const shares = [];
+  for await (const entry of list) {
+    const value = await SHARE.get(entry.name, { type: 'json' });
+    if (value?.key === key) {
+      shares.push({
+        id: entry.name,
+        file: value.file,
+        password: value.password,
+        expiresAt: value.expiresAt,
+        link: `https://www.0515364.xyz/pan/share.html?id=${entry.name}`
+      });
+    }
+  }
+
+  return jsonResponse(shares);
+}
+
 
     // ✅ 修改分享 /share/update
     if (path === 'share/update' && method === 'POST') {
