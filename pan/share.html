@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>文件分享</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>分享下载</title>
   <link rel="stylesheet" href="share.css" />
+  <script defer src="sharing.js"></script>
 </head>
 <body>
-  <div class="share-container">
-    <h2><i class="fas fa-share-alt"></i> 文件分享</h2>
-    <div id="share-content" class="share-content">
-      加载中...
+  <div class="container">
+    <h1>分享文件</h1>
+    <div id="share-content"></div>
+    <div id="download-area" class="hidden">
+      <a id="download-btn" href="#" class="btn"><i class="fas fa-download"></i> 下载</a>
     </div>
   </div>
-
-  <script src="sharing.js"></script>
 </body>
 </html>
