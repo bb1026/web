@@ -198,14 +198,19 @@ const fileFunctions = {
       right.className = 'right';
 
       if (!showTrash) {
-        right.appendChild(helpers.createButton('下载', 'download', 'btn', () => downloadFile(file.name)));
-        if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
-          right.appendChild(helpers.createButton('删除', 'trash', 'btn', () => deleteFile(file.name)));
-        }
-      } else {
-        right.appendChild(helpers.createButton('还原', 'undo', 'btn', () => restoreTrash(file.name)));
-        right.appendChild(helpers.createButton('彻底删除', 'times', 'btn', () => deleteTrash(file.name)));
-      }
+  right.appendChild(helpers.createButton('下载', 'download', 'btn', () => downloadFile(file.name)));
+
+  // ✅ 添加分享按钮（“分享”或“分享设置”）
+  const shareLabel = shareState[file.name] ? '分享设置' : '分享';
+  right.appendChild(helpers.createButton(shareLabel, 'share', 'btn', () => openShareModal(file.name)));
+
+  if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
+    right.appendChild(helpers.createButton('删除', 'trash', 'btn', () => deleteFile(file.name)));
+  }
+} else {
+  right.appendChild(helpers.createButton('还原', 'undo', 'btn', () => restoreTrash(file.name)));
+  right.appendChild(helpers.createButton('彻底删除', 'times', 'btn', () => deleteTrash(file.name)));
+}
 
       li.appendChild(left);
       li.appendChild(right);
@@ -308,4 +313,225 @@ window.deleteTrash = async (name) => {
   if (!confirm(`确认彻底删除 ${name}？`)) return;
   const res = await helpers.fetchWithAuth(`${api.trash.delete}?file=${encodeURIComponent(name)}`, { method: 'POST' });
   if (res) fileFunctions.loadTrash();
+};
+
+
+// === 添加分享 API ===
+api.share = {
+  create: "https://pan.0515364.xyz/share/create",
+  cancel: "https://pan.0515364.xyz/share/cancel"
+};
+
+// === 分享状态存储 ===
+const shareState = {}; // 结构：{ filename: { id, link, password, expiresAt } }
+
+// === 注入分享弹窗 HTML ===
+document.body.insertAdjacentHTML('beforeend', `
+  <div id="share-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>分享设置</h2>
+      <div class="form-group">
+        <label>文件名：</label>
+        <span id="share-filename"></span>
+      </div>
+      <div class="form-group" id="share-info-group" class="hidden">
+        <label>已分享信息：</label>
+        <div id="share-info"></div>
+      </div>
+      <div class="form-group" id="share-config-group">
+        <label>有效期：</label>
+        <select id="share-expiry">
+          <option value="1d">1 天</option>
+          <option value="3d">3 天</option>
+          <option value="7d" selected>7 天</option>
+          <option value="forever">永久</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>密码保护：</label>
+        <select id="share-password-type">
+          <option value="none">无</option>
+          <option value="random">随机密码</option>
+          <option value="custom">自定义</option>
+        </select>
+        <input id="share-password" placeholder="输入自定义密码" class="hidden" />
+      </div>
+      <div class="form-group hidden" id="share-result-group">
+        <label>分享链接：</label>
+        <input id="share-result" readonly />
+        <button onclick="navigator.clipboard.writeText(document.getElementById('share-result').value)">复制</button>
+      </div>
+      <div class="modal-actions">
+        <button onclick="createShareConfirm()">创建</button>
+        <button onclick="closeShareModal()">关闭</button>
+        <button id="cancel-share-btn" class="hidden" onclick="cancelShare()">取消分享</button>
+      </div>
+    </div>
+  </div>
+`);
+
+// === 分享弹窗样式 ===
+const style = document.createElement('style');
+style.textContent = `
+.modal {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); display: flex;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #fff; padding: 20px; border-radius: 8px; width: 300px;
+}
+.form-group { margin: 10px 0; }
+.form-group label { display: block; font-weight: bold; }
+.form-group input, select { width: 100%; padding: 6px; margin-top: 4px; }
+.modal-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+`;
+document.head.appendChild(style);
+
+// === 打开分享弹窗 ===
+window.openShareModal = (filename) => {
+  document.getElementById('share-filename').textContent = filename;
+  document.getElementById('share-modal').classList.remove('hidden');
+
+  const info = shareState[filename];
+  const infoGroup = document.getElementById('share-info-group');
+  const resultGroup = document.getElementById('share-result-group');
+  const cancelBtn = document.getElementById('cancel-share-btn');
+  const passwordInput = document.getElementById('share-password');
+
+  // 是否已分享
+  if (info) {
+    infoGroup.classList.remove('hidden');
+    resultGroup.classList.remove('hidden');
+    cancelBtn.classList.remove('hidden');
+
+    document.getElementById('share-info').innerHTML = `
+      链接：<a href="${info.link}" target="_blank">${info.link}</a><br>
+      ${info.password ? `密码：${info.password}<br>` : ''}
+      有效期：${new Date(info.expiresAt).toLocaleString()}
+    `;
+
+    document.getElementById('share-result').value = info.link;
+  } else {
+    infoGroup.classList.add('hidden');
+    resultGroup.classList.add('hidden');
+    cancelBtn.classList.add('hidden');
+    passwordInput.classList.add('hidden');
+  }
+
+  document.getElementById('share-password-type').onchange = e => {
+    passwordInput.classList.toggle('hidden', e.target.value !== 'custom');
+  };
+
+  window.__shareFile = filename;
+};
+
+// === 关闭弹窗 ===
+window.closeShareModal = () => {
+  document.getElementById('share-modal').classList.add('hidden');
+  delete window.__shareFile;
+  delete window.__shareId;
+  document.getElementById('cancel-share-btn').classList.add('hidden');
+};
+
+
+
+
+
+
+
+// === 创建分享 ===
+window.createShareConfirm = async () => {
+  const filename = window.__shareFile;
+  if (!filename) return helpers.showAlert('❌ 未获取到文件名');
+
+  const expiry = document.getElementById('share-expiry').value;
+  const type = document.getElementById('share-password-type').value;
+  const pwdInput = document.getElementById('share-password').value;
+
+  let password = '';
+  if (type === 'random') password = Math.random().toString(36).slice(2, 8);
+  if (type === 'custom') {
+    if (!pwdInput) return helpers.showAlert('❌ 请输入自定义密码');
+    password = pwdInput;
+  }
+
+  if (!auth) return helpers.showAlert('❌ 登录信息缺失');
+
+  const payload = {
+    file: filename,
+    passwordType: type,
+    customPassword: password,
+    expiresIn: expiry,
+    key: auth
+  };
+
+  try {
+    const res = await fetch(api.share.create, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      helpers.showAlert(`❌ 创建失败\n状态码: ${res.status}\n响应: ${text}`);
+      return;
+    }
+
+    const result = await res.json();
+    if (!result.link || !result.id) {
+      helpers.showAlert('❌ 后端返回异常数据');
+      return;
+    }
+
+    shareState[filename] = {
+      id: result.id,
+      link: result.link,
+      password: result.password,
+      expiresAt: result.expiresAt
+    };
+    window.__shareId = result.id;
+
+    document.getElementById('share-result').value = result.link;
+    document.getElementById('share-result-group').classList.remove('hidden');
+    document.getElementById('cancel-share-btn').classList.remove('hidden');
+
+    helpers.showAlert('✅ 分享创建成功');
+    openShareModal(filename);
+  } catch (err) {
+    helpers.showAlert(`❌ 网络错误或浏览器限制\n${err.message || err}`);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+// === 取消分享 ===
+window.cancelShare = async () => {
+  const info = shareState[window.__shareFile];
+  if (!info?.id) return helpers.showAlert('无有效分享记录');
+
+  const res = await fetch(api.share.cancel, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: info.id, key: auth })
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    return helpers.showAlert(`取消失败：${msg}`);
+  }
+
+  delete shareState[window.__shareFile];
+  helpers.showAlert('✅ 分享已取消');
+  closeShareModal();
 };
