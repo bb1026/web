@@ -1,4 +1,4 @@
-import { createShare, getShare, listShares, cancelShare } from './share.js';
+import { createShare, getShare } from './share.js';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
