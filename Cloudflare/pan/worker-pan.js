@@ -1,3 +1,5 @@
+import shareHandler from './share.js';
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -13,6 +15,11 @@ export default {
     try {
       const url = new URL(request.url);
       const path = url.pathname.replace(/^\/+/, '');
+
+      // === 分发给分享模块 ===
+      if (path.startsWith('share/')) {
+        return shareHandler.fetch(request, env);
+      }
 
       // === 权限配置 ===
       let accessMap = {};
