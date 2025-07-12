@@ -105,24 +105,35 @@ export default {
     }
     
     
-    // 检查分享
-    if (pathname === '/share/list' && method === 'GET') {
+    // ✅ 获取某个 key 的所有分享（从 R2 的 __share__ 目录中遍历）
+if (path === 'share/list' && method === 'GET') {
   const key = url.searchParams.get('key');
-  if (!key) return new Response('Missing key', { status: 400 });
-
-  const list = await SHARE.list(); // Cloudflare KV 存储
+  if (!key) return jsonResponse({ error: '缺少 key 参数' }, 400);
 
   const shares = [];
-  for await (const entry of list) {
-    const value = await SHARE.get(entry.name, { type: 'json' });
-    if (value?.key === key) {
-      shares.push({
-        id: entry.name,
-        file: value.file,
-        password: value.password,
-        expiresAt: value.expiresAt,
-        link: `https://www.0515364.xyz/pan/share.html?id=${entry.name}`
-      });
+
+  // 遍历所有以 __share__/ 开头的对象（即所有分享记录）
+  const list = await env.BUCKET.list({ prefix: '__share__/' });
+
+  for (const item of list.objects) {
+    const obj = await env.BUCKET.get(item.key);
+    if (!obj) continue;
+
+    const text = await obj.text();
+    try {
+      const data = JSON.parse(text);
+      // 匹配 key（即创建分享时记录的用户标识）
+      if (data.key === key) {
+        shares.push({
+          id: data.id,
+          file: data.file,
+          password: data.password,
+          expiresAt: data.expiresAt,
+          link: `https://www.0515364.xyz/pan/share.html?id=${data.id}`
+        });
+      }
+    } catch (_) {
+      // 忽略格式错误项
     }
   }
 
