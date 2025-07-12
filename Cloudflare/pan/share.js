@@ -37,43 +37,44 @@ export default {
 
     // ✅ 创建分享 /share/create
     if (path === 'share/create' && method === 'POST') {
-      try {
-        const body = await request.json();
-        const { file, passwordType = 'none', customPassword = '', expiresIn = '7d', key } = body;
+  try {
+    const body = await request.json();
+    const { file, passwordType = 'none', customPassword = '', expiresIn = '7d', key } = body;
 
-        if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
-        if (!key || typeof key !== 'string') return jsonResponse({ error: '未登录或 key 缺失' }, 401);
+    if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
+    if (!key || typeof key !== 'string') return jsonResponse({ error: '未登录或 key 缺失' }, 401);
 
-        const id = genId();
-        let password = '';
-        if (passwordType === 'random') password = genPassword();
-        else if (passwordType === 'custom') password = customPassword;
+    const id = genId();
+    let password = '';
+    if (passwordType === 'random') password = genPassword();
+    else if (passwordType === 'custom') password = customPassword;
 
-        const now = Date.now();
-        const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
-        const days = expiresMap[expiresIn] || 7;
-        const expiresAt = now + days * 24 * 3600 * 1000;
+    const now = Date.now();
+    const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
+    const days = expiresMap[expiresIn] || 7;
+    const expiresAt = now + days * 24 * 3600 * 1000;
 
-        const record = {
-          id,
-          file,
-          password,
-          expiresAt,
-          createdAt: now
-        };
+    const record = {
+      id,
+      file,
+      key, // ✅ 必须加上
+      password,
+      expiresAt,
+      createdAt: now
+    };
 
-        await env.BUCKET.put(`__share__/${id}`, JSON.stringify(record));
+    await env.BUCKET.put(`__share__/${id}`, JSON.stringify(record));
 
-        return jsonResponse({
-          id,
-          link: `https://www.0515364.xyz/pan/share.html?id=${id}`,
-          password: password || undefined,
-          expiresAt
-        });
-      } catch (e) {
-        return jsonResponse({ error: `系统内部错误：${e.message}` }, 500);
-      }
-    }
+    return jsonResponse({
+      id,
+      link: `https://www.0515364.xyz/pan/share.html?id=${id}`,
+      password: password || undefined,
+      expiresAt
+    });
+  } catch (e) {
+    return jsonResponse({ error: `系统内部错误：${e.message}` }, 500);
+  }
+}
 
     // ✅ 获取分享信息 /share/get?id=xxx&password=xxx
     if (path === 'share/get' && method === 'GET') {
