@@ -1,17 +1,39 @@
-const apiBase = location.origin;
-function getParam(k){return new URLSearchParams(location.search).get(k);}
-function showError(msg){document.getElementById('share-content').innerHTML=`<p class="error">❌ ${msg}</p>`;}
+const api = 'https://pan.0515364.xyz/share/get';
 
-async function load() {
-  const token = getParam('token'), pwd = getParam('password');
-  if (!token) return showError('无效分享');
-  let res = await fetch(`${apiBase}/share/get?token=${encodeURIComponent(token)}${pwd?'&password='+encodeURIComponent(pwd):''}`);
-  if (!res.ok) return showError(await res.text());
-  const file = await res.json();
-  document.getElementById('share-content').innerHTML = `<p>文件名：<strong>${file.name}</strong></p><p>大小：${file.size} B</p>`;
-  const btn = document.getElementById('download-btn');
-  btn.href = `${apiBase}/share/get?token=${encodeURIComponent(token)}${pwd?'&password='+encodeURIComponent(pwd):''}`;
-  document.getElementById('download-area').classList.remove('hidden');
+async function loadShareInfo() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const password = params.get('password') || '';
+
+  if (!id) {
+    showError('缺少分享ID');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${api}?id=${encodeURIComponent(id)}&password=${encodeURIComponent(password)}`);
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      showError(data.error || '获取分享失败');
+      return;
+    }
+
+    document.getElementById('status').classList.add('hidden');
+    document.getElementById('result').classList.remove('hidden');
+    document.getElementById('filename').textContent = data.file;
+    document.getElementById('expires').textContent = new Date(data.expiresAt).toLocaleString();
+    document.getElementById('download-link').href = `https://pan.0515364.xyz/download?file=${encodeURIComponent(data.file)}`;
+  } catch (err) {
+    showError('加载失败：' + err.message);
+  }
 }
 
-load();
+function showError(msg) {
+  document.getElementById('status').classList.add('hidden');
+  const errEl = document.getElementById('error');
+  errEl.textContent = msg;
+  errEl.classList.remove('hidden');
+}
+
+loadShareInfo();

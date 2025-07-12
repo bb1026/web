@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>分享下载</title>
+  <meta charset="UTF-8" />
+  <title>文件分享</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="share.css" />
-  <script defer src="sharing.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>分享文件</h1>
-    <div id="share-content"></div>
-    <div id="download-area" class="hidden">
-      <a id="download-btn" href="#" class="btn"><i class="fas fa-download"></i> 下载</a>
+    <h2>文件分享</h2>
+    <div id="status">正在加载分享信息...</div>
+    <div id="result" class="hidden">
+      <p><strong>文件名：</strong><span id="filename"></span></p>
+      <p><strong>有效期至：</strong><span id="expires"></span></p>
+      <a id="download-link" class="download-btn" target="_blank">点击下载</a>
     </div>
+    <div id="error" class="error hidden"></div>
   </div>
+
+  <script src="share.js"></script>
 </body>
 </html>
