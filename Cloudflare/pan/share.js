@@ -66,7 +66,7 @@ export default {
 
         return jsonResponse({
           id,
-          link: `${url.origin}/share.html?id=${id}`,
+          link: `https://www.0515364.xyz/pan/share.html?id=${id}`,
           password: password || undefined,
           expiresAt
         });
