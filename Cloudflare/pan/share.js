@@ -1,152 +1,121 @@
-// share.js - 使用标准ES模块导出
-import { Buffer } from 'node:buffer';
-
-// 安全比较函数（防止时序攻击）
-function safeCompare(a, b) {
-  const aBuf = Buffer.from(a);
-  const bBuf = Buffer.from(b);
-  return aBuf.length === bBuf.length && 
-         crypto.subtle.timingSafeEqual(aBuf, bBuf);
-}
-
-// 创建分享链接
-export async function createShare(request, env, userKey, userRole) {
-  // 参数验证和权限检查
-  if (userRole !== 'admin' && userRole !== 'upload') {
-    return new Response(JSON.stringify({ error: '无权限分享' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
-  try {
-    const { file, expireIn = 259200, password = null } = await request.json();
-    
-    // 基础验证
-    if (!file) throw new Error('缺少文件参数');
-    if (password && (password.length < 4 || password.length > 20)) {
-      throw new Error('密码长度需为4-20位');
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
     }
-
-    // 检查文件是否存在
-    const fileObj = await env.BUCKET.get(file);
-    if (!fileObj) throw new Error('文件不存在');
-
-    // 生成分享令牌
-    const token = crypto.randomUUID();
-    const expireAt = Date.now() + Math.min(parseInt(expireIn), 2592000) * 1000; // 最大30天
-
-    // 存储分享数据
-    await env.BUCKET.put(`shares/${token}`, JSON.stringify({
-      file,
-      owner: userKey,
-      createdAt: Date.now(),
-      expireAt,
-      password: password ? await hashPassword(password) : null, // 密码哈希存储
-      fileName: file.split('/').pop(),
-      downloadCount: 0
-    }), {
-      metadata: { owner: userKey }
-    });
-
-    return new Response(JSON.stringify({
-      token,
-      url: `${new URL(request.url).origin}/d/${token}`,
-      expireAt: new Date(expireAt).toISOString()
-    }), { 
-      headers: { 'Content-Type': 'application/json' } 
-    });
-
-  } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
+  });
 }
 
-// 获取分享信息（供下载前验证）
-export async function getShare(env, token, inputPassword = '') {
-  try {
-    const obj = await env.BUCKET.get(`shares/${token}`);
-    if (!obj) return { error: '分享不存在', status: 404 };
-
-    const data = JSON.parse(await obj.text());
-    
-    // 检查过期
-    if (Date.now() > data.expireAt) {
-      await env.BUCKET.delete(`shares/${token}`);
-      return { error: '分享已过期', status: 410 };
-    }
-
-    // 检查密码
-    if (data.password && !(await verifyPassword(inputPassword, data.password))) {
-      return { error: '密码错误', status: 403 };
-    }
-
-    // 返回文件信息
-    const file = await env.BUCKET.get(data.file);
-    if (!file) return { error: '文件不存在', status: 404 };
-
-    // 更新下载计数
-    await env.BUCKET.put(`shares/${token}`, JSON.stringify({
-      ...data,
-      downloadCount: data.downloadCount + 1
-    }));
-
-    return {
-      fileStream: file.body,
-      fileName: data.fileName,
-      fileSize: file.size,
-      contentType: file.httpMetadata?.contentType || 'application/octet-stream'
-    };
-  } catch (err) {
-    return { error: '获取分享失败', status: 500 };
-  }
+function genId() {
+  return crypto.randomUUID();
 }
 
-// 密码处理函数
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + process.env.PASSWORD_SALT);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Buffer.from(hash).toString('hex');
+function genPassword(length = 6) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-async function verifyPassword(input, hashed) {
-  const inputHashed = await hashPassword(input);
-  return safeCompare(inputHashed, hashed);
-}
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/^\/+/, '');
+    const method = request.method;
 
-// 辅助方法：列出用户的所有分享
-export async function listSharesByUser(env, userKey) {
-  const shares = [];
-  const list = await env.BUCKET.list({ prefix: 'shares/' });
+    // 创建分享 /share/create
+    if (path === 'share/create' && method === 'POST') {
+      const body = await request.json();
+      const { file, passwordType = 'none', customPassword = '', expiresIn = '7d' } = body;
 
-  await Promise.all(list.objects.map(async item => {
-    const data = await env.BUCKET.get(item.key);
-    const share = JSON.parse(await data.text());
-    if (share.owner === userKey) {
-      shares.push({
-        token: item.key.replace('shares/', ''),
-        url: `${process.env.BASE_URL}/d/${item.key.replace('shares/', '')}`,
-        ...share,
-        expireAt: new Date(share.expireAt).toISOString()
+      if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
+
+      const id = genId();
+      let password = '';
+      if (passwordType === 'random') password = genPassword();
+      else if (passwordType === 'custom') password = customPassword;
+
+      const now = Date.now();
+      const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
+      const days = expiresMap[expiresIn] || 7;
+      const expiresAt = now + days * 24 * 3600 * 1000;
+
+      const record = {
+        id,
+        file,
+        password,
+        expiresAt,
+        createdAt: now
+      };
+
+      await env.BUCKET.put(`__share__/${id}`, JSON.stringify(record));
+
+      return jsonResponse({
+        id,
+        link: `${url.origin}/share.html?id=${id}`,
+        password: password || undefined,
+        expiresAt
       });
     }
-  }));
 
-  return shares.sort((a, b) => b.createdAt - a.createdAt);
-}
+    // 获取分享 /share/get?id=xxx&password=xxx
+    if (path === 'share/get' && method === 'GET') {
+      const id = url.searchParams.get('id');
+      const password = url.searchParams.get('password') || '';
 
-// 辅助方法：取消分享
-export async function deleteShare(env, userKey, token) {
-  const obj = await env.BUCKET.get(`shares/${token}`);
-  if (!obj) return { error: '分享不存在', status: 404 };
+      if (!id) return jsonResponse({ error: '缺少分享ID' }, 400);
 
-  const data = JSON.parse(await obj.text());
-  if (data.owner !== userKey) return { error: '无权操作', status: 403 };
+      const obj = await env.BUCKET.get(`__share__/${id}`);
+      if (!obj) return jsonResponse({ error: '分享不存在' }, 404);
 
-  await env.BUCKET.delete(`shares/${token}`);
-  return { success: true };
-}
+      const data = JSON.parse(await obj.text());
+      if (Date.now() > data.expiresAt) return jsonResponse({ error: '分享已过期' }, 410);
+
+      if (data.password && data.password !== password) {
+        return jsonResponse({ error: '密码错误' }, 403);
+      }
+
+      return jsonResponse({
+        file: data.file,
+        expiresAt: data.expiresAt
+      });
+    }
+
+    // 取消分享 /share/cancel
+    if (path === 'share/cancel' && method === 'POST') {
+      const { id } = await request.json();
+      if (!id) return jsonResponse({ error: '缺少分享ID' }, 400);
+
+      await env.BUCKET.delete(`__share__/${id}`);
+      return jsonResponse({ message: '✅ 已取消分享' });
+    }
+
+    // 修改分享信息（如密码、有效期） /share/update
+    if (path === 'share/update' && method === 'POST') {
+      const { id, password, expiresIn } = await request.json();
+      if (!id) return jsonResponse({ error: '缺少分享ID' }, 400);
+
+      const obj = await env.BUCKET.get(`__share__/${id}`);
+      if (!obj) return jsonResponse({ error: '分享不存在' }, 404);
+
+      const data = JSON.parse(await obj.text());
+
+      if (password !== undefined) data.password = password;
+      if (expiresIn) {
+        const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
+        const days = expiresMap[expiresIn] || 7;
+        data.expiresAt = Date.now() + days * 24 * 3600 * 1000;
+      }
+
+      await env.BUCKET.put(`__share__/${id}`, JSON.stringify(data));
+
+      return jsonResponse({ message: '✅ 分享已更新' });
+    }
+
+    // 默认响应
+    return new Response('❌ 无效分享请求', {
+      status: 404,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+};
