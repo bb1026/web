@@ -23,51 +23,59 @@ export default {
     const path = url.pathname.replace(/^\/+/, '');
     const method = request.method;
 
-    // 创建分享 /share/create
-    if (path === 'share/create' && method === 'POST') {
-  try {
-    const body = await request.json();
-    const { file, passwordType = 'none', customPassword = '', expiresIn = '7d', key } = body;
-
-    if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
-
-    // 这里你如果有 auth 校验，可以判断 key 对不对
-    if (!key || typeof key !== 'string') {
-      return jsonResponse({ error: '未登录或 key 缺失' }, 401);
+    // ✅ 处理预检请求
+    if (method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      });
     }
 
-    const id = genId();
-    let password = '';
-    if (passwordType === 'random') password = genPassword();
-    else if (passwordType === 'custom') password = customPassword;
+    // ✅ 创建分享 /share/create
+    if (path === 'share/create' && method === 'POST') {
+      try {
+        const body = await request.json();
+        const { file, passwordType = 'none', customPassword = '', expiresIn = '7d', key } = body;
 
-    const now = Date.now();
-    const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
-    const days = expiresMap[expiresIn] || 7;
-    const expiresAt = now + days * 24 * 3600 * 1000;
+        if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
+        if (!key || typeof key !== 'string') return jsonResponse({ error: '未登录或 key 缺失' }, 401);
 
-    const record = {
-      id,
-      file,
-      password,
-      expiresAt,
-      createdAt: now
-    };
+        const id = genId();
+        let password = '';
+        if (passwordType === 'random') password = genPassword();
+        else if (passwordType === 'custom') password = customPassword;
 
-    await env.BUCKET.put(`__share__/${id}`, JSON.stringify(record));
+        const now = Date.now();
+        const expiresMap = { '1d': 1, '3d': 3, '7d': 7, 'forever': 3650 };
+        const days = expiresMap[expiresIn] || 7;
+        const expiresAt = now + days * 24 * 3600 * 1000;
 
-    return jsonResponse({
-      id,
-      link: `${url.origin}/share.html?id=${id}`,
-      password: password || undefined,
-      expiresAt
-    });
-  } catch (e) {
-    return jsonResponse({ error: `系统内部错误：${e.message}` }, 500);
-  }
-}
+        const record = {
+          id,
+          file,
+          password,
+          expiresAt,
+          createdAt: now
+        };
 
-    // 获取分享 /share/get?id=xxx&password=xxx
+        await env.BUCKET.put(`__share__/${id}`, JSON.stringify(record));
+
+        return jsonResponse({
+          id,
+          link: `${url.origin}/share.html?id=${id}`,
+          password: password || undefined,
+          expiresAt
+        });
+      } catch (e) {
+        return jsonResponse({ error: `系统内部错误：${e.message}` }, 500);
+      }
+    }
+
+    // ✅ 获取分享信息 /share/get?id=xxx&password=xxx
     if (path === 'share/get' && method === 'GET') {
       const id = url.searchParams.get('id');
       const password = url.searchParams.get('password') || '';
@@ -79,10 +87,7 @@ export default {
 
       const data = JSON.parse(await obj.text());
       if (Date.now() > data.expiresAt) return jsonResponse({ error: '分享已过期' }, 410);
-
-      if (data.password && data.password !== password) {
-        return jsonResponse({ error: '密码错误' }, 403);
-      }
+      if (data.password && data.password !== password) return jsonResponse({ error: '密码错误' }, 403);
 
       return jsonResponse({
         file: data.file,
@@ -90,7 +95,7 @@ export default {
       });
     }
 
-    // 取消分享 /share/cancel
+    // ✅ 取消分享 /share/cancel
     if (path === 'share/cancel' && method === 'POST') {
       const { id } = await request.json();
       if (!id) return jsonResponse({ error: '缺少分享ID' }, 400);
@@ -99,7 +104,7 @@ export default {
       return jsonResponse({ message: '✅ 已取消分享' });
     }
 
-    // 修改分享信息（如密码、有效期） /share/update
+    // ✅ 修改分享 /share/update
     if (path === 'share/update' && method === 'POST') {
       const { id, password, expiresIn } = await request.json();
       if (!id) return jsonResponse({ error: '缺少分享ID' }, 400);
@@ -121,10 +126,13 @@ export default {
       return jsonResponse({ message: '✅ 分享已更新' });
     }
 
-    // 默认响应
+    // ❌ 未知路径
     return new Response('❌ 无效分享请求', {
       status: 404,
-      headers: { 'Access-Control-Allow-Origin': '*' }
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'text/plain'
+      }
     });
   }
 };
