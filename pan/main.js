@@ -170,7 +170,7 @@ const fileFunctions = {
         ${(role === 'admin' || role === 'upload') ? `<button onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> 上传</button>` : ''}
         ${(role === 'admin' || role === 'upload') ? `<button onclick="batchDelete()"><i class="fas fa-trash"></i> 批量删除</button>` : ''}
         <button onclick="loadFiles()"><i class="fas fa-sync"></i> 刷新</button>
-        <button onclick="toggleTrash()"><i class="fas fa-trash-alt"></i> 回收站</button>
+        ${(role === 'admin' || role === 'upload') ? `<button onclick="toggleTrash()"><i class="fas fa-trash-alt"></i> 回收站</button>` : ''}
         ${currentPath ? `<button onclick="goBack()"><i class="fas fa-arrow-left"></i> 返回上一级</button>` : ''}
       </div>
       <div class="path-nav" style="margin:6px 0;">${fileFunctions.renderPathNav()}</div>
@@ -231,7 +231,6 @@ renderFileList: () => {
       topRow.appendChild(cb);
     }
 
-
     const nameSpan = document.createElement('span');
 const fullName = file.name;
 const shortName = fullName.length > 20 ? fullName.slice(0, 20) + '...' : fullName;
@@ -251,7 +250,6 @@ nameSpan.onclick = () => {
   isExpanded = !isExpanded;
   nameSpan.textContent = isExpanded ? fullName : shortName;
 };
-
 
     topRow.appendChild(nameSpan);
 
@@ -275,7 +273,6 @@ nameSpan.onclick = () => {
     meta.textContent = metaText;
     left.appendChild(meta);
 
-    // 新位置：按钮放到 left 下面
     const buttonRow = document.createElement('div');
     buttonRow.style.display = 'flex';
     buttonRow.style.flexWrap = 'wrap';
@@ -285,10 +282,13 @@ nameSpan.onclick = () => {
     if (!showTrash) {
       buttonRow.appendChild(helpers.createButton('下载', 'download', 'btn download-btn', () => downloadFile(file.name)));
 
-      const shareLabel = shareState[file.name] ? '设置' : '分享';
-      buttonRow.appendChild(helpers.createButton(shareLabel, 'share', 'btn', () => openShareModal(file.name)));
+    
 
       if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
+
+const shareLabel = shareState[file.name] ? '设置' : '分享';
+
+buttonRow.appendChild(helpers.createButton(shareLabel, 'share', 'btn', () => openShareModal(file.name)));
         buttonRow.appendChild(helpers.createButton('删除', 'trash', 'btn delete-btn', () => deleteFile(file.name)));
       }
     } else {
@@ -337,20 +337,11 @@ function toggleTrash() {
 window.login = authFunctions.login;
 window.logout = authFunctions.logout;
 
-
-
-
-
-
-
-
-// ... [前面的代码保持不变，直到 window.upload 函数] ...
-
 window.upload = async () => {
   const input = document.getElementById('fileInput');
   if (!input.files.length) return;
 
-  // 创建上传进度容器（保持原始逻辑不变，只添加UI元素）
+  // 创建上传进度容器
   const progressContainer = document.createElement('div');
   progressContainer.className = 'progress-container';
   progressContainer.innerHTML = `
@@ -367,16 +358,13 @@ window.upload = async () => {
   let uploadedCount = 0;
   const totalFiles = input.files.length;
 
-  // 完全保持原始上传逻辑，只添加进度更新
   for (const file of input.files) {
     const form = new FormData();
     form.append("file", file);
     
     try {
-      // 更新进度文本
       progressText.textContent = `正在上传 ${file.name} (${uploadedCount+1}/${totalFiles})`;
       
-      // 完全保持原始fetch请求
       const res = await fetch(`${api.upload}?key=${auth}`, {
         method: "POST",
         body: form
@@ -386,7 +374,6 @@ window.upload = async () => {
         helpers.showAlert(`${file.name} 上传失败`);
       } else {
         uploadedCount++;
-        // 更新进度条
         const percent = Math.round((uploadedCount / totalFiles) * 100);
         progressIndicator.style.width = `${percent}%`;
       }
@@ -395,30 +382,17 @@ window.upload = async () => {
     }
   }
 
-  // 完成后的处理（保持原始逻辑）
   progressIndicator.style.width = '100%';
   progressIndicator.style.backgroundColor = '#4CAF50';
   progressText.textContent = `上传完成 (${uploadedCount}/${totalFiles})`;
   
-  // 3秒后移除进度条
   setTimeout(() => {
     progressContainer.remove();
   }, 3000);
 
   input.value = '';
-  fileFunctions.loadFiles(); // 保持原始刷新逻辑
+  fileFunctions.loadFiles();
 };
-
-// ... [后面的代码保持不变] ...
-
-
-
-
-
-
-
-
-
 
 window.batchDelete = async () => {
   if (selectedFiles.size === 0) return helpers.showAlert('请选择文件');
