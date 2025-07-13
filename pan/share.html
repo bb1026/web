@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <title>文件分享</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="share.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>文件分享</h2>
-    <div id="status">正在加载分享信息...</div>
-    <div id="result" class="hidden">
-      <p><strong>文件名：</strong><span id="filename"></span></p>
-      <p><strong>有效期至：</strong><span id="expires"></span></p>
-      <a id="download-link" class="download-btn" target="_blank">点击下载</a>
+  <div id="container">
+    <div class="header">
+      <i class="fas fa-share-alt"></i>
+      <h2>文件分享</h2>
     </div>
-    <div id="error" class="error hidden"></div>
+    <div id="share-content">
+      <div class="loader"></div>
+      <p>正在加载文件信息...</p>
+    </div>
   </div>
-
   <script src="share.js"></script>
 </body>
 </html>
