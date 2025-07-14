@@ -5,7 +5,8 @@
     ["IP查询", "/pages/ip.html"],
     ["身份证号码查验", "/pages/idcheck.html"],
     ["单位换算", "/pages/unit-conversion.html"],
-    ["色彩查询", "/pages/color.html"]
+    ["色彩查询", "/pages/color.html"],
+    ["个人网盘", "/pan/"]
   ],
   "代码工具": [
     ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
