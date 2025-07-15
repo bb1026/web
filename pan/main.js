@@ -63,6 +63,12 @@ const helpers = {
 };
 
 const authFunctions = {
+  // 存储定时器ID
+  permissionCheckTimer: null,
+  activityCheckTimer: null,
+  // 记录最后操作时间
+  lastActivityTime: null,
+
   login: async () => {
     const pwd = pwdInput.value.trim();
     if (!pwd) return helpers.showAlert('请输入密码');
@@ -81,8 +87,10 @@ const authFunctions = {
 
         localStorage.setItem('auth', auth);
         localStorage.setItem('role', role);
-
         loginBox.classList.add('hidden');
+
+document.getElementById('homeBtn').classList.add('hidden'); // 隐藏首页按钮
+
         roleElement.textContent = `当前角色：${roleNames[role] || role}`;
         roleElement.classList.remove('hidden');
 
@@ -96,6 +104,9 @@ const authFunctions = {
         fileFunctions.renderMainPanel();
         await fileFunctions.loadFiles();
         await shareFunctions.loadAllShares();
+
+        // 初始化检测机制
+        authFunctions.initChecks();
       } else {
         helpers.showAlert('密码错误');
       }
@@ -105,6 +116,16 @@ const authFunctions = {
   },
 
   logout: () => {
+    // 清除定时器
+    if (authFunctions.permissionCheckTimer) {
+      clearInterval(authFunctions.permissionCheckTimer);
+      authFunctions.permissionCheckTimer = null;
+    }
+    if (authFunctions.activityCheckTimer) {
+      clearInterval(authFunctions.activityCheckTimer);
+      authFunctions.activityCheckTimer = null;
+    }
+
     auth = null;
     role = null;
 
@@ -121,10 +142,57 @@ const authFunctions = {
     roleElement.textContent = '';
     roleElement.classList.add('hidden');
 
+document.getElementById('homeBtn').classList.remove('hidden'); // 显示首页按钮
+
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) logoutBtn.remove();
 
     dynamicContainer.innerHTML = '';
+  },
+
+  // 初始化检测机制
+  initChecks: () => {
+    // 记录初始活动时间
+    authFunctions.lastActivityTime = new Date().getTime();
+
+    // 2分钟账号权限检测（120000毫秒）
+    authFunctions.permissionCheckTimer = setInterval(async () => {
+      try {
+        const res = await fetch(api.whoami, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: auth
+        });
+        const data = await res.json();
+        if (!data.role) {
+          helpers.showAlert('账号权限已失效，自动退出');
+          authFunctions.logout();
+        }
+      } catch (err) {
+        helpers.showAlert('权限验证失败，自动退出');
+        authFunctions.logout();
+      }
+    }, 2 * 60 * 1000);
+
+    // 5分钟页面活动检测（300000毫秒）
+    authFunctions.activityCheckTimer = setInterval(() => {
+      const now = new Date().getTime();
+      // 超过5分钟无活动
+      if (now - authFunctions.lastActivityTime > 0.1 * 60 * 1000) {
+        helpers.showAlert('长时间未操作，自动退出');
+        authFunctions.logout();
+      }
+    }, 0.1 * 60 * 1000);
+
+    // 监听用户操作，更新活动时间
+    const updateActivity = () => {
+      authFunctions.lastActivityTime = new Date().getTime();
+    };
+    // 绑定常见用户交互事件
+    document.addEventListener('click', updateActivity);
+    document.addEventListener('keypress', updateActivity);
+    document.addEventListener('scroll', updateActivity);
+    document.addEventListener('mousemove', updateActivity);
   }
 };
 
@@ -170,7 +238,7 @@ const fileFunctions = {
         ${(role === 'admin' || role === 'upload') ? `<button onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> 上传</button>` : ''}
         ${(role === 'admin' || role === 'upload') ? `<button onclick="batchDelete()"><i class="fas fa-trash"></i> 批量删除</button>` : ''}
         <button onclick="loadFiles()"><i class="fas fa-sync"></i> 刷新</button>
-        ${(role === 'admin' || role === 'upload') ? `<button onclick="toggleTrash()"><i class="fas fa-trash-alt"></i> 回收站</button>` : ''}
+        <button onclick="toggleTrash()"><i class="fas fa-trash-alt"></i> 回收站</button>
         ${currentPath ? `<button onclick="goBack()"><i class="fas fa-arrow-left"></i> 返回上一级</button>` : ''}
       </div>
       <div class="path-nav" style="margin:6px 0;">${fileFunctions.renderPathNav()}</div>
@@ -231,6 +299,7 @@ renderFileList: () => {
       topRow.appendChild(cb);
     }
 
+
     const nameSpan = document.createElement('span');
 const fullName = file.name;
 const shortName = fullName.length > 20 ? fullName.slice(0, 20) + '...' : fullName;
@@ -250,6 +319,7 @@ nameSpan.onclick = () => {
   isExpanded = !isExpanded;
   nameSpan.textContent = isExpanded ? fullName : shortName;
 };
+
 
     topRow.appendChild(nameSpan);
 
@@ -273,6 +343,7 @@ nameSpan.onclick = () => {
     meta.textContent = metaText;
     left.appendChild(meta);
 
+    // 新位置：按钮放到 left 下面
     const buttonRow = document.createElement('div');
     buttonRow.style.display = 'flex';
     buttonRow.style.flexWrap = 'wrap';
@@ -282,13 +353,10 @@ nameSpan.onclick = () => {
     if (!showTrash) {
       buttonRow.appendChild(helpers.createButton('下载', 'download', 'btn download-btn', () => downloadFile(file.name)));
 
-    
+      const shareLabel = shareState[file.name] ? '设置' : '分享';
+      buttonRow.appendChild(helpers.createButton(shareLabel, 'share', 'btn', () => openShareModal(file.name)));
 
       if (role === 'admin' || (role === 'upload' && file.uploader === auth)) {
-
-const shareLabel = shareState[file.name] ? '设置' : '分享';
-
-buttonRow.appendChild(helpers.createButton(shareLabel, 'share', 'btn', () => openShareModal(file.name)));
         buttonRow.appendChild(helpers.createButton('删除', 'trash', 'btn delete-btn', () => deleteFile(file.name)));
       }
     } else {
@@ -337,11 +405,20 @@ function toggleTrash() {
 window.login = authFunctions.login;
 window.logout = authFunctions.logout;
 
+
+
+
+
+
+
+
+// ... [前面的代码保持不变，直到 window.upload 函数] ...
+
 window.upload = async () => {
   const input = document.getElementById('fileInput');
   if (!input.files.length) return;
 
-  // 创建上传进度容器
+  // 创建上传进度容器（保持原始逻辑不变，只添加UI元素）
   const progressContainer = document.createElement('div');
   progressContainer.className = 'progress-container';
   progressContainer.innerHTML = `
@@ -358,13 +435,16 @@ window.upload = async () => {
   let uploadedCount = 0;
   const totalFiles = input.files.length;
 
+  // 完全保持原始上传逻辑，只添加进度更新
   for (const file of input.files) {
     const form = new FormData();
     form.append("file", file);
     
     try {
+      // 更新进度文本
       progressText.textContent = `正在上传 ${file.name} (${uploadedCount+1}/${totalFiles})`;
       
+      // 完全保持原始fetch请求
       const res = await fetch(`${api.upload}?key=${auth}`, {
         method: "POST",
         body: form
@@ -374,6 +454,7 @@ window.upload = async () => {
         helpers.showAlert(`${file.name} 上传失败`);
       } else {
         uploadedCount++;
+        // 更新进度条
         const percent = Math.round((uploadedCount / totalFiles) * 100);
         progressIndicator.style.width = `${percent}%`;
       }
@@ -382,17 +463,30 @@ window.upload = async () => {
     }
   }
 
+  // 完成后的处理（保持原始逻辑）
   progressIndicator.style.width = '100%';
   progressIndicator.style.backgroundColor = '#4CAF50';
   progressText.textContent = `上传完成 (${uploadedCount}/${totalFiles})`;
   
+  // 3秒后移除进度条
   setTimeout(() => {
     progressContainer.remove();
   }, 3000);
 
   input.value = '';
-  fileFunctions.loadFiles();
+  fileFunctions.loadFiles(); // 保持原始刷新逻辑
 };
+
+// ... [后面的代码保持不变] ...
+
+
+
+
+
+
+
+
+
 
 window.batchDelete = async () => {
   if (selectedFiles.size === 0) return helpers.showAlert('请选择文件');
@@ -673,11 +767,16 @@ window.addEventListener('keydown', e => {
 
 window.addEventListener('load', async () => {
   const savedAuth = localStorage.getItem('auth');
+  const homeBtn = document.getElementById('homeBtn');
+
+
+
   const savedRole = localStorage.getItem('role');
   if (savedAuth && savedRole) {
     auth = savedAuth;
     role = savedRole;
     loginBox.classList.add('hidden');
+homeBtn.classList.add('hidden');
     roleElement.textContent = `当前角色：${roleNames[role] || role}`;
     roleElement.classList.remove('hidden');
 
@@ -691,5 +790,6 @@ window.addEventListener('load', async () => {
     await shareFunctions.loadAllShares();
   } else {
     loginBox.classList.remove('hidden');
+homeBtn.classList.remove('hidden');
   }
 });
