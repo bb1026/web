@@ -12,8 +12,8 @@ function generateCaptcha() {
 }
 
 function generateRandomName() {
-  const longNumber = Math.floor(100000000000 + Math.random() * 900000000000).toString();
-  return '访客用户 #' + longNumber;
+  const longNumber = Math.floor(10000000000000 + Math.random() * 90000000000000).toString();
+  return '访客' + longNumber;
 }
 
 function initName() {
