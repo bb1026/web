@@ -19,7 +19,7 @@ jobs:
       - name: Install Wrangler v2
         run: npm install -g wrangler@2
 
-      - name: Publish pan-worker to Cloudflare
+      - name: Publish message-worker to Cloudflare
         working-directory: Cloudflare/message/
         run: |
           wrangler publish --config wrangler-message.toml
