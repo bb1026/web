@@ -8,9 +8,7 @@ export default {
     const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: corsHeaders()
-      });
+      return new Response(null, { headers: corsHeaders() });
     }
 
     if (request.method === 'GET') {
@@ -26,7 +24,7 @@ export default {
           const text = await res.text();
           try {
             const item = JSON.parse(text);
-            item._key = obj.key; // 管理端需要
+            item._key = obj.key;
             messages.push(item);
           } catch (_) {}
         }
@@ -46,7 +44,6 @@ export default {
     }
 
     if (request.method === 'POST') {
-      // 防刷（简单版）
       const now = Date.now();
       const recent = ipCache.get(clientIP) || [];
       const filtered = recent.filter(ts => now - ts < 60000);
@@ -67,11 +64,35 @@ export default {
       const record = {
         name: data.name.slice(0, 100),
         message: data.message.slice(0, 1000),
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        replies: []
       };
 
       await bucket.put(key, JSON.stringify(record));
       return jsonResponse({ success: true });
+    }
+
+    if (request.method === 'PATCH') {
+      const data = await request.json().catch(() => null);
+      if (!data?.key || !data?.name || !data?.message) {
+        return new Response('Invalid input', { status: 400 });
+      }
+
+      const obj = await bucket.get(data.key);
+      if (!obj) return new Response('Not Found', { status: 404 });
+
+      const text = await obj.text();
+      const record = JSON.parse(text);
+
+      if (!Array.isArray(record.replies)) record.replies = [];
+      record.replies.push({
+        name: data.name.slice(0, 100),
+        message: data.message.slice(0, 500),
+        timestamp: Date.now()
+      });
+
+      await bucket.put(data.key, JSON.stringify(record));
+      return jsonResponse({ replied: true });
     }
 
     if (request.method === 'DELETE') {
@@ -89,7 +110,7 @@ export default {
 
     return new Response('Method Not Allowed', { status: 405 });
   }
-}
+};
 
 function jsonResponse(data) {
   return new Response(JSON.stringify(data), {
@@ -100,7 +121,7 @@ function jsonResponse(data) {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS',
+    'Access-Control-Allow-Methods': 'GET,POST,DELETE,OPTIONS,PATCH',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
 }
