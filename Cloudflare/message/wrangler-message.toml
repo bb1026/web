@@ -9,7 +9,7 @@ compatibility_date = "2025-07-08"
 
 workers_dev = true
 
-routes = ["*.0515364.xyz/*"]
+routes = ["message.0515364.xyz/*"]
 
 [observability.logs]
 enabled = true
