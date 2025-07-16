@@ -1,8 +1,19 @@
-name = "temp-file-share"
-main = "worker-share.js"
+name = "temp-share"
+main = "worker.js"
+type = "module"
+account_id = "4796a78c1804791b739f97bb336bab79"
+zone_id = "df09b3a563bde936907cc7c4a710f942"
 compatibility_date = "2025-07-16"
+workers_dev = true
+routes = ["share.0515364.xyz/*"]
+
+[build]
+upload.format = "modules"
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
-bucket_name = "temp-files"
-preview_bucket_name = "temp-files"
+bucket_name = "tempfiles"
+preview_bucket_name = "tempfiles"
+
+[observability.logs]
+enabled = true
