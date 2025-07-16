@@ -35,5 +35,6 @@
   "Scriptable":[
     ["Scriptable代码", "/pages/scriptable.html"]
   ],
-  "关于": "/pages/about.html"
+  "关于": "/pages/about.html",
+  "留言板": "/page/message.html"
 }
