@@ -1,4 +1,4 @@
-name: Deploy Cloudflare Worker
+name: Deploy Cloudflare Worker (网站规则)
 
 on:
   push:
