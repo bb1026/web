@@ -1,0 +1,28 @@
+name: Deploy message-worker (留言)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Cloudflare/message/worker-message.js'
+      - 'Cloudflare/message/wrangler-message.toml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Wrangler v2
+        run: npm install -g wrangler@2
+
+      - name: Publish pan-worker to Cloudflare
+        working-directory: Cloudflare/message/
+        run: |
+          wrangler publish --config wrangler-message.toml
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
