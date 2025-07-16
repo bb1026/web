@@ -1,20 +1,20 @@
 name = "pan-worker"
-main = "worker-pan.js"
-type = "module"
+main = "worker-message.js"
+type = "javascript"
+
 account_id = "4796a78c1804791b739f97bb336bab79"
 zone_id = "df09b3a563bde936907cc7c4a710f942"
+
 compatibility_date = "2025-07-08"
+
 workers_dev = true
+
 routes = ["*.0515364.xyz/*"]
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "mypan"
-preview_bucket_name = "mypan"
-
-[[kv_namespaces]]
-binding = "pan_share_data"
-id = "a30c3ece82e0421eab27bf575b64da1a"
 
 [observability.logs]
 enabled = true
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "message"
+preview_bucket_name = "message"
