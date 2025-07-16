@@ -11,6 +11,9 @@ workers_dev = true
 
 routes = ["message.0515364.xyz/*"]
 
+[vars]
+ADMIN_PASSWORD = "540154897"
+
 [observability.logs]
 enabled = true
 
