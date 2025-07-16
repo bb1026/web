@@ -8,17 +8,23 @@
 </head>
 <body>
 
-<div class="admin-entry" id="adminEntry">
-  <button onclick="showAdminLogin()">管理员入口</button>
-</div>
-
 <div class="container">
+
+  <div class="header-bar">
+    <div>
+      <a href="/" class="home-link">首页</a>
+    </div>
+    <div class="admin-entry" id="adminEntry">
+      <button onclick="showAdminLogin()">管理员入口</button>
+    </div>
+  </div>
+
   <h2>留言板</h2>
 
   <div id="user-area">
-  <input type="text" id="nameInput" placeholder="你的名字"
-  onfocus="handleNameInputFocus(this)"
-  onblur="handleNameInputBlur(this)">
+    <input type="text" id="nameInput" placeholder="你的名字"
+      onfocus="handleNameInputFocus(this)"
+      onblur="handleNameInputBlur(this)">
 
     <textarea id="messageInput" placeholder="请输入留言..."></textarea>
 
@@ -35,6 +41,7 @@
 
   <div id="messages"></div>
   <button id="loadMoreBtn" onclick="loadMore()" style="display:none;">加载更多</button>
+
 </div>
 
 <script src="/js/message.js"></script>
