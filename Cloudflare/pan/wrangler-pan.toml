@@ -15,9 +15,5 @@ binding = "BUCKET"
 bucket_name = "mypan"
 preview_bucket_name = "mypan"
 
-[[kv_namespaces]]
-binding = "pan_share_data"
-id = "a30c3ece82e0421eab27bf575b64da1a"
-
 [observability.logs]
 enabled = true
