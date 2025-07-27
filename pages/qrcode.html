@@ -8,6 +8,8 @@
      crossorigin="anonymous"></script>
 <title>二维码生成器</title>
 <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/floating-menu.css">
 <style>
   body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -134,6 +136,9 @@
 </head>
 <body>
 <h2>二维码生成器</h2>
+
+<!-- 球形菜单挂载点 -->
+<div id="fm-container"></div>
 
 <!-- 内容类型 -->
 <fieldset>
@@ -588,11 +593,7 @@
 })();
 </script>
 
-<!-- 声明信息 -->
-<hr style="margin-top:40px; border:none; border-top:1px solid #ccc;" />
-<footer style="text-align:center; margin-top:20px; font-size:13px; color:#666;">
-  本工具仅供学习与个人使用，二维码内容生成后请自行核对准确性。<br>
-  © 2025 彩色二维码生成器
-</footer>
+<script src="/js/floating-menu.js"></script>
+<script src="/js/main-header-notice-footer.js"></script>
 </body>
 </html>
