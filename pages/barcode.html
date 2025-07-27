@@ -9,6 +9,8 @@
   <title>条形码生成器</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/floating-menu.css">
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
@@ -96,6 +98,8 @@
   </style>
 </head>
 <body>
+  <!-- 球形菜单挂载点 -->
+  <div id="fm-container"></div>
 
 <header>条形码生成器</header>
 
@@ -177,6 +181,9 @@
     });
   }
 </script>
+
+<script src="/js/floating-menu.js"></script>
+<script src="/js/main-header-notice-footer.js"></script>
 
 </body>
 </html>
