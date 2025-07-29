@@ -178,11 +178,11 @@ document.getElementById('homeBtn').classList.remove('hidden'); // 显示首页�
     authFunctions.activityCheckTimer = setInterval(() => {
       const now = new Date().getTime();
       // 超过5分钟无活动
-      if (now - authFunctions.lastActivityTime > 0.1 * 60 * 1000) {
+      if (now - authFunctions.lastActivityTime > 5 * 60 * 1000) {
         helpers.showAlert('长时间未操作，自动退出');
         authFunctions.logout();
       }
-    }, 0.1 * 60 * 1000);
+    }, 5 * 60 * 1000);
 
     // 监听用户操作，更新活动时间
     const updateActivity = () => {
