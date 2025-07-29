@@ -64,17 +64,57 @@ export default {
       }
 
       // === 下载文件 ===
-      if (path === 'download' && role) {
-        const fileName = url.searchParams.get('file');
-        const file = await env.BUCKET.get(fileName);
-        if (!file) return new Response('文件不存在', { status: 404 });
-        return new Response(file.body, {
-          headers: {
-            'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
-            'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName.split('/').pop())}"`
-          }
-        });
+if (path === 'download') {
+  const fileName = url.searchParams.get('file');
+  if (!fileName) return new Response('缺少文件名', { status: 400 });
+
+  // 获取文件（包括元数据）
+  const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
+  if (!file) return new Response('文件不存在', { status: 404 });
+
+  // 判断是否有权限
+  let hasAccess = false;
+
+  // ✅ 情况 1：已登录用户（带 key）
+  if (role) {
+    hasAccess = true;
+  } else {
+    // ✅ 情况 2：该文件是“公开分享”文件（无密码 & 未过期）
+    const shareList = await env.BUCKET.list({ prefix: '__share__/' });
+    for (const obj of shareList.objects) {
+      const recordObj = await env.BUCKET.get(obj.key);
+      if (!recordObj) continue;
+
+      try {
+        const record = JSON.parse(await recordObj.text());
+        const isPublic = !record.password;
+        const isValid = Date.now() < record.expiresAt;
+        if (record.file === fileName && isPublic && isValid) {
+          hasAccess = true;
+          break;
+        }
+      } catch (err) {
+        // 跳过解析失败项
       }
+    }
+  }
+
+  if (!hasAccess) {
+    return new Response('❌ 未授权下载', {
+      status: 403,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // ✅ 允许下载
+  return new Response(file.body, {
+    headers: {
+      'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName.split('/').pop())}"`,
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
 
       // === 上传文件 ===
       if (path === 'upload' && (role === 'upload' || role === 'admin')) {
