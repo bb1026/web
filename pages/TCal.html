@@ -14,7 +14,7 @@
         }
         
         body {
-            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            font-family: 'Arial', 'Microsoft YaHei', 'Arial Unicode MS', sans-serif;
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
@@ -35,21 +35,27 @@
         .language-switch {
             text-align: right;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            flex-wrap: wrap;
         }
         
         .language-switch button {
             background: none;
-            border: none;
+            border: 1px solid var(--primary-color);
             color: var(--primary-color);
             cursor: pointer;
             padding: 5px 10px;
-            font-size: 14px;
+            font-size: 12px;
+            border-radius: 15px;
             transition: all 0.3s;
         }
         
         .language-switch button.active {
+            background-color: var(--primary-color);
+            color: white;
             font-weight: bold;
-            text-decoration: underline;
         }
         
         .time-input {
@@ -99,13 +105,24 @@
                 flex: 1;
                 min-width: 60px;
             }
+            
+            .language-switch {
+                justify-content: center;
+            }
+            
+            .language-switch button {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="language-switch">
-        <button id="lang-zh" onclick="switchLanguage('zh')">中文</button>
         <button id="lang-en" onclick="switchLanguage('en')">English</button>
+        <button id="lang-zh" onclick="switchLanguage('zh')">中文</button>
+        <button id="lang-ta" onclick="switchLanguage('ta')">தமிழ்</button>
+        <button id="lang-ms" onclick="switchLanguage('ms')">Bahasa Melayu</button>
     </div>
     
     <div class="header">
@@ -166,8 +183,20 @@
             return url.searchParams.get(name);
         }
 
-        // 多语言支持
+        // 多语言支持（中文、英文、泰米尔语、马来语）
         const translations = {
+            en: {
+                title: "Time Difference Calculator",
+                subtitle: "Calculate total hours difference between two datetimes (in 15-minute increments)",
+                startTimeLabel: "Start Time",
+                endTimeLabel: "End Time",
+                resultTotal: "Total difference",
+                resultHours: "hours",
+                resultStart: "Start time",
+                resultEnd: "End time",
+                error: "Error: End time cannot be earlier than start time",
+                loading: "Calculating..."
+            },
             zh: {
                 title: "时间差计算器",
                 subtitle: "计算两个日期时间之间的总小时差（15分钟为单位）",
@@ -180,23 +209,35 @@
                 error: "错误：结束时间不能早于开始时间",
                 loading: "计算中..."
             },
-            en: {
-                title: "Time Difference Calculator",
-                subtitle: "Calculate total hours difference between two datetimes (in 15-minute increments)",
-                startTimeLabel: "Start Time",
-                endTimeLabel: "End Time",
-                resultTotal: "Total difference",
-                resultHours: "hours",
-                resultStart: "Start time",
-                resultEnd: "End time",
-                error: "Error: End time cannot be earlier than start time",
-                loading: "Calculating..."
+            ta: {
+                title: "நேர வித்தியாச கால்குலேட்டர்",
+                subtitle: "இரண்டு தேதி நேரங்களுக்கு இடையே மொத்த மணிநேர வித்தியாசத்தை கணக்கிடுங்கள் (15 நிமிட அதிகரிப்புகளில்)",
+                startTimeLabel: "தொடக்க நேரம்",
+                endTimeLabel: "முடிவு நேரம்",
+                resultTotal: "மொத்த வித்தியாசம்",
+                resultHours: "மணிநேரம்",
+                resultStart: "தொடக்க நேரம்",
+                resultEnd: "முடிவு நேரம்",
+                error: "பிழை: முடிவு நேரம் தொடக்க நேரத்தை விட முன்னதாக இருக்க முடியாது",
+                loading: "கணக்கிடுகிறது..."
+            },
+            ms: {
+                title: "Kalkulator Perbezaan Masa",
+                subtitle: "Kira jumlah perbezaan jam antara dua tarikh masa (dalam kenaikan 15 minit)",
+                startTimeLabel: "Masa Mula",
+                endTimeLabel: "Masa Tamat",
+                resultTotal: "Jumlah perbezaan",
+                resultHours: "jam",
+                resultStart: "Masa mula",
+                resultEnd: "Masa tamat",
+                error: "Ralat: Masa tamat tidak boleh lebih awal daripada masa mula",
+                loading: "Mengira..."
             }
         };
         
         // 初始化语言（优先使用URL参数，其次本地存储，默认英文）
         let currentLanguage = getUrlParam('lang') || localStorage.getItem('preferredLanguage') || 'en';
-        if (!['en', 'zh'].includes(currentLanguage)) {
+        if (!['en', 'zh', 'ta', 'ms'].includes(currentLanguage)) {
             currentLanguage = 'en';
         }
         let calculationTimeout = null;
@@ -211,8 +252,10 @@
             document.getElementById('end-time-label').textContent = translations[lang].endTimeLabel;
             
             // 更新语言按钮状态
-            document.getElementById('lang-en').classList.toggle('active', lang === 'en');
-            document.getElementById('lang-zh').classList.toggle('active', lang === 'zh');
+            document.querySelectorAll('.language-switch button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`lang-${lang}`).classList.add('active');
             
             // 保存偏好到本地存储
             localStorage.setItem('preferredLanguage', lang);
@@ -303,9 +346,17 @@
             const hours = date.getHours().toString().padStart(2, '0');
             const minutes = date.getMinutes().toString().padStart(2, '0');
             
-            return currentLanguage === 'zh' 
-                ? `${year}-${month}-${day} ${hours}:${minutes}`
-                : `${month}/${day}/${year} ${hours}:${minutes}`;
+            // 不同语言的日期格式
+            switch(currentLanguage) {
+                case 'zh':
+                    return `${year}-${month}-${day} ${hours}:${minutes}`;
+                case 'ta':
+                    return `${day}/${month}/${year} ${hours}:${minutes}`;
+                case 'ms':
+                    return `${day}/${month}/${year} ${hours}:${minutes}`;
+                default: // en
+                    return `${month}/${day}/${year} ${hours}:${minutes}`;
+            }
         }
         
         // 初始化应用
