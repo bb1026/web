@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间差计算器 / Time Difference Calculator</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --border-color: #ddd;
+            --bg-color: #f8f8f8;
+            --text-color: #333;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            color: var(--text-color);
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .language-switch {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        
+        .language-switch button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .time-input {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: white;
+        }
+        
+        input, button, select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        #result {
+            font-size: 16px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--bg-color);
+            border-radius: 5px;
+            line-height: 1.6;
+            min-height: 100px;
+        }
+        
+        .time-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .time-selector {
+                flex-wrap: wrap;
+            }
+            
+            select {
+                flex: 1;
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switch">
+        <button onclick="switchLanguage('zh')">中文</button>
+        <button onclick="switchLanguage('en')">English</button>
+    </div>
+    
+    <div class="header">
+        <h1 id="title">时间差计算器</h1>
+        <p id="subtitle">计算两个日期时间之间的总小时差（15分钟为单位）</p>
+    </div>
+    
+    <div class="container">
+        <div class="time-input">
+            <h3 id="start-time-label">开始时间</h3>
+            <input type="date" id="start-date">
+            <div class="time-selector">
+                <select id="start-hours">
+                    <script>
+                        for (let i = 0; i < 24; i++) {
+                            document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+                        }
+                    </script>
+                </select>
+                <span>:</span>
+                <select id="start-minutes">
+                    <option value="0">00</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="time-input">
+            <h3 id="end-time-label">结束时间</h3>
+            <input type="date" id="end-date">
+            <div class="time-selector">
+                <select id="end-hours">
+                    <script>
+                        for (let i = 0; i < 24; i++) {
+                            document.write(`<option value="${i}">${i.toString().padStart(2, '0')}</option>`);
+                        }
+                    </script>
+                </select>
+                <span>:</span>
+                <select id="end-minutes">
+                    <option value="0">00</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        // 多语言支持
+        const translations = {
+            zh: {
+                title: "时间差计算器",
+                subtitle: "计算两个日期时间之间的总小时差（15分钟为单位）",
+                startTimeLabel: "开始时间",
+                endTimeLabel: "结束时间",
+                resultTotal: "总时间差",
+                resultHours: "小时",
+                resultStart: "开始时间",
+                resultEnd: "结束时间",
+                error: "错误：结束时间不能早于开始时间",
+                loading: "计算中..."
+            },
+            en: {
+                title: "Time Difference Calculator",
+                subtitle: "Calculate total hours difference between two datetimes (in 15-minute increments)",
+                startTimeLabel: "Start Time",
+                endTimeLabel: "End Time",
+                resultTotal: "Total difference",
+                resultHours: "hours",
+                resultStart: "Start time",
+                resultEnd: "End time",
+                error: "Error: End time cannot be earlier than start time",
+                loading: "Calculating..."
+            }
+        };
+        
+        let currentLanguage = 'zh';
+        let calculationTimeout = null;
+        
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            document.getElementById('title').textContent = translations[lang].title;
+            document.getElementById('subtitle').textContent = translations[lang].subtitle;
+            document.getElementById('start-time-label').textContent = translations[lang].startTimeLabel;
+            document.getElementById('end-time-label').textContent = translations[lang].endTimeLabel;
+            
+            // 触发重新计算以更新语言
+            calculateTimeDifference();
+        }
+        
+        // 设置默认日期为今天
+        document.getElementById('start-date').valueAsDate = new Date();
+        document.getElementById('end-date').valueAsDate = new Date();
+        
+        // 为所有输入元素添加事件监听
+        const inputs = ['start-date', 'start-hours', 'start-minutes', 'end-date', 'end-hours', 'end-minutes'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                // 使用防抖技术，避免频繁计算
+                if (calculationTimeout) {
+                    clearTimeout(calculationTimeout);
+                }
+                document.getElementById('result').textContent = translations[currentLanguage].loading;
+                calculationTimeout = setTimeout(calculateTimeDifference, 300);
+            });
+        });
+        
+        // 初始计算
+        calculateTimeDifference();
+        
+        function calculateTimeDifference() {
+            // 获取开始时间
+            const startDate = document.getElementById('start-date').value;
+            const startHours = parseInt(document.getElementById('start-hours').value);
+            const startMinutes = parseInt(document.getElementById('start-minutes').value);
+            
+            // 获取结束时间
+            const endDate = document.getElementById('end-date').value;
+            const endHours = parseInt(document.getElementById('end-hours').value);
+            const endMinutes = parseInt(document.getElementById('end-minutes').value);
+            
+            // 创建Date对象
+            const startTime = new Date(startDate);
+            startTime.setHours(startHours, startMinutes, 0, 0);
+            
+            const endTime = new Date(endDate);
+            endTime.setHours(endHours, endMinutes, 0, 0);
+            
+            // 计算时间差（毫秒）
+            const timeDiff = endTime - startTime;
+            
+            // 检查结束时间是否早于开始时间
+            if (timeDiff < 0) {
+                document.getElementById('result').innerHTML = translations[currentLanguage].error;
+                return;
+            }
+            
+            // 转换为小时（15分钟为0.25小时）
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+            
+            // 四舍五入到小数点后2位
+            const roundedHours = Math.round(hoursDiff * 100) / 100;
+            
+            // 显示结果
+            document.getElementById('result').innerHTML = 
+                `${translations[currentLanguage].resultTotal}: ${roundedHours} ${translations[currentLanguage].resultHours}<br>
+                 ${translations[currentLanguage].resultStart}: ${formatDateTime(startTime)}<br>
+                 ${translations[currentLanguage].resultEnd}: ${formatDateTime(endTime)}`;
+        }
+        
+        function formatDateTime(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            return currentLanguage === 'zh' 
+                ? `${year}-${month}-${day} ${hours}:${minutes}`
+                : `${month}/${day}/${year} ${hours}:${minutes}`;
+        }
+    </script>
+</body>
+</html>
