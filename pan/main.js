@@ -745,7 +745,12 @@ closeShareBtn.onclick = () => {
 
 copyLinkBtn.onclick = () => {
   const filename = window.__shareFile;
-  if (!filename || !shareState[filename]) return;
+  console.log("当前 shareFile=", filename, "shareState=", shareState);
+
+  if (!filename || !shareState[filename]) {
+    helpers.showAlert("没有可复制的分享信息");
+    return;
+  }
 
   const info = shareState[filename];
   let textToCopy = `分享链接: ${info.link}\n`;
@@ -754,10 +759,27 @@ copyLinkBtn.onclick = () => {
   }
   textToCopy += `有效期至: ${new Date(info.expiresAt).toLocaleString()}`;
 
-  navigator.clipboard.writeText(textToCopy)
-    .then(() => helpers.showAlert('链接、密码和有效期已复制', false))
-    .catch(() => helpers.showAlert('复制失败'));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => helpers.showAlert('链接、密码和有效期已复制', false))
+      .catch(err => {
+        console.error("复制失败:", err);
+        fallbackCopy(textToCopy);
+      });
+  } else {
+    fallbackCopy(textToCopy);
+  }
 };
+
+function fallbackCopy(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+  helpers.showAlert('已复制', false);
+}
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !shareModal.classList.contains('hidden')) {
