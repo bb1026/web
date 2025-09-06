@@ -3,6 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <title>我的日历订阅</title>
+  <!-- 自适应屏幕，并禁止缩放 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    /* 页面居中、字体适配屏幕 */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    a {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      color: #fff;
+      background-color: #007bff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+
+    a:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <h1>欢迎订阅我的日历</h1>
