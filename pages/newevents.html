@@ -73,7 +73,6 @@ button.secondary{background:#6b7280}
 </div>
 
 <script>
-// 默认时区
 function setDefaultTimezone(){
   const tzInput = document.getElementById('tz');
   tzInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
@@ -91,7 +90,6 @@ function escapeText(s){return(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').r
 
 const eventsContainer=document.getElementById('events');
 
-// 重新生成事件编号
 function refreshEventNumbers(){
   const cards = eventsContainer.querySelectorAll('.card');
   cards.forEach((card, i)=>{
@@ -100,7 +98,6 @@ function refreshEventNumbers(){
   });
 }
 
-// 创建事件卡
 function createEventCard(data){
   const div=document.createElement('div');
   div.className='card';
@@ -123,10 +120,16 @@ function createEventCard(data){
     <input class="summary" type="text" value="${data?.summary||''}" placeholder="教师节">
     <label>说明（DESCRIPTION，可选）</label>
     <input class="description" type="text" value="${data?.description||''}" placeholder="每年教师节">
+    <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+    <div style="flex:1;display:flex;flex-direction:column;">
     <label>开始 (DTSTART)</label>
-    <input class="dtstart" type="date" value="${todayDate}">
+    <input class="dtstart" type="date" value="${todayDate}" style="width:100%;">
+  </div>
+    <div style="flex:1;display:flex;flex-direction:column;">
     <label>结束 (DTEND)</label>
-    <input class="dtend" type="date" value="${todayDate}">
+    <input class="dtend" type="date" value="${todayDate}" style="width:100%;">
+  </div>
+</div>
     <label>重复规则 (RRULE)</label>
     <select class="rrulePreset">
       <option value="">无</option>
@@ -145,25 +148,15 @@ function createEventCard(data){
     </div>
   `;
 
-  // 删除当前事件
-  div.querySelector('.removeBtn').onclick=()=>{
-    div.remove();
-    refreshEventNumbers();
-  };
-
-  // 清空当前事件
-  div.querySelector('.clearBtn').onclick=()=>{
-    div.querySelector('.uid').value='';
-    div.querySelector('.summary').value='';
-    div.querySelector('.description').value='';
-    div.querySelector('.dtstart').value=todayDate;
-    div.querySelector('.dtend').value=todayDate;
-    div.querySelector('.rrulePreset').value='';
-    div.querySelector('.rruleCustom').value='';
-  };
-
-  // RRULE逻辑
   const dtstartInput=div.querySelector('.dtstart');
+  const dtendInput=div.querySelector('.dtend');
+
+  dtstartInput.onchange=dtendInput.onchange=()=>{
+    const start = new Date(dtstartInput.value);
+    const end = new Date(dtendInput.value);
+    if(end<start) dtendInput.value = dtstartInput.value;
+  };
+
   const rruleSel=div.querySelector('.rrulePreset');
   const rruleCustom=div.querySelector('.rruleCustom');
   function updateRRULE(){
@@ -180,18 +173,31 @@ function createEventCard(data){
       default: rruleCustom.value=''; break;
     }
   }
-  dtstartInput.onchange=updateRRULE;
+  dtstartInput.onchange=()=>{updateRRULE(); dtendInput.onchange();}
   rruleSel.onchange=updateRRULE;
 
-  // 示例按钮
-  div.querySelector('.fillSample').onclick=()=>{
-    div.querySelector('.summary').value='示例事件';
+  div.querySelector('.removeBtn').onclick=()=>{
+    div.remove();
+    refreshEventNumbers();
+  };
+  div.querySelector('.clearBtn').onclick=()=>{
+    div.querySelector('.uid').value='';
+    div.querySelector('.summary').value='';
+    div.querySelector('.description').value='';
     dtstartInput.value=todayDate;
-    div.querySelector('.dtend').value=todayDate;
+    dtendInput.value=todayDate;
+    rruleSel.value='';
     rruleCustom.value='';
   };
 
-  // 规则介绍
+  div.querySelector('.fillSample').onclick=()=>{
+    div.querySelector('.summary').value='示例事件';
+    dtstartInput.value=todayDate;
+    dtendInput.value=todayDate;
+    rruleSel.value='';
+    rruleCustom.value='';
+  };
+  
   div.querySelector('.ruleInfoBtn').onclick=()=>{alert(`RRULE 规则说明：
 • 每年同一天：FREQ=YEARLY
 • 每年同月同日：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10
@@ -200,8 +206,7 @@ function createEventCard(data){
 • 母亲节：FREQ=YEARLY;BYMONTH=5;BYDAY=2SU
 • 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU`);};
 
-  // 预览事件
-  div.querySelector('.previewEventBtn').onclick=()=>{
+div.querySelector('.previewEventBtn').onclick=()=>{
     refreshEventNumbers();
     const ev = readEventFromCard(div);
     const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div)+1;
@@ -214,7 +219,6 @@ function createEventCard(data){
   return div;
 }
 
-// 读取事件
 function readEventFromCard(card){
   const uid=card.querySelector('.uid').value.trim();
   const summary=card.querySelector('.summary').value.trim();
@@ -248,14 +252,11 @@ function buildCalendarICS(){
   const header=['BEGIN:VCALENDAR',`PRODID:${prodid}`,'VERSION:2.0','CALSCALE:GREGORIAN','METHOD:PUBLISH',`X-WR-CALNAME:${escapeText(calName)}`,`X-WR-TIMEZONE:${tz}`];
   const eventCards=Array.from(document.querySelectorAll('#events .card'));
   if(eventCards.length===0){createEventCard(); return '';}
-
   refreshEventNumbers();
-
   for(let i=0;i<eventCards.length;i++){
     const summary = eventCards[i].querySelector('.summary').value.trim();
     if(!summary){alert(`事件 ${i+1} 标题为空！`); return '';}
   }
-
   const events=eventCards.map(c=>buildSingleEventICS(readEventFromCard(c)));
   return header.concat(events).concat(['END:VCALENDAR']).join('\r\n')+'\r\n';
 }
