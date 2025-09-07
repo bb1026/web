@@ -1,4 +1,5 @@
-name = "worker-menu"
+name = "inject-menu-worker"
+main = "worker-menu"
 type = "javascript"
 account_id = "4796a78c1804791b739f97bb336bab79"
 compatibility_date = "2025-09-08"
