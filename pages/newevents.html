@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>ICS 事件生成器 - 0515364.xyz</title>
+<!-- 引入 Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
 body{margin:0;padding:20px;background:#f6f7fb;color:#111;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;gap:16px}
@@ -15,7 +17,7 @@ input[type="text"], input[type="date"], select, textarea{
   width:100%;padding:8px;border:1px solid #e2e6ef;border-radius:6px;font-size:0.95rem;box-sizing:border-box;
 }
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer}
+button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 button.secondary{background:#6b7280}
 .small{padding:6px 10px;font-size:0.9rem}
 .events-list{display:flex;flex-direction:column;gap:8px}
@@ -29,45 +31,55 @@ button.secondary{background:#6b7280}
   .row{flex-direction:column}
   .event-header{flex-direction:column;align-items:flex-start}
 }
+.dialog-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;justify-content:center;align-items:center;z-index:1000;
+}
+.dialog-box{
+  background:#fff;border-radius:10px;padding:16px;max-width:600px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.25);
+}
+.dialog-box pre{white-space:pre-wrap;background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;max-height:300px;overflow:auto;font-family:monospace;}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>ICS 事件生成器</h1>
+  <h1><i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器</h1>
   <div class="card">
-    <label>日历名称（X-WR-CALNAME）</label>
+    <label><i class="fa-solid fa-book"></i> 日历名称（X-WR-CALNAME）</label>
     <input id="calName" type="text" value="我的订阅日历" placeholder="例如：我的订阅日历">
-    <label>时区 (X-WR-TIMEZONE)
-      <button id="refreshTz" class="small secondary" style="margin-left:8px;background:#ef4444;">重置</button>
+    <label><i class="fa-solid fa-globe"></i> 时区 (X-WR-TIMEZONE)
+      <button id="refreshTz" class="small secondary" style="margin-left:8px;background:#ef4444;">
+        <i class="fa-solid fa-rotate"></i> 重置
+      </button>
     </label>
     <input id="tz" type="text" placeholder="例如：Asia/Shanghai">
-    <label>PRODID</label>
+    <label><i class="fa-solid fa-code"></i> PRODID</label>
     <input id="prodid" type="text" value="-//0515364.xyz//My Calendar//CN">
   </div>
 
   <div class="card">
-    <strong>事件列表</strong>
+    <strong><i class="fa-solid fa-list"></i> 事件列表</strong>
     <div id="events" class="events-list" style="margin-top:12px"></div>
     <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-      <button id="addEventBtn" class="small">添加事件</button>
-      <button id="clearEvents" class="small secondary">清空所有</button>
+      <button id="addEventBtn" class="small"><i class="fa-solid fa-plus"></i> 添加事件</button>
+      <button id="clearEvents" class="small secondary"><i class="fa-solid fa-trash"></i> 清空所有</button>
     </div>
-    <div class="muted" style="margin-top:8px">说明：<br>
+    <div class="muted" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i> 说明：<br>
 • UID 可留空，系统会自动生成；<br>
-• DTSTAMP 自动填写为当前 UTC 时间；<br>
+• DTSTAMP 自动填写为当前本地时间；<br>
 • 默认全天事件，无法添加时间；<br>
 • 修改重复规则请查看规则介绍。
 </div>
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button id="generateBtn">生成 .ics 并预览</button>
-    <button id="copyBtn" class="secondary">复制到剪贴板</button>
-    <button id="downloadBtn" class="secondary">下载 .ics</button>
+    <button id="generateBtn"><i class="fa-solid fa-eye"></i> 生成 .ics 并预览</button>
+    <button id="copyBtn" class="secondary"><i class="fa-solid fa-copy"></i> 复制到剪贴板</button>
+    <button id="downloadBtn" class="secondary"><i class="fa-solid fa-download"></i> 下载 .ics</button>
   </div>
 
   <div class="card">
-    <label>预览 (.ics)</label>
+    <label><i class="fa-solid fa-code"></i> 预览 (.ics)</label>
     <div id="preview" class="preview">// 点击“生成 .ics 并预览”查看结果</div>
   </div>
 </div>
@@ -80,9 +92,14 @@ function setDefaultTimezone(){
 window.addEventListener('DOMContentLoaded', setDefaultTimezone);
 document.getElementById('refreshTz').onclick = setDefaultTimezone;
 
-function makeDTStampUTC(date=new Date()){
-  const iso=date.toISOString();
-  return iso.replace(/\.\d{3}Z$/,'Z').replace(/[-:]/g,'');
+function makeDTStampLocal(date=new Date()){
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth()+1).padStart(2,'0');
+  const dd = String(date.getDate()).padStart(2,'0');
+  const hh = String(date.getHours()).padStart(2,'0');
+  const mi = String(date.getMinutes()).padStart(2,'0');
+  const ss = String(date.getSeconds()).padStart(2,'0');
+  return `${yyyy}${mm}${dd}T${hh}${mi}${ss}`;
 }
 function genUID(base){const rand=Math.random().toString(36).slice(2,10);const now=new Date().getTime();const host=(base&&base.includes('@'))?base.split('@').pop():'0515364.xyz';return`uid-${now}-${rand}@${host}`;}
 function foldLine(line){const max=75;if(line.length<=max)return line;let out='',pos=0;while(pos<line.length){if(pos===0){out+=line.slice(pos,pos+max);}else{out+='\r\n '+line.slice(pos,pos+max);}pos+=max;}return out;}
@@ -96,6 +113,39 @@ function refreshEventNumbers(){
     const strong = card.querySelector('.event-header strong');
     strong.textContent = `事件 #${i+1}`;
   });
+}
+
+function createDialog(title, content, withCopy=false){
+  const backdrop=document.createElement('div');
+  backdrop.className='dialog-backdrop';
+  const box=document.createElement('div');
+  box.className='dialog-box';
+  box.innerHTML=`<h3 style="margin-top:0;font-size:1rem">${title}</h3>`;
+  if(typeof content==='string'){
+    box.innerHTML+=`<pre>${content}</pre>`;
+  }else{
+    box.appendChild(content);
+  }
+  const actions=document.createElement('div');
+  actions.className='dialog-actions';
+  if(withCopy){
+    const copyBtn=document.createElement('button');
+    copyBtn.textContent='复制';
+    copyBtn.onclick=async()=>{
+      try{
+        await navigator.clipboard.writeText(content);
+        alert('已复制');
+      }catch(e){alert('复制失败');}
+    };
+    actions.appendChild(copyBtn);
+  }
+  const closeBtn=document.createElement('button');
+  closeBtn.textContent='关闭';
+  closeBtn.onclick=()=>backdrop.remove();
+  actions.appendChild(closeBtn);
+  box.appendChild(actions);
+  backdrop.appendChild(box);
+  document.body.appendChild(backdrop);
 }
 
 function createEventCard(data){
@@ -120,12 +170,12 @@ function createEventCard(data){
     <input class="summary" type="text" value="${data?.summary||''}" placeholder="教师节">
     <label>说明（DESCRIPTION，可选）</label>
     <input class="description" type="text" value="${data?.description||''}" placeholder="每年教师节">
-    <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
-    <div style="flex:1;display:flex;flex-direction:column;">
+	 <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+	 <div style="flex:1;display:flex;flex-direction:column;">
     <label>开始 (DTSTART)</label>
     <input class="dtstart" type="date" value="${todayDate}" style="width:100%;">
   </div>
-    <div style="flex:1;display:flex;flex-direction:column;">
+	 <div style="flex:1;display:flex;flex-direction:column;">
     <label>结束 (DTEND)</label>
     <input class="dtend" type="date" value="${todayDate}" style="width:100%;">
   </div>
@@ -197,21 +247,25 @@ function createEventCard(data){
     rruleSel.value='';
     rruleCustom.value='';
   };
-  
-  div.querySelector('.ruleInfoBtn').onclick=()=>{alert(`RRULE 规则说明：
+
+  div.querySelector('.ruleInfoBtn').onclick=()=>{
+    const text=`RRULE 规则说明：
 • 每年同一天：FREQ=YEARLY
 • 每年同月同日：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10
 • 每月同一天：FREQ=MONTHLY;BYMONTHDAY=15
 • 每周某天：FREQ=WEEKLY;BYDAY=MO
 • 母亲节：FREQ=YEARLY;BYMONTH=5;BYDAY=2SU
-• 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU`);};
+• 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU`;
+    createDialog('规则介绍', text, false);
+  };
 
-div.querySelector('.previewEventBtn').onclick=()=>{
+  div.querySelector('.previewEventBtn').onclick=()=>{
     refreshEventNumbers();
     const ev = readEventFromCard(div);
     const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div)+1;
     if(!ev.summary){alert(`事件 ${idx} 标题为空！`); return;}
-    alert(buildSingleEventICS(ev));
+    const text=buildSingleEventICS(ev);
+    createDialog('事件 ICS 预览', text, true);
   };
 
   eventsContainer.appendChild(div);
@@ -234,7 +288,7 @@ function readEventFromCard(card){
 function buildSingleEventICS(ev){
   const lines=['BEGIN:VEVENT'];
   lines.push(`UID:${ev.uid||genUID()}`);
-  lines.push(`DTSTAMP:${makeDTStampUTC(new Date())}`);
+  lines.push(`DTSTAMP:${makeDTStampLocal(new Date())}`);
   lines.push(`SUMMARY:${escapeText(ev.summary)}`);
   if(ev.dtstart) lines.push(`DTSTART;VALUE=DATE:${ev.dtstart}`);
   if(ev.dtend) lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
@@ -271,25 +325,22 @@ document.getElementById('generateBtn').onclick=()=>{
   document.getElementById('preview').textContent=ics;
 };
 document.getElementById('copyBtn').onclick=async()=>{
-  const txt=document.getElementById('preview').textContent;
-  if(!txt||txt.startsWith('//')){alert('请先生成 .ics');return;}
-  try{await navigator.clipboard.writeText(txt);alert('已复制到剪贴板');}catch(e){alert('复制失败');}
+  const text=document.getElementById('preview').textContent;
+  if(text.startsWith('// ')){alert('请先生成 .ics');return;}
+  try{await navigator.clipboard.writeText(text);alert('已复制全部 .ics');}catch(e){alert('复制失败');}
 };
 document.getElementById('downloadBtn').onclick=()=>{
-  const ics=document.getElementById('preview').textContent;
-  if(!ics||ics.startsWith('//')){alert('请先生成 .ics');return;}
-  const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  const text=document.getElementById('preview').textContent;
+  if(text.startsWith('// ')){alert('请先生成 .ics');return;}
+  const blob=new Blob([text],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;
-  a.download='calendar.ics';
-  document.body.appendChild(a);
+  a.href=url;a.download='calendar.ics';
   a.click();
-  a.remove();
   URL.revokeObjectURL(url);
 };
 
-// 初始化
+// 初始化一个事件
 createEventCard();
 </script>
 </body>
