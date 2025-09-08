@@ -132,6 +132,29 @@ function escapeText(s){return(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').r
 
 const eventsContainer=document.getElementById('events');
 
+// 保存打开弹窗前的滚动位置（用于恢复）
+let _savedScrollY = null;
+function disableBodyScroll(){
+  if (_savedScrollY !== null) return; // 已锁定
+  _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  // 固定 body 位置，防止背景滚动，同时保持视觉位置不变
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_savedScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+}
+function enableBodyScroll(){
+  if (_savedScrollY === null) return;
+  // 恢复 body 样式并滚动回之前位置
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  const y = _savedScrollY;
+  _savedScrollY = null;
+  window.scrollTo(0, y);
+}
+
 function refreshEventNumbers(){
   const cards = eventsContainer.querySelectorAll('.card');
   cards.forEach((card, i)=>{
@@ -158,7 +181,9 @@ function createDialog(title, content, withCopy=false){
     copyBtn.textContent='复制';
     copyBtn.onclick=async()=>{
       try{
-        await navigator.clipboard.writeText(content);
+        // 如果 content 是字符串，直接复制；否则尝试复制 innerText
+        const toCopy = (typeof content === 'string') ? content : (content.innerText || content.textContent || '');
+        await navigator.clipboard.writeText(toCopy);
         alert('已复制');
       }catch(e){alert('复制失败');}
     };
@@ -166,11 +191,21 @@ function createDialog(title, content, withCopy=false){
   }
   const closeBtn=document.createElement('button');
   closeBtn.textContent='关闭';
-  closeBtn.onclick=()=>backdrop.remove();
+  closeBtn.onclick=()=>{
+    backdrop.remove();
+    enableBodyScroll();
+  };
   actions.appendChild(closeBtn);
   box.appendChild(actions);
   backdrop.appendChild(box);
+
+  // 阻止 backdrop 本身的触摸/滚动穿透（增加额外保护）
+  backdrop.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+
   document.body.appendChild(backdrop);
+
+  // 打开弹窗时禁止背景滚动
+  disableBodyScroll();
 }
 
 function createEventCard(data){
