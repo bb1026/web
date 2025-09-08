@@ -12,14 +12,24 @@ body{margin:0;padding:20px;background:#f6f7fb;color:#111;box-sizing:border-box;m
 h1{margin:0;font-size:1.25rem}
 .container{max-width:900px;margin:0 auto;width:100%}
 .card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 6px rgba(20,20,40,0.06);margin-bottom:12px}
-label{display:block;font-size:0.9rem;margin-bottom:6px;color:#333}
+label{display:block;font-size:0.9rem;margin-bottom:6px;color:#333;font-weight:500;}
+/* 事件卡内 label 美化 */
+.card .event-header + label,
+.card label{
+  color:#2563eb;
+  font-weight:600;
+  margin-top:6px;
+  margin-bottom:4px;
+  font-size:0.95rem;
+}
 input[type="text"], input[type="date"], select, textarea{
   width:100%;padding:8px;border:1px solid #e2e6ef;border-radius:6px;font-size:0.95rem;box-sizing:border-box;
 }
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
 button.secondary{background:#6b7280}
-.small{padding:6px 10px;font-size:0.9rem}
+button.small{padding:6px 10px;font-size:0.9rem}
+button:hover{opacity:0.85;transform:translateY(-1px);}
 .events-list{display:flex;flex-direction:column;gap:8px}
 .event-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .preview{white-space:pre;overflow:auto;max-height:360px;padding:12px;background:#0b1220;color:#e6eef8;font-family:monospace;border-radius:8px}
@@ -85,6 +95,7 @@ button.secondary{background:#6b7280}
 </div>
 
 <script>
+// 时区默认值
 function setDefaultTimezone(){
   const tzInput = document.getElementById('tz');
   tzInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
@@ -101,7 +112,21 @@ function makeDTStampLocal(date=new Date()){
   const ss = String(date.getSeconds()).padStart(2,'0');
   return `${yyyy}${mm}${dd}T${hh}${mi}${ss}`;
 }
-function genUID(base){const rand=Math.random().toString(36).slice(2,10);const now=new Date().getTime();const host=(base&&base.includes('@'))?base.split('@').pop():'0515364.xyz';return`uid-${now}-${rand}@${host}`;}
+
+// UID 自动增加默认后缀
+function formatUID(uid){
+  uid = uid.trim();
+  if(!uid) return '';
+  return uid.includes('@') ? uid : `${uid}@0515364.xyz`;
+}
+
+function genUID(base){
+  const rand=Math.random().toString(36).slice(2,10);
+  const now=new Date().getTime();
+  const host=(base && base.includes('@')) ? base.split('@').pop() : '0515364.xyz';
+  return `${now}-${rand}@${host}`;
+}
+
 function foldLine(line){const max=75;if(line.length<=max)return line;let out='',pos=0;while(pos<line.length){if(pos===0){out+=line.slice(pos,pos+max);}else{out+='\r\n '+line.slice(pos,pos+max);}pos+=max;}return out;}
 function escapeText(s){return(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
 
@@ -160,8 +185,8 @@ function createEventCard(data){
     <div class="event-header">
       <strong>事件</strong>
       <div style="display:flex;gap:6px">
-        <button class="removeBtn secondary small">删除</button>
-        <button class="clearBtn secondary small">清空当前事件</button>
+        <button class="removeBtn secondary small"><i class="fa-solid fa-trash"></i> 删除</button>
+        <button class="clearBtn secondary small"><i class="fa-solid fa-eraser"></i> 清空</button>
       </div>
     </div>
     <label>UID（可留空自动生成）</label>
@@ -192,9 +217,9 @@ function createEventCard(data){
     </select>
     <input class="rruleCustom rruleCustom" placeholder="例如：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10">
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="fillSample small secondary">填示例</button>
-      <button class="ruleInfoBtn small secondary">规则介绍</button>
-      <button class="previewEventBtn small">预览事件 ICS</button>
+      <button class="fillSample small secondary"><i class="fa-solid fa-magic"></i> 填示例</button>
+      <button class="ruleInfoBtn small secondary"><i class="fa-solid fa-circle-info"></i> 规则介绍</button>
+      <button class="previewEventBtn small"><i class="fa-solid fa-eye"></i> 预览事件</button>
     </div>
   `;
 
@@ -274,7 +299,8 @@ function createEventCard(data){
 }
 
 function readEventFromCard(card){
-  const uid=card.querySelector('.uid').value.trim();
+  const rawUid=card.querySelector('.uid').value.trim();
+  const uid=formatUID(rawUid); // 自动补充后缀
   const summary=card.querySelector('.summary').value.trim();
   const description=card.querySelector('.description').value.trim();
   const dtstartRaw=card.querySelector('.dtstart').value;
