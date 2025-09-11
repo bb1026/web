@@ -49,6 +49,19 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
 }
 .dialog-box pre{white-space:pre-wrap;background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;max-height:300px;overflow:auto;font-family:monospace;}
 .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.uid-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 0.8rem;
+}
+.uid-status.auto {
+  color: #10b981;
+}
+.uid-status.manual {
+  color: #f59e0b;
+}
 </style>
 </head>
 <body>
@@ -56,7 +69,7 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
   <h1><i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器</h1>
   <div class="card">
     <label><i class="fa-solid fa-book"></i> 日历名称（X-WR-CALNAME）</label>
-    <input id="calName" type="text" value="我的订阅日历" placeholder="例如：我的订阅日历">
+    <input id="calName" type="text" value="我的日历" placeholder="例如：我的日历">
     <label><i class="fa-solid fa-globe"></i> 时区 (X-WR-TIMEZONE)
       <button id="refreshTz" class="small secondary" style="margin-left:8px;background:#ef4444;">
         <i class="fa-solid fa-rotate"></i> 重置
@@ -75,7 +88,7 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
       <button id="clearEvents" class="small secondary"><i class="fa-solid fa-trash"></i> 清空所有</button>
     </div>
     <div class="muted" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i> 说明：<br>
-• UID 可留空，系统会自动生成；<br>
+• UID 可留空，系统会自动生成拼音格式的UID；<br>
 • DTSTAMP 自动填写为当前本地时间；<br>
 • 默认全天事件，无法添加时间；<br>
 • 修改重复规则请查看规则介绍。
@@ -90,7 +103,7 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
 
   <div class="card">
     <label><i class="fa-solid fa-code"></i> 预览 (.ics)</label>
-    <div id="preview" class="preview">// 点击“生成 .ics 并预览”查看结果</div>
+    <div id="preview" class="preview">// 点击"生成 .ics 并预览"查看结果</div>
   </div>
 </div>
 
@@ -125,6 +138,37 @@ function genUID(base){
   const now=new Date().getTime();
   const host=(base && base.includes('@')) ? base.split('@').pop() : '0515364.xyz';
   return `${now}-${rand}@${host}`;
+}
+
+// 中文转拼音函数（逐字转换）
+function convertToPinyin(text) {
+  if (!text) return '';
+  
+  // 常见汉字拼音映射表（每个字独立）
+  const pinyinMap = {
+    '教': 'jiao', '师': 'shi', '节': 'jie', '元': 'yuan', 
+    '旦': 'dan', '春': 'chun', '清': 'qing', '明': 'ming', 
+    '劳': 'lao', '动': 'dong', '端': 'duan', '午': 'wu', 
+    '中': 'zhong', '秋': 'qiu', '国': 'guo', '庆': 'qing', 
+    '耶': 'ye', '稣': 'su', '受': 'shou', '难': 'nan', 
+    '日': 'ri', '卫': 'wei', '塞': 'sai', '屠': 'tu', 
+    '妖': 'yao', '圣': 'sheng', '诞': 'dan', '开': 'kai', 
+    '斋': 'zhai', '哈': 'ha', '芝': 'zhi', '新': 'xin', '农': 'nong', '历': 'li', 
+    '年': 'nian', '际': 'ji', '人': 'ren', '民': 'min', 
+    '共': 'gong', '和': 'he' , '植': 'zhi', '树': 'shu' ,'儿': 'er' ,'童': 'tong', '建': 'jian', '党': 'dang', '军': 'jun', '青': 'qing', '护': 'hu', '士': 'shi', '光': 'guang', '棍': 'gun', '夕': 'xi', '重': 'chong', '阳': 'yang', '腊': 'la', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu', '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '零': 'ling'};
+  
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (pinyinMap[char]) {
+      result += pinyinMap[char];
+    } else if (/[a-zA-Z0-9]/.test(char)) {
+      result += char;
+    }
+    // 忽略不在映射表中的中文字符
+  }
+  
+  return result;
 }
 
 function foldLine(line){const max=75;if(line.length<=max)return line;let out='',pos=0;while(pos<line.length){if(pos===0){out+=line.slice(pos,pos+max);}else{out+='\r\n '+line.slice(pos,pos+max);}pos+=max;}return out;}
@@ -226,6 +270,9 @@ function createEventCard(data){
     </div>
     <label>UID（可留空自动生成）</label>
     <input class="uid" type="text" value="${data?.uid||''}" placeholder="例如：teacher@0515364.xyz">
+    <div class="uid-status auto">
+      <i class="fa-solid fa-bolt"></i> <span>自动生成模式：输入标题后将自动生成拼音UID</span>
+    </div>
     <label>标题（SUMMARY）</label>
     <input class="summary" type="text" value="${data?.summary||''}" placeholder="教师节">
     <label>说明（DESCRIPTION，可选）</label>
@@ -233,11 +280,11 @@ function createEventCard(data){
 	 <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
 	 <div style="flex:1;display:flex;flex-direction:column;">
     <label>开始 (DTSTART)</label>
-    <input class="dtstart" type="date" value="${todayDate}" style="width:100%;">
+    <input class="dtstart" type="date" value="${data?.dtstart ? data.dtstart : todayDate}" style="width:100%;">
   </div>
 	 <div style="flex:1;display:flex;flex-direction:column;">
     <label>结束 (DTEND)</label>
-    <input class="dtend" type="date" value="${todayDate}" style="width:100%;">
+    <input class="dtend" type="date" value="${data?.dtend ? data.dtend : todayDate}" style="width:100%;">
   </div>
 </div>
     <label>重复规则 (RRULE)</label>
@@ -250,7 +297,7 @@ function createEventCard(data){
       <option value="FATHER_DAY">父亲节（6月第3个周日）</option>
       <option value="YEARLY_SPECIAL">母亲节（5月第2个周日）</option>
     </select>
-    <input class="rruleCustom rruleCustom" placeholder="例如：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10">
+    <input class="rruleCustom rruleCustom" placeholder="例如：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10" value="${data?.rrule || ''}">
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
       <button class="fillSample small secondary"><i class="fa-solid fa-magic"></i> 填示例</button>
       <button class="ruleInfoBtn small secondary"><i class="fa-solid fa-circle-info"></i> 规则介绍</button>
@@ -260,6 +307,51 @@ function createEventCard(data){
 
   const dtstartInput=div.querySelector('.dtstart');
   const dtendInput=div.querySelector('.dtend');
+  const summaryInput = div.querySelector('.summary');
+  const uidInput = div.querySelector('.uid');
+  const rruleSel = div.querySelector('.rrulePreset');
+  const rruleCustom = div.querySelector('.rruleCustom');
+
+  // 设置预设的重复规则
+  if (data?.rrule) {
+    if (data.rrule === 'FREQ=YEARLY') {
+      rruleSel.value = 'YEARLY';
+    } else if (data.rrule.includes('BYMONTHDAY')) {
+      rruleSel.value = 'YEARLY_MONTHDAY';
+    } else if (data.rrule.includes('FREQ=MONTHLY')) {
+      rruleSel.value = 'MONTHLY';
+    } else if (data.rrule.includes('FREQ=WEEKLY')) {
+      rruleSel.value = 'WEEKLY';
+    } else if (data.rrule.includes('FATHER_DAY')) {
+      rruleSel.value = 'FATHER_DAY';
+    } else if (data.rrule.includes('YEARLY_SPECIAL')) {
+      rruleSel.value = 'YEARLY_SPECIAL';
+    }
+    rruleCustom.value = data.rrule;
+  }
+
+  // 如果提供了数据，自动生成UID
+  if (data?.summary) {
+    const pinyinUid = convertToPinyin(data.summary);
+    if (pinyinUid) {
+      uidInput.value = formatUID(pinyinUid);
+    }
+  }
+
+  // 监听标题输入变化，自动生成拼音UID
+  summaryInput.addEventListener('input', function() {
+    const summaryText = this.value.trim();
+    
+    if (summaryText) {
+      const pinyinUid = convertToPinyin(summaryText);
+      if (pinyinUid) {
+        uidInput.value = formatUID(pinyinUid);
+      }
+    } else {
+      // 标题为空时清空UID
+      uidInput.value = '';
+    }
+  });
 
   dtstartInput.onchange=dtendInput.onchange=()=>{
     const start = new Date(dtstartInput.value);
@@ -267,8 +359,6 @@ function createEventCard(data){
     if(end<start) dtendInput.value = dtstartInput.value;
   };
 
-  const rruleSel=div.querySelector('.rrulePreset');
-  const rruleCustom=div.querySelector('.rruleCustom');
   function updateRRULE(){
     const v=dtstartInput.value;
     if(!v){rruleCustom.value=''; return;}
@@ -306,6 +396,11 @@ function createEventCard(data){
     dtendInput.value=todayDate;
     rruleSel.value='';
     rruleCustom.value='';
+    // 自动生成拼音UID
+    const pinyinUid = convertToPinyin('示例事件');
+    if (pinyinUid) {
+      uidInput.value = formatUID(pinyinUid);
+    }
   };
 
   div.querySelector('.ruleInfoBtn').onclick=()=>{
