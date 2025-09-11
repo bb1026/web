@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>我的日历订阅</title>
+  <title>我的日历</title>
   <!-- 自适应屏幕，并禁止缩放 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
@@ -30,7 +30,7 @@
       margin-bottom: 1.5rem;
     }
 
-    a {
+    a.button {
       display: inline-block;
       padding: 0.75rem 1.5rem;
       font-size: 1rem;
@@ -39,16 +39,34 @@
       text-decoration: none;
       border-radius: 8px;
       transition: background-color 0.3s;
+      margin-bottom: 8px;
     }
 
-    a:hover {
+    a.button:hover {
       background-color: #0056b3;
+    }
+
+    a.text-link {
+      display: inline-block;
+      font-size: 1rem;
+      color: #111;
+      text-decoration: underline;
+      margin-top: 8px;
+    }
+
+    a.text-link:hover {
+      color: #111;
     }
   </style>
 </head>
 <body>
   <h1>欢迎订阅我的日历</h1>
   <p>点击下方链接即可在 Apple/Google 日历中订阅：</p>
-  <a href="calendar.ics">下载 / 订阅 calendar.ics</a>
+
+  <!-- 按钮 -->
+  <a href="calendar.ics" class="button">下载 / 订阅 calendar.ics</a>
+
+  <!-- DIY文字链接 -->
+  <a href="newevents.html" class="text-link">DIY 日历</a>
 </body>
 </html>
