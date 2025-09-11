@@ -466,18 +466,22 @@ const uidStatus = div.querySelector('.uid-status');
 
   // 监听标题输入变化，自动生成拼音UID
   summaryInput.addEventListener('input', function() {
-    const summaryText = this.value.trim();
-    
+  const summaryText = this.value.trim();
+
+  // 只有当 UID 状态为自动生成时，才更新 UID
+  if (uidStatus.classList.contains('auto')) {
     if (summaryText) {
       const pinyinUid = convertToPinyin(summaryText);
       if (pinyinUid) {
         uidInput.value = formatUID(pinyinUid);
+      } else {
+        uidInput.value = '';
       }
     } else {
-      // 标题为空时清空UID
       uidInput.value = '';
     }
-  });
+  }
+});
 
   dtstartInput.onchange=dtendInput.onchange=()=>{
     const start = new Date(dtstartInput.value);
@@ -518,9 +522,13 @@ const uidStatus = div.querySelector('.uid-status');
 
   div.querySelector('.fillSample').onclick=()=>{
     div.querySelector('.summary').value='元旦';
-div.querySelector('.description').value='元旦：新年第一天，新年快乐！🎉';
-    dtstartInput.value=todayDate;
-    dtendInput.value=todayDate;
+div.querySelector('.description').value = `元旦：新年第一天，新年快乐！🎉
+中国的元旦，据传说起于三皇五帝之一的颛顼，距今已有3000多年的历史。
+“元旦”一词最早出现于《晋书》：“颛帝以孟夏正月为元，其实正朔元旦之春”的诗中。
+南北朝时，南朝萧子云的《介雅》诗中也有“四季新元旦，万寿初春朝”的记载。`;
+	 const thisYear = new Date().getFullYear();
+    dtstartInput.value=`${thisYear}-01-01`;
+    dtendInput.value=`${thisYear}-01-02`;
     rruleSel.value='';
     rruleCustom.value='';
     // 自动生成拼音UID
