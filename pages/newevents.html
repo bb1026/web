@@ -143,7 +143,12 @@ select:disabled {
 </head>
 <body>
 <div class="container">
-  <h1><i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器</h1>
+  <h1 style="display:flex;align-items:center;gap:12px;">
+  <i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器
+  <a href="calendar.html" style="margin-left:auto;font-size:0.9rem;color:#2563eb;text-decoration:none;display:flex;align-items:center;gap:4px;">
+    <i class="fa-solid fa-calendar-days"></i> 订阅日历
+  </a>
+</h1>
   <div class="card">
     <label><i class="fa-solid fa-book"></i> 日历名称（X-WR-CALNAME）</label>
     <input id="calName" type="text" value="我的日历" placeholder="例如：我的日历">
@@ -529,8 +534,8 @@ div.querySelector('.description').value = `元旦：新年第一天，新年快�
 	 const thisYear = new Date().getFullYear();
     dtstartInput.value=`${thisYear}-01-01`;
     dtendInput.value=`${thisYear}-01-02`;
-    rruleSel.value='';
-    rruleCustom.value='';
+    rruleSel.value='YEARLY';
+    rruleCustom.value='FREQ=YEARLY';
     // 自动生成拼音UID
     const pinyinUid = convertToPinyin('元旦');
     if (pinyinUid) {
@@ -556,14 +561,21 @@ div.querySelector('.description').value = `元旦：新年第一天，新年快�
     createDialog('RRULE 规则说明：', text, false);
   };
 
-  div.querySelector('.previewEventBtn').onclick=()=>{
-    refreshEventNumbers();
-    const ev = readEventFromCard(div);
-    const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div)+1;
-    if(!ev.summary){showNotification('error', '预览失败', `事件 ${idx} 标题为空！`); return;}
-    const text=buildSingleEventICS(ev);
-    createDialog('事件 ICS 预览', text, true);
-  };
+  div.querySelector('.previewEventBtn').onclick = () => {
+  refreshEventNumbers();
+  const ev = readEventFromCard(div);
+  const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div) + 1;
+  if (!ev.summary) {
+    showNotification('error', '预览失败', `事件 ${idx} 标题为空！`);
+    return;
+  }
+  let text = buildSingleEventICS(ev);
+  
+  // 预览时把 \n 转成真正换行
+  text = text.replace(/\\n/g, '\n');
+
+  createDialog('事件 ICS 预览', text, true);
+};
 
   eventsContainer.appendChild(div);
   refreshEventNumbers();
@@ -634,7 +646,7 @@ document.getElementById('clearEvents').onclick=()=>{if(confirm('确定清空吗�
 document.getElementById('generateBtn').onclick=()=>{
   const ics=buildCalendarICS();
   if(!ics) return;
-  document.getElementById('preview').textContent=ics;
+  document.getElementById('preview').textContent = ics.replace(/\\n/g, '\n');
   showNotification('success', '生成成功', 'ICS 内容已生成，请查看预览区域');
 };
 document.getElementById('copyBtn').onclick=async()=>{
