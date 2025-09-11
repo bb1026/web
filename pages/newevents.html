@@ -459,7 +459,17 @@ function buildCalendarICS(){
   const tz=document.getElementById('tz').value||Intl.DateTimeFormat().resolvedOptions().timeZone||'';
   document.getElementById('tz').value=tz;
   const prodid=document.getElementById('prodid').value||'-//0515364.xyz//My Calendar//CN';
-  const header=['BEGIN:VCALENDAR',`PRODID:${prodid}`,'VERSION:2.0','CALSCALE:GREGORIAN','METHOD:PUBLISH',`X-WR-CALNAME:${escapeText(calName)}`,`X-WR-TIMEZONE:${tz}`];
+  
+  const header=[
+    'BEGIN:VCALENDAR',
+    `PRODID:${prodid}`,
+    'VERSION:2.0',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeText(calName)}`,
+    `X-WR-TIMEZONE:${tz}`
+  ];
+  
   const eventCards=Array.from(document.querySelectorAll('#events .card'));
   if(eventCards.length===0){createEventCard(); return '';}
   refreshEventNumbers();
@@ -467,8 +477,12 @@ function buildCalendarICS(){
     const summary = eventCards[i].querySelector('.summary').value.trim();
     if(!summary){alert(`事件 ${i+1} 标题为空！`); return '';}
   }
-  const events=eventCards.map(c=>buildSingleEventICS(readEventFromCard(c)));
-  return header.concat(events).concat(['END:VCALENDAR']).join('\r\n')+'\r\n';
+
+  // 每个事件之间加空行
+  const events = eventCards.map(c=>buildSingleEventICS(readEventFromCard(c))).join('\r\n\r\n');
+
+  // 头部和事件之间加空行，最后和 END:VCALENDAR 之间也加空行
+  return header.join('\r\n') + '\r\n\r\n' + events + '\r\n\r\nEND:VCALENDAR\r\n';
 }
 
 // 按钮事件
