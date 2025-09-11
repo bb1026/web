@@ -62,6 +62,83 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
 .uid-status.manual {
   color: #f59e0b;
 }
+/* 通知样式 */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  max-width: 320px;
+}
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+.notification.success {
+  border-left: 4px solid #10b981;
+}
+.notification.error {
+  border-left: 4px solid #ef4444;
+}
+.notification-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.notification.success .notification-icon {
+  color: #10b981;
+}
+.notification.error .notification-icon {
+  color: #ef4444;
+}
+.notification-content {
+  flex: 1;
+}
+.notification-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+.notification-message {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+/* 美化下拉选择器 */
+select {
+  appearance: none; /* 去掉默认箭头 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 8px 12px;
+  border: 1px solid #e2e6ef;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff url("data:image/svg+xml;utf8,<svg fill='%236b7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center;
+  background-size: 16px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* 让禁用状态更明显 */
+select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -108,6 +185,39 @@ button:hover{opacity:0.85;transform:translateY(-1px);}
 </div>
 
 <script>
+// 显示通知函数
+function showNotification(type, title, message, duration = 3000) {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  let iconClass = 'fa-circle-info';
+  if (type === 'success') iconClass = 'fa-circle-check';
+  if (type === 'error') iconClass = 'fa-circle-exclamation';
+  
+  notification.innerHTML = `
+    <div class="notification-icon">
+      <i class="fa-solid ${iconClass}"></i>
+    </div>
+    <div class="notification-content">
+      <div class="notification-title">${title}</div>
+      <div class="notification-message">${message}</div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // 触发动画
+  setTimeout(() => notification.classList.add('show'), 10);
+  
+  // 自动隐藏
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 300);
+  }, duration);
+  
+  return notification;
+}
+
 // 时区默认值
 function setDefaultTimezone(){
   const tzInput = document.getElementById('tz');
@@ -228,8 +338,10 @@ function createDialog(title, content, withCopy=false){
         // 如果 content 是字符串，直接复制；否则尝试复制 innerText
         const toCopy = (typeof content === 'string') ? content : (content.innerText || content.textContent || '');
         await navigator.clipboard.writeText(toCopy);
-        alert('已复制');
-      }catch(e){alert('复制失败');}
+        showNotification('success', '已复制', '内容已成功复制到剪贴板');
+      }catch(e){
+        showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');
+      }
     };
     actions.appendChild(copyBtn);
   }
@@ -268,15 +380,16 @@ function createEventCard(data){
         <button class="clearBtn secondary small"><i class="fa-solid fa-eraser"></i> 清空</button>
       </div>
     </div>
-    <label>UID（可留空自动生成）</label>
-    <input class="uid" type="text" value="${data?.uid||''}" placeholder="例如：teacher@0515364.xyz">
-    <div class="uid-status auto">
-      <i class="fa-solid fa-bolt"></i> <span>自动生成模式：输入标题后将自动生成拼音UID</span>
+        <label>UID（可留空随机生成）</label>
+    <input class="uid" type="text" value="${data?.uid||''}" placeholder="例如：newyear@0515364.xyz">
+    <div class="uid-status ${data?.uid ? 'manual' : 'auto'}">
+      <i class="fa-solid ${data?.uid ? 'fa-pen' : 'fa-bolt'}"></i> 
+      <span>${data?.uid ? '手动输入UID' : '自动生成UID'}</span>
     </div>
     <label>标题（SUMMARY）</label>
-    <input class="summary" type="text" value="${data?.summary||''}" placeholder="教师节">
+    <input class="summary" type="text" value="${data?.summary||''}" placeholder="元旦">
     <label>说明（DESCRIPTION，可选）</label>
-    <input class="description" type="text" value="${data?.description||''}" placeholder="每年教师节">
+    <textarea class="description" rows="3" placeholder="元旦: 新年第一天！">${data?.description||''}</textarea>
 	 <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
 	 <div style="flex:1;display:flex;flex-direction:column;">
     <label>开始 (DTSTART)</label>
@@ -329,6 +442,19 @@ function createEventCard(data){
     }
     rruleCustom.value = data.rrule;
   }
+
+const uidStatus = div.querySelector('.uid-status');
+
+  // 监听 UID 输入框，切换状态
+  uidInput.addEventListener('input', function() {
+    if (this.value.trim()) {
+      uidStatus.className = 'uid-status manual';
+      uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入UID</span>`;
+    } else {
+      uidStatus.className = 'uid-status auto';
+      uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID</span>`;
+    }
+  });
 
   // 如果提供了数据，自动生成UID
   if (data?.summary) {
@@ -391,34 +517,42 @@ function createEventCard(data){
   };
 
   div.querySelector('.fillSample').onclick=()=>{
-    div.querySelector('.summary').value='示例事件';
+    div.querySelector('.summary').value='元旦';
+div.querySelector('.description').value='元旦：新年第一天，新年快乐！🎉';
     dtstartInput.value=todayDate;
     dtendInput.value=todayDate;
     rruleSel.value='';
     rruleCustom.value='';
     // 自动生成拼音UID
-    const pinyinUid = convertToPinyin('示例事件');
+    const pinyinUid = convertToPinyin('元旦');
     if (pinyinUid) {
       uidInput.value = formatUID(pinyinUid);
     }
   };
 
   div.querySelector('.ruleInfoBtn').onclick=()=>{
-    const text=`RRULE 规则说明：
+    const text=`
 • 每年同一天：FREQ=YEARLY
+
 • 每年同月同日：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10
+
 • 每月同一天：FREQ=MONTHLY;BYMONTHDAY=15
+
 • 每周某天：FREQ=WEEKLY;BYDAY=MO
+"MO" / "TU" / "WE" / "TH" / "FR" / "SA" / "SU"
+
 • 母亲节：FREQ=YEARLY;BYMONTH=5;BYDAY=2SU
-• 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU`;
-    createDialog('规则介绍', text, false);
+
+• 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU
+`;
+    createDialog('RRULE 规则说明：', text, false);
   };
 
   div.querySelector('.previewEventBtn').onclick=()=>{
     refreshEventNumbers();
     const ev = readEventFromCard(div);
     const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div)+1;
-    if(!ev.summary){alert(`事件 ${idx} 标题为空！`); return;}
+    if(!ev.summary){showNotification('error', '预览失败', `事件 ${idx} 标题为空！`); return;}
     const text=buildSingleEventICS(ev);
     createDialog('事件 ICS 预览', text, true);
   };
@@ -475,10 +609,10 @@ function buildCalendarICS(){
   refreshEventNumbers();
   for(let i=0;i<eventCards.length;i++){
     const summary = eventCards[i].querySelector('.summary').value.trim();
-    if(!summary){alert(`事件 ${i+1} 标题为空！`); return '';}
+    if(!summary){showNotification('error', '生成失败', `事件 ${i+1} 标题为空！`); return '';}
   }
 
-  // 每个事件之间加空行
+  // 每个事件之间加空行，第一个事件和上方加空行，最后一个事件和下方加空行
   const events = eventCards.map(c=>buildSingleEventICS(readEventFromCard(c))).join('\r\n\r\n');
 
   // 头部和事件之间加空行，最后和 END:VCALENDAR 之间也加空行
@@ -493,21 +627,23 @@ document.getElementById('generateBtn').onclick=()=>{
   const ics=buildCalendarICS();
   if(!ics) return;
   document.getElementById('preview').textContent=ics;
+  showNotification('success', '生成成功', 'ICS 内容已生成，请查看预览区域');
 };
 document.getElementById('copyBtn').onclick=async()=>{
   const text=document.getElementById('preview').textContent;
-  if(text.startsWith('// ')){alert('请先生成 .ics');return;}
-  try{await navigator.clipboard.writeText(text);alert('已复制全部 .ics');}catch(e){alert('复制失败');}
+  if(text.startsWith('// ')){showNotification('error', '复制失败', '请先生成 ICS 内容');return;}
+  try{await navigator.clipboard.writeText(text);showNotification('success', '复制成功', 'ICS 内容已复制到剪贴板');}catch(e){showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');}
 };
 document.getElementById('downloadBtn').onclick=()=>{
   const text=document.getElementById('preview').textContent;
-  if(text.startsWith('// ')){alert('请先生成 .ics');return;}
+  if(text.startsWith('// ')){showNotification('error', '下载失败', '请先生成 ICS 内容');return;}
   const blob=new Blob([text],{type:'text/calendar;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download='calendar.ics';
   a.click();
   URL.revokeObjectURL(url);
+  showNotification('success', '下载成功', 'ICS 文件已开始下载');
 };
 
 // 初始化一个事件
