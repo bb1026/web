@@ -1,673 +1,642 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>ICS 事件生成器 - 0515364.xyz</title>
-<!-- 引入 Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<style>
-:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-body{margin:0;padding:20px;background:#f6f7fb;color:#111;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;gap:16px}
-h1{margin:0;font-size:1.25rem}
-.container{max-width:900px;margin:0 auto;width:100%}
-.card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 6px rgba(20,20,40,0.06);margin-bottom:12px}
-label{display:block;font-size:0.9rem;margin-bottom:6px;color:#333;font-weight:500;}
-/* 事件卡内 label 美化 */
-.card .event-header + label,
-.card label{
-  color:#2563eb;
-  font-weight:600;
-  margin-top:6px;
-  margin-bottom:4px;
-  font-size:0.95rem;
-}
-input[type="text"], input[type="date"], select, textarea{
-  width:100%;padding:8px;border:1px solid #e2e6ef;border-radius:6px;font-size:0.95rem;box-sizing:border-box;
-}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
-button.secondary{background:#6b7280}
-button.small{padding:6px 10px;font-size:0.9rem}
-button:hover{opacity:0.85;transform:translateY(-1px);}
-.events-list{display:flex;flex-direction:column;gap:8px}
-.event-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.preview{white-space:pre;overflow:auto;max-height:360px;padding:12px;background:#0b1220;color:#e6eef8;font-family:monospace;border-radius:8px}
-.meta-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.muted{color:#6b7280;font-size:0.9rem}
-.rruleCustom{min-width:300px;font-family:monospace;}
-.date-block{margin-top:8px}
-@media (max-width:640px){
-  .row{flex-direction:column}
-  .event-header{flex-direction:column;align-items:flex-start}
-}
-.dialog-backdrop{
-  position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;justify-content:center;align-items:center;z-index:1000;
-}
-.dialog-box{
-  background:#fff;border-radius:10px;padding:16px;max-width:600px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.25);
-}
-.dialog-box pre{white-space:pre-wrap;background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;max-height:300px;overflow:auto;font-family:monospace;}
-.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-.uid-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  font-size: 0.8rem;
-}
-.uid-status.auto {
-  color: #10b981;
-}
-.uid-status.manual {
-  color: #f59e0b;
-}
-/* 通知样式 */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 10000;
-  transform: translateX(100%);
-  opacity: 0;
-  transition: all 0.3s ease;
-  max-width: 320px;
-}
-.notification.show {
-  transform: translateX(0);
-  opacity: 1;
-}
-.notification.success {
-  border-left: 4px solid #10b981;
-}
-.notification.error {
-  border-left: 4px solid #ef4444;
-}
-.notification-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-.notification.success .notification-icon {
-  color: #10b981;
-}
-.notification.error .notification-icon {
-  color: #ef4444;
-}
-.notification-content {
-  flex: 1;
-}
-.notification-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-  font-size: 0.95rem;
-}
-.notification-message {
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-/* 美化下拉选择器 */
-select {
-  appearance: none; /* 去掉默认箭头 */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding: 8px 12px;
-  border: 1px solid #e2e6ef;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  background: #fff url("data:image/svg+xml;utf8,<svg fill='%236b7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 10px center;
-  background-size: 16px 16px;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-select:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
-/* 让禁用状态更明显 */
-select:disabled {
-  background-color: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
-</style>
-</head>
-<body>
-<div class="container">
-  <h1 style="display:flex;align-items:center;gap:12px;">
-  <i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器
-  <a href="calendar.html" style="margin-left:auto;font-size:0.9rem;color:#2563eb;text-decoration:none;display:flex;align-items:center;gap:4px;">
-    <i class="fa-solid fa-calendar-days"></i> 订阅日历
-  </a>
-</h1>
-  <div class="card">
-    <label><i class="fa-solid fa-book"></i> 日历名称（X-WR-CALNAME）</label>
-    <input id="calName" type="text" value="我的日历" placeholder="例如：我的日历">
-    <label><i class="fa-solid fa-globe"></i> 时区 (X-WR-TIMEZONE)
-      <button id="refreshTz" class="small secondary" style="margin-left:8px;background:#ef4444;">
-        <i class="fa-solid fa-rotate"></i> 重置
-      </button>
-    </label>
-    <input id="tz" type="text" placeholder="例如：Asia/Shanghai">
-    <label><i class="fa-solid fa-code"></i> PRODID</label>
-    <input id="prodid" type="text" value="-//0515364.xyz//My Calendar//CN">
-  </div>
-
-  <div class="card">
-    <strong><i class="fa-solid fa-list"></i> 事件列表</strong>
-    <div id="events" class="events-list" style="margin-top:12px"></div>
-    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-      <button id="addEventBtn" class="small"><i class="fa-solid fa-plus"></i> 添加事件</button>
-      <button id="clearEvents" class="small secondary"><i class="fa-solid fa-trash"></i> 清空所有</button>
-    </div>
-    <div class="muted" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i> 说明：<br>
-• UID 可留空，系统会自动生成拼音格式的UID；<br>
-• DTSTAMP 自动填写为当前本地时间；<br>
-• 默认全天事件，无法添加时间；<br>
-• 修改重复规则请查看规则介绍。
-</div>
-  </div>
-
-  <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button id="generateBtn"><i class="fa-solid fa-eye"></i> 生成 .ics 并预览</button>
-    <button id="copyBtn" class="secondary"><i class="fa-solid fa-copy"></i> 复制到剪贴板</button>
-    <button id="downloadBtn" class="secondary"><i class="fa-solid fa-download"></i> 下载 .ics</button>
-  </div>
-
-  <div class="card">
-    <label><i class="fa-solid fa-code"></i> 预览 (.ics)</label>
-    <div id="preview" class="preview">// 点击"生成 .ics 并预览"查看结果</div>
-  </div>
-</div>
-
-<script>
-// 显示通知函数
-function showNotification(type, title, message, duration = 3000) {
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  
-  let iconClass = 'fa-circle-info';
-  if (type === 'success') iconClass = 'fa-circle-check';
-  if (type === 'error') iconClass = 'fa-circle-exclamation';
-  
-  notification.innerHTML = `
-    <div class="notification-icon">
-      <i class="fa-solid ${iconClass}"></i>
-    </div>
-    <div class="notification-content">
-      <div class="notification-title">${title}</div>
-      <div class="notification-message">${message}</div>
-    </div>
-  `;
-  
-  document.body.appendChild(notification);
-  
-  // 触发动画
-  setTimeout(() => notification.classList.add('show'), 10);
-  
-  // 自动隐藏
-  setTimeout(() => {
-    notification.classList.remove('show');
-    setTimeout(() => notification.remove(), 300);
-  }, duration);
-  
-  return notification;
-}
-
-// 时区默认值
-function setDefaultTimezone(){
-  const tzInput = document.getElementById('tz');
-  tzInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
-}
-window.addEventListener('DOMContentLoaded', setDefaultTimezone);
-document.getElementById('refreshTz').onclick = setDefaultTimezone;
-
-function makeDTStampLocal(date=new Date()){
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth()+1).padStart(2,'0');
-  const dd = String(date.getDate()).padStart(2,'0');
-  const hh = String(date.getHours()).padStart(2,'0');
-  const mi = String(date.getMinutes()).padStart(2,'0');
-  const ss = String(date.getSeconds()).padStart(2,'0');
-  return `${yyyy}${mm}${dd}T${hh}${mi}${ss}`;
-}
-
-// UID 自动增加默认后缀
-function formatUID(uid){
-  uid = uid.trim();
-  if(!uid) return '';
-  return uid.includes('@') ? uid : `${uid}@0515364.xyz`;
-}
-
-function genUID(base){
-  const rand=Math.random().toString(36).slice(2,10);
-  const now=new Date().getTime();
-  const host=(base && base.includes('@')) ? base.split('@').pop() : '0515364.xyz';
-  return `${now}-${rand}@${host}`;
-}
-
-// 中文转拼音函数（逐字转换）
-function convertToPinyin(text) {
-  if (!text) return '';
-  
-  // 常见汉字拼音映射表（每个字独立）
-  const pinyinMap = {
-    '教': 'jiao', '师': 'shi', '节': 'jie', '元': 'yuan', 
-    '旦': 'dan', '春': 'chun', '清': 'qing', '明': 'ming', 
-    '劳': 'lao', '动': 'dong', '端': 'duan', '午': 'wu', 
-    '中': 'zhong', '秋': 'qiu', '国': 'guo', '庆': 'qing', 
-    '耶': 'ye', '稣': 'su', '受': 'shou', '难': 'nan', 
-    '日': 'ri', '卫': 'wei', '塞': 'sai', '屠': 'tu', 
-    '妖': 'yao', '圣': 'sheng', '诞': 'dan', '开': 'kai', 
-    '斋': 'zhai', '哈': 'ha', '芝': 'zhi', '新': 'xin', '农': 'nong', '历': 'li', 
-    '年': 'nian', '际': 'ji', '人': 'ren', '民': 'min', 
-    '共': 'gong', '和': 'he' , '植': 'zhi', '树': 'shu' ,'儿': 'er' ,'童': 'tong', '建': 'jian', '党': 'dang', '军': 'jun', '青': 'qing', '护': 'hu', '士': 'shi', '光': 'guang', '棍': 'gun', '夕': 'xi', '重': 'chong', '阳': 'yang', '腊': 'la', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu', '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '零': 'ling'};
-  
-  let result = '';
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (pinyinMap[char]) {
-      result += pinyinMap[char];
-    } else if (/[a-zA-Z0-9]/.test(char)) {
-      result += char;
-    }
-    // 忽略不在映射表中的中文字符
-  }
-  
-  return result;
-}
-
-function foldLine(line){const max=75;if(line.length<=max)return line;let out='',pos=0;while(pos<line.length){if(pos===0){out+=line.slice(pos,pos+max);}else{out+='\r\n '+line.slice(pos,pos+max);}pos+=max;}return out;}
-function escapeText(s){return(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
-
-const eventsContainer=document.getElementById('events');
-
-// 保存打开弹窗前的滚动位置（用于恢复）
-let _savedScrollY = null;
-function disableBodyScroll(){
-  if (_savedScrollY !== null) return; // 已锁定
-  _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-  // 固定 body 位置，防止背景滚动，同时保持视觉位置不变
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${_savedScrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-}
-function enableBodyScroll(){
-  if (_savedScrollY === null) return;
-  // 恢复 body 样式并滚动回之前位置
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
-  const y = _savedScrollY;
-  _savedScrollY = null;
-  window.scrollTo(0, y);
-}
-
-function refreshEventNumbers(){
-  const cards = eventsContainer.querySelectorAll('.card');
-  cards.forEach((card, i)=>{
-    const strong = card.querySelector('.event-header strong');
-    strong.textContent = `事件 #${i+1}`;
-  });
-}
-
-function createDialog(title, content, withCopy=false){
-  const backdrop=document.createElement('div');
-  backdrop.className='dialog-backdrop';
-  const box=document.createElement('div');
-  box.className='dialog-box';
-  box.innerHTML=`<h3 style="margin-top:0;font-size:1rem">${title}</h3>`;
-  if(typeof content==='string'){
-    box.innerHTML+=`<pre>${content}</pre>`;
-  }else{
-    box.appendChild(content);
-  }
-  const actions=document.createElement('div');
-  actions.className='dialog-actions';
-  if(withCopy){
-    const copyBtn=document.createElement('button');
-    copyBtn.textContent='复制';
-    copyBtn.onclick=async()=>{
-      try{
-        // 如果 content 是字符串，直接复制；否则尝试复制 innerText
-        const toCopy = (typeof content === 'string') ? content : (content.innerText || content.textContent || '');
-        await navigator.clipboard.writeText(toCopy);
-        showNotification('success', '已复制', '内容已成功复制到剪贴板');
-      }catch(e){
-        showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');
-      }
-    };
-    actions.appendChild(copyBtn);
-  }
-  const closeBtn=document.createElement('button');
-  closeBtn.textContent='关闭';
-  closeBtn.onclick=()=>{
-    backdrop.remove();
-    enableBodyScroll();
-  };
-  actions.appendChild(closeBtn);
-  box.appendChild(actions);
-  backdrop.appendChild(box);
-
-  // 阻止 backdrop 本身的触摸/滚动穿透（增加额外保护）
-  backdrop.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
-
-  document.body.appendChild(backdrop);
-
-  // 打开弹窗时禁止背景滚动
-  disableBodyScroll();
-}
-
-function createEventCard(data){
-  const div=document.createElement('div');
-  div.className='card';
-
-  const today=new Date();
-  const yyyy=today.getFullYear(),mm=String(today.getMonth()+1).padStart(2,'0'),dd=String(today.getDate()).padStart(2,'0');
-  const todayDate=`${yyyy}-${mm}-${dd}`;
-
-  div.innerHTML=`
-    <div class="event-header">
-      <strong>事件</strong>
-      <div style="display:flex;gap:6px">
-        <button class="removeBtn secondary small"><i class="fa-solid fa-trash"></i> 删除</button>
-        <button class="clearBtn secondary small"><i class="fa-solid fa-eraser"></i> 清空</button>
+   <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+      <title>ICS 事件生成器 - 0515364.xyz</title>
+      <!-- 引入 Font Awesome -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+      <style>
+         :root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+         body{margin:0;padding:20px;background:#f6f7fb;color:#111;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;gap:16px}
+         h1{margin:0;font-size:1.25rem}
+         .container{max-width:900px;margin:0 auto;width:100%}
+         .card{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 6px rgba(20,20,40,0.06);margin-bottom:12px}
+         label{display:block;font-size:0.9rem;margin-bottom:6px;color:#333;font-weight:500;}
+         .card .event-header + label,
+         .card label{
+         color:#2563eb;
+         font-weight:600;
+         margin-top:6px;
+         margin-bottom:4px;
+         font-size:0.95rem;
+         }
+         input[type="text"], input[type="date"], input[type="time"], select, textarea{
+         width:100%;padding:8px;border:1px solid #e2e6ef;border-radius:6px;font-size:0.95rem;box-sizing:border-box;
+         }
+         .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+         button{padding:10px 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
+         button.secondary{background:#6b7280}
+         button.small{padding:6px 10px;font-size:0.9rem}
+         button:hover{opacity:0.85;transform:translateY(-1px);}
+         .events-list{display:flex;flex-direction:column;gap:8px}
+         .event-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+         .preview{white-space:pre;overflow:auto;max-height:360px;padding:12px;background:#0b1220;color:#e6eef8;font-family:monospace;border-radius:8px}
+         .meta-row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+         .muted{color:#6b7280;font-size:0.9rem}
+         .rruleCustom{min-width:300px;font-family:monospace;}
+         .date-block{margin-top:8px}
+         @media (max-width:640px){
+         .row{flex-direction:column}
+         .event-header{flex-direction:column;align-items:flex-start}
+         }
+         .dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;justify-content:center;align-items:center;z-index:1000;}
+         .dialog-box{background:#fff;border-radius:10px;padding:16px;max-width:600px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.25);}
+         .dialog-box pre{white-space:pre-wrap;background:#0b1220;color:#e6eef8;padding:12px;border-radius:8px;max-height:300px;overflow:auto;font-family:monospace;}
+         .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+         .uid-status{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:0.8rem;}
+         .uid-status.auto{color:#10b981;}
+         .uid-status.manual{color:#f59e0b;}
+         .notification{position:fixed;top:20px;right:20px;background:#fff;border-radius:8px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;gap:12px;z-index:10000;transform:translateX(100%);opacity:0;transition:all 0.3s ease;max-width:320px;}
+         .notification.show{transform:translateX(0);opacity:1;}
+         .notification.success{border-left:4px solid #10b981;}
+         .notification.error{border-left:4px solid #ef4444;}
+         .notification-icon{font-size:1.2rem;flex-shrink:0;}
+         .notification.success .notification-icon{color:#10b981;}
+         .notification.error .notification-icon{color:#ef4444;}
+         .notification-content{flex:1;}
+         .notification-title{font-weight:600;margin-bottom:4px;font-size:0.95rem;}
+         .notification-message{font-size:0.85rem;color:#6b7280;}
+         select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding:8px 12px;border:1px solid #e2e6ef;border-radius:6px;font-size:0.95rem;background:#fff url("data:image/svg+xml;utf8,
+         <svg fill='%236b7280' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'>
+            <path d='M7 10l5 5 5-5z'/>
+         </svg>
+         ") no-repeat right 10px center;background-size:16px 16px;cursor:pointer;transition:border-color 0.2s, box-shadow 0.2s;}
+         select:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.2);}
+         select:disabled{background-color:#f3f4f6;color:#9ca3af;cursor:not-allowed;}
+      </style>
+   </head>
+   <body>
+      <div class="container">
+         <h1 style="display:flex;align-items:center;gap:12px;">
+            <i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器
+            <a href="calendar.html" style="margin-left:auto;font-size:0.9rem;color:#2563eb;text-decoration:none;display:flex;align-items:center;gap:4px;">
+            <i class="fa-solid fa-calendar-days"></i> 订阅日历
+            </a>
+         </h1>
+         <div class="card">
+            <label><i class="fa-solid fa-book"></i> 日历名称（X-WR-CALNAME）</label>
+            <input id="calName" type="text" value="我的日历" placeholder="例如：我的日历">
+            <label><i class="fa-solid fa-globe"></i> 时区 (X-WR-TIMEZONE)
+            <button id="refreshTz" class="small secondary" style="margin-left:8px;background:#ef4444;">
+            <i class="fa-solid fa-rotate"></i> 重置
+            </button>
+            </label>
+            <input id="tz" type="text" placeholder="例如：Asia/Shanghai">
+            <label><i class="fa-solid fa-code"></i> PRODID</label>
+            <input id="prodid" type="text" value="-//0515364.xyz//My Calendar//CN">
+         </div>
+         <div class="card">
+            <strong><i class="fa-solid fa-list"></i> 事件列表</strong>
+            <div id="events" class="events-list" style="margin-top:12px"></div>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+               <button id="addEventBtn" class="small"><i class="fa-solid fa-plus"></i> 添加事件</button>
+               <button id="clearEvents" class="small secondary"><i class="fa-solid fa-trash"></i> 清空所有</button>
+            </div>
+            <div class="muted" style="margin-top:8px"><i class="fa-solid fa-circle-info"></i> 说明：<br>
+               • UID 可留空，系统会自动生成拼音格式的UID；<br>
+               • DTSTAMP 自动填写为当前本地时间；<br>
+               • 默认全天事件，无法添加时间；<br>
+               • 修改重复规则请查看规则介绍。
+            </div>
+         </div>
+         <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="generateBtn"><i class="fa-solid fa-eye"></i> 生成 .ics 并预览</button>
+            <button id="copyBtn" class="secondary"><i class="fa-solid fa-copy"></i> 复制到剪贴板</button>
+            <button id="downloadBtn" class="secondary"><i class="fa-solid fa-download"></i> 下载 .ics</button>
+         </div>
+         <div class="card">
+            <label><i class="fa-solid fa-code"></i> 预览 (.ics)</label>
+            <div id="preview" class="preview">// 点击"生成 .ics 并预览"查看结果</div>
+         </div>
       </div>
-    </div>
-        <label>UID（可留空随机生成）</label>
-    <input class="uid" type="text" value="${data?.uid||''}" placeholder="例如：newyear@0515364.xyz">
-    <div class="uid-status ${data?.uid ? 'manual' : 'auto'}">
-      <i class="fa-solid ${data?.uid ? 'fa-pen' : 'fa-bolt'}"></i> 
-      <span>${data?.uid ? '手动输入UID' : '自动生成UID'}</span>
-    </div>
-    <label>标题（SUMMARY）</label>
-    <input class="summary" type="text" value="${data?.summary||''}" placeholder="元旦">
-    <label>说明（DESCRIPTION，可选）</label>
-    <textarea class="description" rows="3" placeholder="元旦: 新年第一天！">${data?.description||''}</textarea>
-	 <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
-	 <div style="flex:1;display:flex;flex-direction:column;">
-    <label>开始 (DTSTART)</label>
-    <input class="dtstart" type="date" value="${data?.dtstart ? data.dtstart : todayDate}" style="width:100%;">
-  </div>
-	 <div style="flex:1;display:flex;flex-direction:column;">
-    <label>结束 (DTEND)</label>
-    <input class="dtend" type="date" value="${data?.dtend ? data.dtend : todayDate}" style="width:100%;">
-  </div>
-</div>
-    <label>重复规则 (RRULE)</label>
-    <select class="rrulePreset">
-      <option value="">无</option>
-      <option value="YEARLY">每年同一天</option>
-      <option value="YEARLY_MONTHDAY">每年同月同日</option>
-      <option value="MONTHLY">每月同一天</option>
-      <option value="WEEKLY">每周某天</option>
-      <option value="FATHER_DAY">父亲节（6月第3个周日）</option>
-      <option value="YEARLY_SPECIAL">母亲节（5月第2个周日）</option>
-    </select>
-    <input class="rruleCustom rruleCustom" placeholder="例如：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10" value="${data?.rrule || ''}">
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="fillSample small secondary"><i class="fa-solid fa-magic"></i> 填示例</button>
-      <button class="ruleInfoBtn small secondary"><i class="fa-solid fa-circle-info"></i> 规则介绍</button>
-      <button class="previewEventBtn small"><i class="fa-solid fa-eye"></i> 预览事件</button>
-    </div>
-  `;
-
-  const dtstartInput=div.querySelector('.dtstart');
-  const dtendInput=div.querySelector('.dtend');
-  const summaryInput = div.querySelector('.summary');
-  const uidInput = div.querySelector('.uid');
-  const rruleSel = div.querySelector('.rrulePreset');
-  const rruleCustom = div.querySelector('.rruleCustom');
-
-  // 设置预设的重复规则
-  if (data?.rrule) {
-    if (data.rrule === 'FREQ=YEARLY') {
-      rruleSel.value = 'YEARLY';
-    } else if (data.rrule.includes('BYMONTHDAY')) {
-      rruleSel.value = 'YEARLY_MONTHDAY';
-    } else if (data.rrule.includes('FREQ=MONTHLY')) {
-      rruleSel.value = 'MONTHLY';
-    } else if (data.rrule.includes('FREQ=WEEKLY')) {
-      rruleSel.value = 'WEEKLY';
-    } else if (data.rrule.includes('FATHER_DAY')) {
-      rruleSel.value = 'FATHER_DAY';
-    } else if (data.rrule.includes('YEARLY_SPECIAL')) {
-      rruleSel.value = 'YEARLY_SPECIAL';
-    }
-    rruleCustom.value = data.rrule;
-  }
-
-const uidStatus = div.querySelector('.uid-status');
-
-  // 监听 UID 输入框，切换状态
-  uidInput.addEventListener('input', function() {
-    if (this.value.trim()) {
-      uidStatus.className = 'uid-status manual';
-      uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入UID</span>`;
-    } else {
-      uidStatus.className = 'uid-status auto';
-      uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID</span>`;
-    }
-  });
-
-  // 如果提供了数据，自动生成UID
-  if (data?.summary) {
-    const pinyinUid = convertToPinyin(data.summary);
-    if (pinyinUid) {
-      uidInput.value = formatUID(pinyinUid);
-    }
-  }
-
-  // 监听标题输入变化，自动生成拼音UID
-  summaryInput.addEventListener('input', function() {
-  const summaryText = this.value.trim();
-
-  // 只有当 UID 状态为自动生成时，才更新 UID
-  if (uidStatus.classList.contains('auto')) {
-    if (summaryText) {
-      const pinyinUid = convertToPinyin(summaryText);
-      if (pinyinUid) {
-        uidInput.value = formatUID(pinyinUid);
-      } else {
-        uidInput.value = '';
-      }
-    } else {
-      uidInput.value = '';
-    }
-  }
-});
-
-  dtstartInput.onchange=dtendInput.onchange=()=>{
-    const start = new Date(dtstartInput.value);
-    const end = new Date(dtendInput.value);
-    if(end<start) dtendInput.value = dtstartInput.value;
-  };
-
-  function updateRRULE(){
-    const v=dtstartInput.value;
-    if(!v){rruleCustom.value=''; return;}
-    const d=new Date(v);
-    switch(rruleSel.value){
-      case 'YEARLY': rruleCustom.value='FREQ=YEARLY'; break;
-      case 'YEARLY_MONTHDAY': rruleCustom.value=`FREQ=YEARLY;BYMONTH=${d.getMonth()+1};BYMONTHDAY=${d.getDate()}`; break;
-      case 'MONTHLY': rruleCustom.value=`FREQ=MONTHLY;BYMONTHDAY=${d.getDate()}`; break;
-      case 'WEEKLY': rruleCustom.value=`FREQ=WEEKLY;BYDAY=MO`; break;
-      case 'YEARLY_SPECIAL': rruleCustom.value='FREQ=YEARLY;BYMONTH=5;BYDAY=2SU'; break;
-      case 'FATHER_DAY': rruleCustom.value='FREQ=YEARLY;BYMONTH=6;BYDAY=3SU'; break;
-      default: rruleCustom.value=''; break;
-    }
-  }
-  dtstartInput.onchange=()=>{updateRRULE(); dtendInput.onchange();}
-  rruleSel.onchange=updateRRULE;
-
-  div.querySelector('.removeBtn').onclick=()=>{
-    div.remove();
-    refreshEventNumbers();
-  };
-  div.querySelector('.clearBtn').onclick=()=>{
-    div.querySelector('.uid').value='';
-    div.querySelector('.summary').value='';
-    div.querySelector('.description').value='';
-    dtstartInput.value=todayDate;
-    dtendInput.value=todayDate;
-    rruleSel.value='';
-    rruleCustom.value='';
-  };
-
-  div.querySelector('.fillSample').onclick=()=>{
-    div.querySelector('.summary').value='元旦';
-div.querySelector('.description').value = `元旦：新年第一天，新年快乐！🎉
-中国的元旦，据传说起于三皇五帝之一的颛顼，距今已有3000多年的历史。
-“元旦”一词最早出现于《晋书》：“颛帝以孟夏正月为元，其实正朔元旦之春”的诗中。
-南北朝时，南朝萧子云的《介雅》诗中也有“四季新元旦，万寿初春朝”的记载。`;
-	 const thisYear = new Date().getFullYear();
-    dtstartInput.value=`${thisYear}-01-01`;
-    dtendInput.value=`${thisYear}-01-02`;
-    rruleSel.value='YEARLY';
-    rruleCustom.value='FREQ=YEARLY';
-    // 自动生成拼音UID
-    const pinyinUid = convertToPinyin('元旦');
-    if (pinyinUid) {
-      uidInput.value = formatUID(pinyinUid);
-    }
-  };
-
-  div.querySelector('.ruleInfoBtn').onclick=()=>{
-    const text=`
-• 每年同一天：FREQ=YEARLY
-
-• 每年同月同日：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10
-
-• 每月同一天：FREQ=MONTHLY;BYMONTHDAY=15
-
-• 每周某天：FREQ=WEEKLY;BYDAY=MO
-"MO" / "TU" / "WE" / "TH" / "FR" / "SA" / "SU"
-
-• 母亲节：FREQ=YEARLY;BYMONTH=5;BYDAY=2SU
-
-• 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU
-`;
-    createDialog('RRULE 规则说明：', text, false);
-  };
-
-  div.querySelector('.previewEventBtn').onclick = () => {
-  refreshEventNumbers();
-  const ev = readEventFromCard(div);
-  const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div) + 1;
-  if (!ev.summary) {
-    showNotification('error', '预览失败', `事件 ${idx} 标题为空！`);
-    return;
-  }
-  let text = buildSingleEventICS(ev);
-  
-  // 预览时把 \n 转成真正换行
-  text = text.replace(/\\n/g, '\n');
-
-  createDialog('事件 ICS 预览', text, true);
-};
-
-  eventsContainer.appendChild(div);
-  refreshEventNumbers();
-  return div;
-}
-
-function readEventFromCard(card){
-  const rawUid=card.querySelector('.uid').value.trim();
-  const uid=formatUID(rawUid); // 自动补充后缀
-  const summary=card.querySelector('.summary').value.trim();
-  const description=card.querySelector('.description').value.trim();
-  const dtstartRaw=card.querySelector('.dtstart').value;
-  const dtendRaw=card.querySelector('.dtend').value;
-  const rrule=card.querySelector('.rruleCustom').value.trim();
-  const dtstart=dtstartRaw?dtstartRaw.replace(/-/g,''):'';
-  const dtend=dtendRaw?dtendRaw.replace(/-/g,''):'';
-  return {uid,summary,description,allDay:true,dtstart,dtend,rrule};
-}
-
-function buildSingleEventICS(ev){
-  const lines=['BEGIN:VEVENT'];
-  lines.push(`UID:${ev.uid||genUID()}`);
-  lines.push(`DTSTAMP:${makeDTStampLocal(new Date())}`);
-  lines.push(`SUMMARY:${escapeText(ev.summary)}`);
-  if(ev.dtstart) lines.push(`DTSTART;VALUE=DATE:${ev.dtstart}`);
-  if(ev.dtend) lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
-  if(ev.rrule) lines.push(`RRULE:${ev.rrule}`);
-  if(ev.description) lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
-  lines.push('END:VEVENT');
-  return lines.map(foldLine).join('\r\n');
-}
-
-function buildCalendarICS(){
-  const calName=document.getElementById('calName').value||'我的订阅日历';
-  const tz=document.getElementById('tz').value||Intl.DateTimeFormat().resolvedOptions().timeZone||'';
-  document.getElementById('tz').value=tz;
-  const prodid=document.getElementById('prodid').value||'-//0515364.xyz//My Calendar//CN';
-  
-  const header=[
-    'BEGIN:VCALENDAR',
-    `PRODID:${prodid}`,
-    'VERSION:2.0',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    `X-WR-CALNAME:${escapeText(calName)}`,
-    `X-WR-TIMEZONE:${tz}`
-  ];
-  
-  const eventCards=Array.from(document.querySelectorAll('#events .card'));
-  if(eventCards.length===0){createEventCard(); return '';}
-  refreshEventNumbers();
-  for(let i=0;i<eventCards.length;i++){
-    const summary = eventCards[i].querySelector('.summary').value.trim();
-    if(!summary){showNotification('error', '生成失败', `事件 ${i+1} 标题为空！`); return '';}
-  }
-
-  // 每个事件之间加空行，第一个事件和上方加空行，最后一个事件和下方加空行
-  const events = eventCards.map(c=>buildSingleEventICS(readEventFromCard(c))).join('\r\n\r\n');
-
-  // 头部和事件之间加空行，最后和 END:VCALENDAR 之间也加空行
-  return header.join('\r\n') + '\r\n\r\n' + events + '\r\n\r\nEND:VCALENDAR\r\n';
-}
-
-// 按钮事件
-document.getElementById('addEventBtn').onclick=()=>createEventCard();
-document.getElementById('clearEvents').onclick=()=>{if(confirm('确定清空吗？')){eventsContainer.innerHTML='';createEventCard();}};
-
-document.getElementById('generateBtn').onclick=()=>{
-  const ics=buildCalendarICS();
-  if(!ics) return;
-  document.getElementById('preview').textContent = ics.replace(/\\n/g, '\n');
-  showNotification('success', '生成成功', 'ICS 内容已生成，请查看预览区域');
-};
-document.getElementById('copyBtn').onclick=async()=>{
-  const text=document.getElementById('preview').textContent;
-  if(text.startsWith('// ')){showNotification('error', '复制失败', '请先生成 ICS 内容');return;}
-  try{await navigator.clipboard.writeText(text);showNotification('success', '复制成功', 'ICS 内容已复制到剪贴板');}catch(e){showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');}
-};
-document.getElementById('downloadBtn').onclick=()=>{
-  const text=document.getElementById('preview').textContent;
-  if(text.startsWith('// ')){showNotification('error', '下载失败', '请先生成 ICS 内容');return;}
-  const blob=new Blob([text],{type:'text/calendar;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download='calendar.ics';
-  a.click();
-  URL.revokeObjectURL(url);
-  showNotification('success', '下载成功', 'ICS 文件已开始下载');
-};
-
-// 初始化一个事件
-createEventCard();
-</script>
-</body>
+      <script>
+         // 显示通知函数
+         function showNotification(type, title, message, duration = 3000) {
+           const notification = document.createElement('div');
+           notification.className = `notification ${type}`;
+           
+           let iconClass = 'fa-circle-info';
+           if (type === 'success') iconClass = 'fa-circle-check';
+           if (type === 'error') iconClass = 'fa-circle-exclamation';
+           
+           notification.innerHTML = `
+             <div class="notification-icon">
+               <i class="fa-solid ${iconClass}"></i>
+             </div>
+             <div class="notification-content">
+               <div class="notification-title">${title}</div>
+               <div class="notification-message">${message}</div>
+             </div>
+           `;
+           
+           document.body.appendChild(notification);
+           
+           // 触发动画
+           setTimeout(() => notification.classList.add('show'), 10);
+           
+           // 自动隐藏
+           setTimeout(() => {
+             notification.classList.remove('show');
+             setTimeout(() => notification.remove(), 300);
+           }, duration);
+           
+           return notification;
+         }
+         
+         // 时区默认值
+         function setDefaultTimezone(){
+           const tzInput = document.getElementById('tz');
+           tzInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Shanghai';
+         }
+         window.addEventListener('DOMContentLoaded', setDefaultTimezone);
+         document.getElementById('refreshTz').onclick = setDefaultTimezone;
+         
+         function makeDTStampLocal(date=new Date()){
+           const yyyy = date.getFullYear();
+           const mm = String(date.getMonth()+1).padStart(2,'0');
+           const dd = String(date.getDate()).padStart(2,'0');
+           const hh = String(date.getHours()).padStart(2,'0');
+           const mi = String(date.getMinutes()).padStart(2,'0');
+           const ss = String(date.getSeconds()).padStart(2,'0');
+           return `${yyyy}${mm}${dd}T${hh}${mi}${ss}`;
+         }
+         
+         // UID 自动增加默认后缀
+         function formatUID(uid){
+           uid = uid.trim();
+           if(!uid) return '';
+           return uid.includes('@') ? uid : `${uid}@0515364.xyz`;
+         }
+         
+         function genUID(base){
+           const rand=Math.random().toString(36).slice(2,10);
+           const now=new Date().getTime();
+           const host=(base && base.includes('@')) ? base.split('@').pop() : '0515364.xyz';
+           return `${now}-${rand}@${host}`;
+         }
+         
+         // 中文转拼音函数（逐字转换）
+         function convertToPinyin(text) {
+           if (!text) return '';
+           
+           // 常见汉字拼音映射表（每个字独立）
+           const pinyinMap = {
+             '教': 'jiao', '师': 'shi', '节': 'jie', '元': 'yuan', 
+             '旦': 'dan', '春': 'chun', '清': 'qing', '明': 'ming', 
+             '劳': 'lao', '动': 'dong', '端': 'duan', '午': 'wu', 
+             '中': 'zhong', '秋': 'qiu', '国': 'guo', '庆': 'qing', 
+             '耶': 'ye', '稣': 'su', '受': 'shou', '难': 'nan', 
+             '日': 'ri', '卫': 'wei', '塞': 'sai', '屠': 'tu', 
+             '妖': 'yao', '圣': 'sheng', '诞': 'dan', '开': 'kai', 
+             '斋': 'zhai', '哈': 'ha', '芝': 'zhi', '新': 'xin', '农': 'nong', '历': 'li', 
+             '年': 'nian', '际': 'ji', '人': 'ren', '民': 'min', 
+             '共': 'gong', '和': 'he' , '植': 'zhi', '树': 'shu' ,'儿': 'er' ,'童': 'tong', '建': 'jian', '党': 'dang', '军': 'jun', '青': 'qing', '护': 'hu', '士': 'shi', '光': 'guang', '棍': 'gun', '夕': 'xi', '重': 'chong', '阳': 'yang', '腊': 'la', '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu', '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '零': 'ling'};
+           
+           let result = '';
+           for (let i = 0; i < text.length; i++) {
+             const char = text[i];
+             if (pinyinMap[char]) {
+               result += pinyinMap[char];
+             } else if (/[a-zA-Z0-9]/.test(char)) {
+               result += char;
+             }
+             // 忽略不在映射表中的中文字符
+           }
+           
+           return result;
+         }
+         
+         function foldLine(line){const max=75;if(line.length<=max)return line;let out='',pos=0;while(pos<line.length){if(pos===0){out+=line.slice(pos,pos+max);}else{out+='\r\n '+line.slice(pos,pos+max);}pos+=max;}return out;}
+         function escapeText(s){return(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
+         
+         const eventsContainer=document.getElementById('events');
+         
+         // 保存打开弹窗前的滚动位置（用于恢复）
+         let _savedScrollY = null;
+         function disableBodyScroll(){
+           if (_savedScrollY !== null) return; // 已锁定
+           _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+           // 固定 body 位置，防止背景滚动，同时保持视觉位置不变
+           document.body.style.position = 'fixed';
+           document.body.style.top = `-${_savedScrollY}px`;
+           document.body.style.left = '0';
+           document.body.style.right = '0';
+         }
+         function enableBodyScroll(){
+           if (_savedScrollY === null) return;
+           // 恢复 body 样式并滚动回之前位置
+           document.body.style.position = '';
+           document.body.style.top = '';
+           document.body.style.left = '';
+           document.body.style.right = '';
+           const y = _savedScrollY;
+           _savedScrollY = null;
+           window.scrollTo(0, y);
+         }
+         
+         function refreshEventNumbers(){
+           const cards = eventsContainer.querySelectorAll('.card');
+           // 预设一组 Font Awesome 图标
+           const icons = [
+             "fa-star", "fa-heart", "fa-gift", "fa-bell",
+             "fa-flag", "fa-moon", "fa-sun", "fa-cake-candles",
+             "fa-music", "fa-seedling", "fa-tree", "fa-smile"
+           ];
+         
+           cards.forEach((card, i)=>{
+             const strong = card.querySelector('.event-header strong');
+             // 如果该卡片还没有分配过图标，就随机选一个
+             if (!card.dataset.icon) {
+               const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+               card.dataset.icon = randomIcon;
+             }
+             const iconClass = card.dataset.icon;
+             strong.innerHTML = `<i class="fa-solid ${iconClass}"></i> 事件 #${i+1}`;
+           });
+         }
+         
+         function createDialog(title, content, withCopy=false){
+           const backdrop=document.createElement('div');
+           backdrop.className='dialog-backdrop';
+           const box=document.createElement('div');
+           box.className='dialog-box';
+           box.innerHTML=`<h3 style="margin-top:0;font-size:1rem">${title}</h3>`;
+           if(typeof content==='string'){
+             box.innerHTML+=`<pre>${content}</pre>`;
+           }else{
+             box.appendChild(content);
+           }
+           const actions=document.createElement('div');
+           actions.className='dialog-actions';
+           if(withCopy){
+             const copyBtn=document.createElement('button');
+             copyBtn.textContent='复制';
+             copyBtn.onclick=async()=>{
+               try{
+                 // 如果 content 是字符串，直接复制；否则尝试复制 innerText
+                 const toCopy = (typeof content === 'string') ? content : (content.innerText || content.textContent || '');
+                 await navigator.clipboard.writeText(toCopy);
+                 showNotification('success', '已复制', '内容已成功复制到剪贴板');
+               }catch(e){
+                 showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');
+               }
+             };
+             actions.appendChild(copyBtn);
+           }
+           const closeBtn=document.createElement('button');
+           closeBtn.textContent='关闭';
+           closeBtn.onclick=()=>{
+             backdrop.remove();
+             enableBodyScroll();
+           };
+           actions.appendChild(closeBtn);
+           box.appendChild(actions);
+           backdrop.appendChild(box);
+         
+           // 阻止 backdrop 本身的触摸/滚动穿透（增加额外保护）
+           backdrop.addEventListener('touchmove', function(e){ e.preventDefault(); }, {passive:false});
+         
+           document.body.appendChild(backdrop);
+         
+           // 打开弹窗时禁止背景滚动
+           disableBodyScroll();
+         }
+         
+         function createEventCard(data){
+           const div=document.createElement('div');
+           div.className='card';
+           const today=new Date();
+           const yyyy=today.getFullYear(),mm=String(today.getMonth()+1).padStart(2,'0'),dd=String(today.getDate()).padStart(2,'0');
+           const todayDate=`${yyyy}-${mm}-${dd}`;
+         
+           div.innerHTML=`
+             <div class="event-header">
+               <strong>事件</strong>
+               <div style="display:flex;gap:6px">
+                 <button class="removeBtn secondary small"><i class="fa-solid fa-trash"></i> 删除</button>
+                 <button class="clearBtn secondary small"><i class="fa-solid fa-eraser"></i> 清空</button>
+               </div>
+             </div>
+             <label><i class="fa-solid fa-fingerprint"></i> UID（可留空随机生成）</label>
+             <input class="uid" type="text" value="${data?.uid||''}" placeholder="例如：newyear@0515364.xyz">
+             <div class="uid-status ${data?.uid ? 'manual' : 'auto'}">
+               <i class="fa-solid ${data?.uid ? 'fa-pen' : 'fa-bolt'}"></i> 
+               <span>${data?.uid ? '手动输入UID' : '自动生成UID'}</span>
+             </div>
+             <label><i class="fa-solid fa-heading"></i> 标题（SUMMARY）</label>
+             <input class="summary" type="text" value="${data?.summary||''}" placeholder="元旦">
+             <label><i class="fa-solid fa-align-left"></i> 说明（DESCRIPTION，可选）</label>
+             <textarea class="description" rows="3" placeholder="元旦: 新年第一天！🎉">${data?.description||''}</textarea>
+             <div class="date-row" style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+               <div style="flex:1;display:flex;flex-direction:column;">
+                 <label><i class="fa-solid fa-calendar-day"></i> 开始 (DTSTART)</label>
+                 <input class="dtstart" type="date" value="${data?.dtstart ? data.dtstart : todayDate}">
+               </div>
+               <div style="flex:1;display:flex;flex-direction:column;">
+                 <label><i class="fa-solid fa-calendar-check"></i> 结束 (DTEND)</label>
+                 <input class="dtend" type="date" value="${data?.dtend ? data.dtend : todayDate}">
+               </div>
+             </div>
+             <div style="margin-top:8px">
+               <label><input type="checkbox" class="hasTime"><i class="fa-solid fa-clock"></i> 添加时间</label>
+               <div class="time-row" style="display:none;gap:12px;margin-top:6px;flex-wrap:wrap;">
+                 <div style="flex:1;display:flex;flex-direction:column;">
+                   <label>开始时间</label>
+                   <input class="tstart" type="time" value="00:00">
+                 </div>
+                 <div style="flex:1;display:flex;flex-direction:column;">
+                   <label>结束时间</label>
+                   <input class="tend" type="time" value="00:00">
+                 </div>
+               </div>
+             </div>
+             <label><i class="fa-solid fa-redo"></i>重复规则 (RRULE)</label>
+             <select class="rrulePreset">
+               <option value="">无</option>
+               <option value="YEARLY">每年同一天</option>
+               <option value="YEARLY_MONTHDAY">每年同月同日</option>
+               <option value="MONTHLY">每月同一天</option>
+               <option value="WEEKLY">每周某天</option>
+               <option value="FATHER_DAY">父亲节（6月第3个周日）</option>
+               <option value="YEARLY_SPECIAL">母亲节（5月第2个周日）</option>
+             </select>
+             <input class="rruleCustom" value="${data?.rrule||''}">
+             <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+               <button class="fillSample small secondary"><i class="fa-solid fa-magic"></i> 填示例</button>
+               <button class="ruleInfoBtn small secondary"><i class="fa-solid fa-circle-info"></i> 规则介绍</button>
+               <button class="previewEventBtn small"><i class="fa-solid fa-eye"></i> 预览事件</button>
+             </div>
+           `;
+         
+           const hasTime=div.querySelector('.hasTime');
+           const timeRow=div.querySelector('.time-row');
+           hasTime.addEventListener('change',()=>{timeRow.style.display=hasTime.checked?'flex':'none';});
+         
+           const dtstartInput=div.querySelector('.dtstart');
+           const dtendInput=div.querySelector('.dtend');
+           const summaryInput = div.querySelector('.summary');
+           const uidInput = div.querySelector('.uid');
+           const rruleSel = div.querySelector('.rrulePreset');
+           const rruleCustom = div.querySelector('.rruleCustom');
+         
+           // 设置预设的重复规则
+           if (data?.rrule) {
+             if (data.rrule === 'FREQ=YEARLY') {
+               rruleSel.value = 'YEARLY';
+             } else if (data.rrule.includes('BYMONTHDAY')) {
+               rruleSel.value = 'YEARLY_MONTHDAY';
+             } else if (data.rrule.includes('FREQ=MONTHLY')) {
+               rruleSel.value = 'MONTHLY';
+             } else if (data.rrule.includes('FREQ=WEEKLY')) {
+               rruleSel.value = 'WEEKLY';
+             } else if (data.rrule.includes('FATHER_DAY')) {
+               rruleSel.value = 'FATHER_DAY';
+             } else if (data.rrule.includes('YEARLY_SPECIAL')) {
+               rruleSel.value = 'YEARLY_SPECIAL';
+             }
+             rruleCustom.value = data.rrule;
+           }
+         
+         const uidStatus = div.querySelector('.uid-status');
+         
+           // 监听 UID 输入框，切换状态
+           uidInput.addEventListener('input', function() {
+             if (this.value.trim()) {
+               uidStatus.className = 'uid-status manual';
+               uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入UID</span>`;
+             } else {
+               uidStatus.className = 'uid-status auto';
+               uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID</span>`;
+             }
+           });
+         
+           // 如果提供了数据，自动生成UID
+           if (data?.summary) {
+             const pinyinUid = convertToPinyin(data.summary);
+             if (pinyinUid) {
+               uidInput.value = formatUID(pinyinUid);
+             }
+           }
+         
+           // 监听标题输入变化，自动生成拼音UID
+           summaryInput.addEventListener('input', function() {
+           const summaryText = this.value.trim();
+         
+           // 只有当 UID 状态为自动生成时，才更新 UID
+           if (uidStatus.classList.contains('auto')) {
+             if (summaryText) {
+               const pinyinUid = convertToPinyin(summaryText);
+               if (pinyinUid) {
+                 uidInput.value = formatUID(pinyinUid);
+               } else {
+                 uidInput.value = '';
+               }
+             } else {
+               uidInput.value = '';
+             }
+           }
+         });
+         
+           dtstartInput.onchange=dtendInput.onchange=()=>{
+             const start = new Date(dtstartInput.value);
+             const end = new Date(dtendInput.value);
+             if(end<start) dtendInput.value = dtstartInput.value;
+           };
+         
+           function updateRRULE(){
+             const v=dtstartInput.value;
+             if(!v){rruleCustom.value=''; return;}
+             const d=new Date(v);
+             switch(rruleSel.value){
+               case 'YEARLY': rruleCustom.value='FREQ=YEARLY'; break;
+               case 'YEARLY_MONTHDAY': rruleCustom.value=`FREQ=YEARLY;BYMONTH=${d.getMonth()+1};BYMONTHDAY=${d.getDate()}`; break;
+               case 'MONTHLY': rruleCustom.value=`FREQ=MONTHLY;BYMONTHDAY=${d.getDate()}`; break;
+               case 'WEEKLY': rruleCustom.value=`FREQ=WEEKLY;BYDAY=MO`; break;
+               case 'YEARLY_SPECIAL': rruleCustom.value='FREQ=YEARLY;BYMONTH=5;BYDAY=2SU'; break;
+               case 'FATHER_DAY': rruleCustom.value='FREQ=YEARLY;BYMONTH=6;BYDAY=3SU'; break;
+               default: rruleCustom.value=''; break;
+             }
+           }
+           dtstartInput.onchange=()=>{updateRRULE(); dtendInput.onchange();}
+           rruleSel.onchange=updateRRULE;
+         
+           div.querySelector('.removeBtn').onclick=()=>{
+             div.remove();
+             refreshEventNumbers();
+           };
+           div.querySelector('.clearBtn').onclick=()=>{
+             div.querySelector('.uid').value='';
+             div.querySelector('.summary').value='';
+             div.querySelector('.description').value='';
+             dtstartInput.value=todayDate;
+             dtendInput.value=todayDate;
+             rruleSel.value='';
+             rruleCustom.value='';
+           };
+         
+           div.querySelector('.fillSample').onclick=()=>{
+           div.querySelector('.summary').value='元旦';
+           div.querySelector('.description').value = `元旦：新年第一天，新年快乐！🎉
+         中国的元旦，据传说起于三皇五帝之一的颛顼，距今已有3000多年的历史。
+         “元旦”一词最早出现于《晋书》：“颛帝以孟夏正月为元，其实正朔元旦之春”的诗中。
+         南北朝时，南朝萧子云的《介雅》诗中也有“四季新元旦，万寿初春朝”的记载。`;
+           const thisYear = new Date().getFullYear();
+           dtstartInput.value=`${thisYear}-01-01`;
+           dtendInput.value=`${thisYear}-01-01`;
+           rruleSel.value='YEARLY';
+           rruleCustom.value='FREQ=YEARLY';
+           // 自动生成拼音UID
+           const pinyinUid = convertToPinyin('元旦');
+           if (pinyinUid) {
+             uidInput.value = formatUID(pinyinUid);
+           }
+         
+           const hasTime = div.querySelector('.hasTime');
+           const timeRow = div.querySelector('.time-row');
+           const tstartInput = div.querySelector('.tstart');
+           const tendInput = div.querySelector('.tend');
+           hasTime.checked = true;
+           timeRow.style.display = 'flex';
+           tstartInput.value = "00:00";
+           tendInput.value = "23:59";
+         };
+         
+           div.querySelector('.ruleInfoBtn').onclick=()=>{
+             const text=`
+         • 每年同一天：FREQ=YEARLY
+         
+         • 每年同月同日：FREQ=YEARLY;BYMONTH=9;BYMONTHDAY=10
+         
+         • 每月同一天：FREQ=MONTHLY;BYMONTHDAY=15
+         
+         • 每周某天：FREQ=WEEKLY;BYDAY=MO
+         "MO" / "TU" / "WE" / "TH" / "FR" / "SA" / "SU"
+         
+         • 母亲节：FREQ=YEARLY;BYMONTH=5;BYDAY=2SU
+         
+         • 父亲节：FREQ=YEARLY;BYMONTH=6;BYDAY=3SU
+         `;
+             createDialog('RRULE 规则说明：', text, false);
+           };
+         
+           div.querySelector('.previewEventBtn').onclick = () => {
+           refreshEventNumbers();
+           const ev = readEventFromCard(div);
+           const idx = Array.from(eventsContainer.querySelectorAll('.card')).indexOf(div) + 1;
+           if (!ev.summary) {
+             showNotification('error', '预览失败', `事件 ${idx} 标题为空！`);
+             return;
+           }
+           let text = buildSingleEventICS(ev);
+           
+           // 预览时把 \n 转成真正换行
+           text = text.replace(/\\n/g, '\n');
+         
+           createDialog('事件 ICS 预览', text, true);
+         };
+         
+           eventsContainer.appendChild(div);
+           refreshEventNumbers();
+           return div;
+         }
+         
+         function readEventFromCard(card){
+           const uid=card.querySelector('.uid').value.trim();
+           const summary=card.querySelector('.summary').value.trim();
+           const description=card.querySelector('.description').value.trim();
+           const dtstartRaw=card.querySelector('.dtstart').value;
+           const dtendRaw=card.querySelector('.dtend').value;
+           const hasTime=card.querySelector('.hasTime').checked;
+           const tstart=card.querySelector('.tstart')?.value||"00:00";
+           const tend=card.querySelector('.tend')?.value||"00:00";
+           let dtstart="",dtend="";
+           if(dtstartRaw){
+             dtstart=hasTime?dtstartRaw.replace(/-/g,'')+'T'+tstart.replace(':','')+'00':dtstartRaw.replace(/-/g,'');
+           }
+           if(dtendRaw){
+             dtend=hasTime?dtendRaw.replace(/-/g,'')+'T'+tend.replace(':','')+'00':dtendRaw.replace(/-/g,'');
+           }
+           return {uid,summary,description,allDay:!hasTime,dtstart,dtend};
+         }
+         
+         function buildSingleEventICS(ev){
+           const lines=['BEGIN:VEVENT'];
+           lines.push(`UID:${ev.uid||genUID()}`);
+           lines.push(`DTSTAMP:${makeDTStampLocal(new Date())}`);
+           lines.push(`SUMMARY:${escapeText(ev.summary)}`);
+           if(ev.allDay){
+             lines.push(`DTSTART;VALUE=DATE:${ev.dtstart}`);
+             lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
+           }else{
+             lines.push(`DTSTART:${ev.dtstart}`);
+             lines.push(`DTEND:${ev.dtend}`);
+           }
+           if(ev.description)lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
+           lines.push('END:VEVENT');
+           return lines.join('\r\n');
+         }
+         
+         function buildCalendarICS(){
+           const calName=document.getElementById('calName').value||'我的订阅日历';
+           const tz=document.getElementById('tz').value||Intl.DateTimeFormat().resolvedOptions().timeZone||'';
+           document.getElementById('tz').value=tz;
+           const prodid=document.getElementById('prodid').value||'-//0515364.xyz//My Calendar//CN';
+           
+           const header=[
+             'BEGIN:VCALENDAR',
+             `PRODID:${prodid}`,
+             'VERSION:2.0',
+             'CALSCALE:GREGORIAN',
+             'METHOD:PUBLISH',
+             `X-WR-CALNAME:${escapeText(calName)}`,
+             `X-WR-TIMEZONE:${tz}`
+           ];
+           
+           const eventCards=Array.from(document.querySelectorAll('#events .card'));
+           if(eventCards.length===0){createEventCard(); return '';}
+           refreshEventNumbers();
+           for(let i=0;i<eventCards.length;i++){
+             const summary = eventCards[i].querySelector('.summary').value.trim();
+             if(!summary){showNotification('error', '生成失败', `事件 ${i+1} 标题为空！`); return '';}
+           }
+         
+           // 每个事件之间加空行，第一个事件和上方加空行，最后一个事件和下方加空行
+           const events = eventCards.map(c=>buildSingleEventICS(readEventFromCard(c))).join('\r\n\r\n');
+         
+           // 头部和事件之间加空行，最后和 END:VCALENDAR 之间也加空行
+           return header.join('\r\n') + '\r\n\r\n' + events + '\r\n\r\nEND:VCALENDAR\r\n';
+         }
+         
+         // 按钮事件
+         document.getElementById('addEventBtn').onclick=()=>createEventCard();
+         document.getElementById('clearEvents').onclick=()=>{if(confirm('确定清空吗？')){eventsContainer.innerHTML='';createEventCard();}};
+         
+         document.getElementById('generateBtn').onclick=()=>{
+           const ics=buildCalendarICS();
+           if(!ics) return;
+           document.getElementById('preview').textContent = ics.replace(/\\n/g, '\n');
+           showNotification('success', '生成成功', 'ICS 内容已生成，请查看预览区域');
+         };
+         document.getElementById('copyBtn').onclick=async()=>{
+           const text=document.getElementById('preview').textContent;
+           if(text.startsWith('// ')){showNotification('error', '复制失败', '请先生成 ICS 内容');return;}
+           try{await navigator.clipboard.writeText(text);showNotification('success', '复制成功', 'ICS 内容已复制到剪贴板');}catch(e){showNotification('error', '复制失败', '无法复制到剪贴板，请手动复制');}
+         };
+         document.getElementById('downloadBtn').onclick=()=>{
+           const text=document.getElementById('preview').textContent;
+           if(text.startsWith('// ')){showNotification('error', '下载失败', '请先生成 ICS 内容');return;}
+           const blob=new Blob([text],{type:'text/calendar;charset=utf-8'});
+           const url=URL.createObjectURL(blob);
+           const a=document.createElement('a');
+           a.href=url;a.download='calendar.ics';
+           a.click();
+           URL.revokeObjectURL(url);
+           showNotification('success', '下载成功', 'ICS 文件已开始下载');
+         };
+         
+         // 初始化一个事件
+         createEventCard();
+      </script>
+   </body>
 </html>
