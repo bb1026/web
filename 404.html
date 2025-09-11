@@ -8,10 +8,27 @@
     h1 { font-size: 3em; color: #cc0000; }
     a { display: inline-block; margin-top: 2em; font-size: 1.2em; }
   </style>
+  <script>
+    // 3秒后自动跳转首页
+    setTimeout(function() {
+      window.location.href = "/";
+    }, 3000);
+  </script>
 </head>
 <body>
   <h1>404 - 页面不存在</h1>
-  <p>您访问的页面不存在</p>
+  <p>您访问的页面不存在，将在 <span id="countdown">3</span> 秒后返回首页</p>
   <a href="/">返回首页</a>
+
+  <script>
+    // 倒计时显示
+    let sec = 3;
+    const countdown = document.getElementById("countdown");
+    const timer = setInterval(() => {
+      sec--;
+      countdown.textContent = sec;
+      if (sec <= 0) clearInterval(timer);
+    }, 1000);
+  </script>
 </body>
 </html>
