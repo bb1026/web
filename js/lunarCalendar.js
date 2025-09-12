@@ -21,59 +21,9 @@ const lunarInfo=[
 // ---------- 阳历节日 ----------
 const solarFestivals = {
   "01-01": "元旦",
-  "01-06": "世界儿童日",
-  "01-09": "世界防治麻风日",
-  "02-02": "世界湿地日",
-  "02-04": "世界抗癌日",
-  "02-14": "情人节",
-  "03-01": "国际海豹日",
-  "03-03": "全国爱耳日",
-  "03-05": "学雷锋纪念日",
-  "03-08": "妇女节",
-  "03-12": "植树节",
-  "03-14": "白色情人节",
-  "03-20": "国际幸福日",
-  "03-21": "世界睡眠日",
-  "03-22": "世界水日",
-  "03-23": "世界气象日",
-  "04-01": "愚人节",
-  "04-07": "世界卫生日",
-  "04-22": "世界地球日",
   "05-01": "劳动节",
-  "05-04": "青年节",
-  "05-12": "国际护士节",
-  "05-15": "国际家庭日",
-  "05-18": "国际博物馆日",
-  "05-31": "世界无烟日",
   "06-01": "儿童节",
-  "06-05": "世界环境日",
-  "06-08": "世界海洋日",
-  "06-14": "世界献血者日",
-  "06-21": "国际瑜伽日",
-  "07-01": "建党节",
-  "07-11": "世界人口日",
-  "08-01": "建军节",
-  "08-09": "世界土著人民日",
-  "08-12": "国际青年日",
-  "09-03": "抗日战争胜利纪念日",
-  "09-08": "国际扫盲日",
-  "09-10": "教师节",
-  "09-16": "国际臭氧层保护日",
-  "09-21": "国际和平日",
-  "09-27": "世界旅游日",
-  "10-01": "国庆节",
-  "10-04": "世界动物日",
-  "10-10": "辛亥革命纪念日",
-  "10-16": "世界粮食日",
-  "10-24": "联合国日",
-  "11-11": "光棍节",
-  "11-20": "世界儿童日",
-  "12-01": "世界艾滋病日",
-  "12-05": "国际志愿人员日",
-  "12-10": "世界人权日",
-  "12-24": "平安夜",
-  "12-25": "圣诞节",
-  "12-31": "跨年夜"
+  "10-01": "国庆节"
 };
 
 // ---------- 农历节日 ----------
@@ -92,6 +42,62 @@ const lunarFestivals = {
   "1208": "腊八节",
   "1223": "北方小年",   // 北方：腊月二十三
   "1224": "南方小年"    // 南方：腊月二十四
+};
+
+// ---------- 其他纪念日 ----------
+const otherFestivals = {
+  "01-06": "世界儿童日",
+  "01-09": "世界防治麻风日",
+  "02-02": "世界湿地日",
+  "02-04": "世界抗癌日",
+  "02-14": "情人节",
+  "03-01": "国际海豹日",
+  "03-03": "全国爱耳日",
+  "03-05": "学雷锋纪念日",
+  "03-08": "妇女节",
+  "03-12": "植树节",
+  "03-14": "白色情人节",
+  "03-20": "国际幸福日",
+  "03-21": "世界睡眠日",
+  "03-22": "世界水日",
+  "03-23": "世界气象日",
+  "04-01": "愚人节",
+  "04-07": "世界卫生日",
+  "04-22": "世界地球日",
+  "05-04": "青年节",
+  "05-12": "国际护士节",
+  "05-15": "国际家庭日",
+  "05-18": "国际博物馆日",
+  "05-31": "世界无烟日",
+  "06-05": "世界环境日",
+  "06-08": "世界海洋日",
+  "06-14": "世界献血者日",
+  "06-21": "国际瑜伽日",
+  "07-07": "七七事变",
+  "07-11": "世界人口日",
+  "08-09": "世界土著人民日",
+  "08-12": "国际青年日",
+  "08-15": "日本投降",
+  "09-03": "抗日战争胜利纪念日",
+  "09-08": "国际扫盲日",
+  "09-16": "国际臭氧层保护日",
+  "09-21": "国际和平日",
+  "09-27": "世界旅游日",
+  "10-04": "世界动物日",
+  "10-10": "辛亥革命纪念日",
+  "10-16": "世界粮食日",
+  "10-24": "联合国日",
+  "11-11": "光棍节",
+  "11-20": "世界儿童日",
+  "12-01": "世界艾滋病日",
+  "12-05": "国际志愿人员日",
+  "12-10": "世界人权日",
+  "12-24": "平安夜",
+  "12-25": "圣诞节",
+  "12-31": "跨年夜",
+  // 浮动节日（母亲节、父亲节）
+  "母亲节": { month: 5, weekday: 0, weekIndex: 2 }, // 5月第二个星期日
+  "父亲节": { month: 6, weekday: 0, weekIndex: 3 }  // 6月第三个星期日
 };
 
 // ---------- 节气 ----------
@@ -167,37 +173,63 @@ function getZodiac(year){return zodiac[(year-4)%12];}
 function isLeapYear(year){return (year%4===0 && year%100!==0)||(year%400===0);}
 
 // 获取一年日历
-function getYearCalendar(year){
+// ---------- 浮动节日判断（母亲节、父亲节） ----------
+function getFloatingFestival(year, month, day) {
+  for (let key of ["母亲节", "父亲节"]) {
+    const fest = otherFestivals[key];
+    if (!fest || fest.month !== month) continue;
+
+    let weekdayCount = 0;
+    for (let d = 1; d <= 31; d++) {
+      const current = new Date(year, month - 1, d);
+      if (current.getMonth() + 1 !== month) break;
+      if (current.getDay() === fest.weekday) {
+        weekdayCount++;
+        if (weekdayCount === fest.weekIndex && current.getDate() === day) {
+          return key; // 返回“母亲节”或“父亲节”名称
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- 获取一年日历 ----------
+function getYearCalendar(year) {
   const result = [];
   const start = new Date(year, 0, 1);
   const end = new Date(year + 1, 0, 1);
 
-  for(let d = start; d < end; d.setDate(d.getDate() + 1)){
+  for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
     const y = d.getFullYear();
     const m = d.getMonth() + 1;
     const day = d.getDate();
     const weekday = getWeekday(d);
     const lunar = solarToLunar(y, m, day);
 
-    // 阳历节日
+    // 阳历节日（固定日期）
     const solarF = solarFestivals[toFixed(m) + "-" + toFixed(day)] || "";
 
     // 农历节日（含除夕判断）
     let lunarF = lunarFestivals[toFixed(lunar.lunarMonth) + toFixed(lunar.lunarDay)] || "";
-    if(lunar.lunarMonth === 12){
-      const lastDay = monthDays(lunar.lunarYear, 12); // 腊月天数
-      if((lunar.lunarDay === 29 && lastDay === 29) || (lunar.lunarDay === 30 && lastDay === 30)){
+    if (lunar.lunarMonth === 12) {
+      const lastDay = monthDays(lunar.lunarYear, 12);
+      if ((lunar.lunarDay === 29 && lastDay === 29) || (lunar.lunarDay === 30 && lastDay === 30)) {
         lunarF = "除夕";
       }
     }
     const isLunarFestival = lunarF !== "";
 
+    // 其他纪念日（固定日期 + 浮动节日）
+    let otherF = otherFestivals[toFixed(m) + "-" + toFixed(day)] || getFloatingFestival(y, m, day);
+    const isOtherFestival = otherF !== "";
+
     // 节气
     let term = "";
     let isSolarTerm = false;
-    for(let i = 0; i < 24; i++){
+    for (let i = 0; i < 24; i++) {
       const tDate = solarTerm(y, i);
-      if(tDate.getDate() === day && tDate.getMonth() + 1 === m){
+      if (tDate.getDate() === day && tDate.getMonth() + 1 === m) {
         term = solarTerms[i];
         isSolarTerm = true;
         break;
@@ -220,6 +252,8 @@ function getYearCalendar(year){
       isSolarFestival: solarF !== "",
       lunarFestival: lunarF,
       isLunarFestival: isLunarFestival,
+      otherFestival: otherF,
+      isOtherFestival: isOtherFestival,
       solarTerm: term,
       isSolarTerm: isSolarTerm
     });
@@ -228,27 +262,13 @@ function getYearCalendar(year){
   return result;
 }
 
-// 获取某一天
+// ---------- 获取某一天 ----------
 function getDayInfo(year, month, day) {
   const calendar = getYearCalendar(year);
-  const dateStr = `${year}-${toFixed(month)}-${toFixed(day)}`;
-  const info = calendar.find(d => d.date === dateStr);
-
-  if (!info) return null;
-
-  // ---------- 自动添加除夕 ----------
-  if (info.lunarMonth === 12) {
-    // 获取腊月天数
-    const lastDay = monthDays(info.lunarYear, 12); // 假设已有 monthDays(year, month) 返回农历月天数
-    if ((info.lunarDay === 29 && lastDay === 29) || (info.lunarDay === 30 && lastDay === 30)) {
-      info.lunarFestival = "除夕";
-    }
-  }
-
-  return info;
+  return calendar.find(d => d.date === `${year}-${toFixed(month)}-${toFixed(day)}`) || null;
 }
 
-// 辅助函数：不足两位补零
+// ---------- 辅助函数：不足两位补零 ----------
 function toFixed(n) {
   return n < 10 ? "0" + n : n;
 }
