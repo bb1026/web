@@ -128,6 +128,11 @@ async function handleRequest(request) {
       // 同源访问，放行
       return fetch(request);
     }
+    
+    // 来源在白名单内则放行
+    if (isAllowedOrigin(request)) {
+      return fetch(request);
+    }
 
     // 2. 检查密钥
     if (hasValidAuthKey(request)) {
