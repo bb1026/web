@@ -179,6 +179,51 @@ const LunarCalendar={
   isLeapYear
 };
 
+/**
+ * 获取某年的节气和节日
+ * @param {number} year 公历年
+ * @returns {Array} 节气和节日数组
+ */
+function getYearFestivalsAndTerms(year) {
+  const allDays = LunarCalendar.getYearCalendar(year);
+  const result = [];
+
+  allDays.forEach(day => {
+    if (day.isSolarTerm) {
+      result.push({
+        type: "节气",
+        name: day.solarTerm,
+        date: day.date,
+        weekday: day.weekday,
+        lunar: `${day.lunarMonthName}月${day.lunarDayName}`
+      });
+    }
+    if (day.isSolarFestival) {
+      result.push({
+        type: "阳历节日",
+        name: day.solarFestival,
+        date: day.date,
+        weekday: day.weekday,
+        lunar: `${day.lunarMonthName}月${day.lunarDayName}`
+      });
+    }
+    if (day.lunarFestival) {
+      result.push({
+        type: "农历节日",
+        name: day.lunarFestival,
+        date: day.date,
+        weekday: day.weekday,
+        lunar: `${day.lunarMonthName}月${day.lunarDayName}`
+      });
+    }
+  });
+
+  return result;
+}
+
+// ✅ 把新方法挂到 LunarCalendar 对象
+LunarCalendar.getYearFestivalsAndTerms = getYearFestivalsAndTerms;
+
 // 示例：获取2026年12月25日信息
 // console.log(LunarCalendar.getDayInfo(2026,12,25));
 
