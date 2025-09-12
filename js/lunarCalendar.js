@@ -51,9 +51,23 @@ const lunarFestivals = {
   "1015": "下元节",
   "1208": "腊八节",
   "1223": "小年",   // 北方：腊月二十三
-  "1224": "小年",   // 南方：腊月二十四
-  "1230": "除夕"    // 有时是腊月二十九，需特殊判断
+  "1224": "小年"    // 南方：腊月二十四
 };
+
+// ---------- 动态添加除夕 ----------
+/**
+ * 获取指定年份的除夕农历日期（1229 或 1230）
+ * @param {number} year 公历年份
+ * @returns {string} 农历日期字符串
+ */
+function getChuxi(year) {
+  const days = monthDays(year, 12); // 腊月天数
+  return days === 29 ? "1229" : "1230";
+}
+
+// 自动加入当年的除夕
+const currentYear = new Date().getFullYear();
+lunarFestivals[getChuxi(currentYear)] = "除夕";
 
 // ---------- 节气 ----------
 const solarTerms=[
