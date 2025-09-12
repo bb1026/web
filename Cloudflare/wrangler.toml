@@ -6,7 +6,7 @@ zone_id = "df09b3a563bde936907cc7c4a710f942"
 compatibility_date = "2025-07-03"
 
 workers_dev = true
-routes = ["*.0515364.xyz/*"]
+routes = ["*.0515364.xyz/*","0515364.xyz/*"]
 
 # wrangler.toml (wrangler v3.88.0^)
 [observability.logs]
