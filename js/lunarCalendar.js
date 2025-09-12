@@ -168,16 +168,24 @@ function getWeekCalendar(startDate){
 }
 
 // ---------- 对外接口 ----------
-const LunarCalendar={
+const LunarCalendar = {
   solarToLunar,
   lunarToSolar,
-  getYearCalendar,
-  getMonthCalendar,
-  getWeekCalendar,
   getDayInfo,
-  getZodiac,
-  isLeapYear
+  getWeekCalendar,
+  getMonthCalendar,
+  getYearCalendar,
+  getYearFestivalsAndTerms
 };
+
+// 通用导出
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = LunarCalendar;   // Node.js
+} else if (typeof window !== "undefined") {
+  window.LunarCalendar = LunarCalendar; // 浏览器
+} else {
+  this.LunarCalendar = LunarCalendar;   // Scriptable (eval)
+}
 
 /**
  * 获取某年的节气和节日
