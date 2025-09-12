@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>农历查询 & ICS生成</title>
 <!-- 引入 Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -426,24 +426,31 @@ function generateICS(events){
   // 获取当前时间作为DTSTAMP
   const now = new Date();
   const dtstamp = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  // 格式化日期：YYYYMMDD
+  function formatDateOnly(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}${m}${d}`;
+  }
   
   let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nCALSCALE:GREGORIAN\nPRODID:-//Festival Calendar Generator//CN\n";
   
   events.forEach(ev => {
     const startDate = new Date(ev.date);
-    const start = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1000); // 结束时间为当天23:59:59
-    const end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1); // 全天事件：结束日期+1
     
     // 生成UID
-    const uid = `${ev.name.toLowerCase().replace(/\s+/g, '')}@0515364.xyz`;
+    const uid = `${ev.name.toLowerCase().replace(/\s+/g, '')}-${formatDateOnly(startDate)}@0515364.xyz`;
     
     ics += "BEGIN:VEVENT\n";
     ics += `UID:${uid}\n`;
     ics += `DTSTAMP:${dtstamp}\n`;
     ics += `SUMMARY:${ev.name}\n`;
-    ics += `DTSTART:${start}\n`;
-    ics += `DTEND:${end}\n`;
+    ics += `DTSTART;VALUE=DATE:${formatDateOnly(startDate)}\n`;
+    ics += `DTEND;VALUE=DATE:${formatDateOnly(endDate)}\n`;
     ics += "END:VEVENT\n";
   });
   
