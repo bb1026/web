@@ -291,7 +291,7 @@ function getWeekCalendar(startDate){
   return week;
 }
 
-// ---------- 获取某年的节气和节日 ----------
+// ---------- 网页端获取某年的节气和节日 ----------
 function getYearFestivalsAndTerms(year) {
   const allDays = getYearCalendar(year);
   const result = [];
@@ -315,10 +315,19 @@ function getYearFestivalsAndTerms(year) {
         lunar: `${day.lunarMonthName}月${day.lunarDayName}`
       });
     }
-    if (day.lunarFestival) {
+    if (day.isLunarFestival) {
       result.push({
         type: "农历节日",
         name: day.lunarFestival,
+        date: day.date,
+        weekday: day.weekday,
+        lunar: `${day.lunarMonthName}月${day.lunarDayName}`
+      });
+    }
+    if (day.isOtherFestival) {
+      result.push({
+        type: "其他节日",
+        name: day.otherFestival,
         date: day.date,
         weekday: day.weekday,
         lunar: `${day.lunarMonthName}月${day.lunarDayName}`
