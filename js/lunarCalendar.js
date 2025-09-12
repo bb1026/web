@@ -167,33 +167,9 @@ function getWeekCalendar(startDate){
   return week;
 }
 
-// ---------- 对外接口 ----------
-const LunarCalendar = {
-  solarToLunar,
-  lunarToSolar,
-  getDayInfo,
-  getWeekCalendar,
-  getMonthCalendar,
-  getYearCalendar,
-  getYearFestivalsAndTerms
-};
-
-// 通用导出
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = LunarCalendar;   // Node.js
-} else if (typeof window !== "undefined") {
-  window.LunarCalendar = LunarCalendar; // 浏览器
-} else {
-  this.LunarCalendar = LunarCalendar;   // Scriptable (eval)
-}
-
-/**
- * 获取某年的节气和节日
- * @param {number} year 公历年
- * @returns {Array} 节气和节日数组
- */
+// ---------- 获取某年的节气和节日 ----------
 function getYearFestivalsAndTerms(year) {
-  const allDays = LunarCalendar.getYearCalendar(year);
+  const allDays = getYearCalendar(year);
   const result = [];
 
   allDays.forEach(day => {
@@ -229,8 +205,25 @@ function getYearFestivalsAndTerms(year) {
   return result;
 }
 
-// ✅ 把新方法挂到 LunarCalendar 对象
-LunarCalendar.getYearFestivalsAndTerms = getYearFestivalsAndTerms;
+// ---------- 对外接口 ----------
+const LunarCalendar = {
+  solarToLunar,
+  lunarToSolar,
+  getDayInfo,
+  getWeekCalendar,
+  getMonthCalendar,
+  getYearCalendar,
+  getYearFestivalsAndTerms
+};
+
+// ---------- 通用挂载 ----------
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = LunarCalendar;   // Node.js
+} else if (typeof window !== "undefined") {
+  window.LunarCalendar = LunarCalendar; // 浏览器
+} else {
+  this.LunarCalendar = LunarCalendar;   // Scriptable eval
+}
 
 // 示例：获取2026年12月25日信息
 // console.log(LunarCalendar.getDayInfo(2026,12,25));
