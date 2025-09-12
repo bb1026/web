@@ -128,57 +128,63 @@ function isLeapYear(year){return (year%4===0 && year%100!==0)||(year%400===0);}
 
 // 获取一年日历
 function getYearCalendar(year){
-  const result=[];
-  const start=new Date(year,0,1);
-  const end=new Date(year+1,0,1);
-  for(let d=start;d<end;d.setDate(d.getDate()+1)){
-    const y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
-    const weekday=getWeekday(d);
-    const lunar=solarToLunar(y,m,day);
+  const result = [];
+  const start = new Date(year, 0, 1);
+  const end = new Date(year + 1, 0, 1);
 
-    const solarF=solarFestivals[toFixed(m)+"-"+toFixed(day)]||"";
-    let lunarF=lunarFestivals[toFixed(lunar.lunarMonth)+toFixed(lunar.lunarDay)]||"";
+  for(let d = start; d < end; d.setDate(d.getDate() + 1)){
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+    const weekday = getWeekday(d);
+    const lunar = solarToLunar(y, m, day);
 
-    let term="";
-    let isSolarTerm=false;
-    for(let i=0;i<24;i++){
-      const tDate=solarTerm(y,i);
-      if(tDate.getDate()==day && tDate.getMonth()+1==m){
-        term=solarTerms[i];
-        isSolarTerm=true;
+    // 阳历节日
+    const solarF = solarFestivals[toFixed(m) + "-" + toFixed(day)] || "";
+
+    // 农历节日（含除夕判断）
+    let lunarF = lunarFestivals[toFixed(lunar.lunarMonth) + toFixed(lunar.lunarDay)] || "";
+    if(lunar.lunarMonth === 12){
+      const lastDay = monthDays(lunar.lunarYear, 12); // 腊月天数
+      if((lunar.lunarDay === 29 && lastDay === 29) || (lunar.lunarDay === 30 && lastDay === 30)){
+        lunarF = "除夕";
+      }
+    }
+    const isLunarFestival = lunarF !== "";
+
+    // 节气
+    let term = "";
+    let isSolarTerm = false;
+    for(let i = 0; i < 24; i++){
+      const tDate = solarTerm(y, i);
+      if(tDate.getDate() === day && tDate.getMonth() + 1 === m){
+        term = solarTerms[i];
+        isSolarTerm = true;
         break;
       }
     }
 
-    const isSolarFestival = solarF !== "";
-
-    // ---------- 自动判断除夕 ----------
-    if (lunar.lunarMonth === 12) {
-      const lastDay = monthDays(lunar.lunarYear, 12);
-      if ((lunar.lunarDay === 29 && lastDay === 29) || (lunar.lunarDay === 30 && lastDay === 30)) {
-        lunarF = "除夕";
-      }
-    }
-
     result.push({
-      date:`${y}-${toFixed(m)}-${toFixed(day)}`,
-      weekday:`星期${weekday}`,
-      lunarYear:lunar.lunarYear,
-      lunarMonth:lunar.lunarMonth,
-      lunarDay:lunar.lunarDay,
-      lunarMonthName:lunar.monthName,
-      lunarDayName:lunar.dayName,
-      isLeapMonth:lunar.isLeapMonth,
-      zodiac:getZodiac(lunar.lunarYear),
-      isLeapYear:isLeapYear(y),
-      leapMonth:leapMonth(y),
-      solarFestival:solarF,
-      isSolarFestival:isSolarFestival,
-      lunarFestival:lunarF,
-      solarTerm:term,
-      isSolarTerm:isSolarTerm
+      date: `${y}-${toFixed(m)}-${toFixed(day)}`,
+      weekday: `星期${weekday}`,
+      lunarYear: lunar.lunarYear,
+      lunarMonth: lunar.lunarMonth,
+      lunarDay: lunar.lunarDay,
+      lunarMonthName: lunar.monthName,
+      lunarDayName: lunar.dayName,
+      isLeapMonth: lunar.isLeapMonth,
+      zodiac: getZodiac(lunar.lunarYear),
+      isLeapYear: isLeapYear(y),
+      leapMonth: leapMonth(y),
+      solarFestival: solarF,
+      isSolarFestival: solarF !== "",
+      lunarFestival: lunarF,
+      isLunarFestival: isLunarFestival,
+      solarTerm: term,
+      isSolarTerm: isSolarTerm
     });
   }
+
   return result;
 }
 
