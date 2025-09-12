@@ -54,21 +54,6 @@ const lunarFestivals = {
   "1224": "小年"    // 南方：腊月二十四
 };
 
-// ---------- 动态添加除夕 ----------
-/**
- * 获取指定年份的除夕农历日期（1229 或 1230）
- * @param {number} year 公历年份
- * @returns {string} 农历日期字符串
- */
-function getChuxi(year) {
-  const days = monthDays(year, 12); // 腊月天数
-  return days === 29 ? "1229" : "1230";
-}
-
-// 自动加入当年的除夕
-const currentYear = new Date().getFullYear();
-lunarFestivals[getChuxi(currentYear)] = "除夕";
-
 // ---------- 节气 ----------
 const solarTerms=[
 "小寒","大寒","立春","雨水","惊蛰","春分","清明","谷雨",
@@ -152,7 +137,7 @@ function getYearCalendar(year){
     const lunar=solarToLunar(y,m,day);
 
     const solarF=solarFestivals[toFixed(m)+"-"+toFixed(day)]||"";
-    const lunarF=lunarFestivals[toFixed(lunar.lunarMonth)+toFixed(lunar.lunarDay)]||"";
+    let lunarF=lunarFestivals[toFixed(lunar.lunarMonth)+toFixed(lunar.lunarDay)]||"";
 
     let term="";
     let isSolarTerm=false;
@@ -166,6 +151,14 @@ function getYearCalendar(year){
     }
 
     const isSolarFestival = solarF !== "";
+
+    // ---------- 自动判断除夕 ----------
+    if (lunar.lunarMonth === 12) {
+      const lastDay = monthDays(lunar.lunarYear, 12);
+      if ((lunar.lunarDay === 29 && lastDay === 29) || (lunar.lunarDay === 30 && lastDay === 30)) {
+        lunarF = "除夕";
+      }
+    }
 
     result.push({
       date:`${y}-${toFixed(m)}-${toFixed(day)}`,
@@ -190,9 +183,28 @@ function getYearCalendar(year){
 }
 
 // 获取某一天
-function getDayInfo(year,month,day){
-  const calendar=getYearCalendar(year);
-  return calendar.find(d=>d.date===`${year}-${toFixed(month)}-${toFixed(day)}`);
+function getDayInfo(year, month, day) {
+  const calendar = getYearCalendar(year);
+  const dateStr = `${year}-${toFixed(month)}-${toFixed(day)}`;
+  const info = calendar.find(d => d.date === dateStr);
+
+  if (!info) return null;
+
+  // ---------- 自动添加除夕 ----------
+  if (info.lunarMonth === 12) {
+    // 获取腊月天数
+    const lastDay = monthDays(info.lunarYear, 12); // 假设已有 monthDays(year, month) 返回农历月天数
+    if ((info.lunarDay === 29 && lastDay === 29) || (info.lunarDay === 30 && lastDay === 30)) {
+      info.lunarFestival = "除夕";
+    }
+  }
+
+  return info;
+}
+
+// 辅助函数：不足两位补零
+function toFixed(n) {
+  return n < 10 ? "0" + n : n;
 }
 
 // 获取某一月
