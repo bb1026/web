@@ -119,9 +119,9 @@ async function handleRequest(request) {
   const timestamp = Date.now();
 
   // 1. 非主域子域名直接放行
-  //if (!isSubdomainOfMain(request)) {
-    //return fetch(request);
-  //}
+  if (!isSubdomainOfMain(request)) {
+    return fetch(request);
+  }
 
   // 2. 来源在白名单内则放行
   if (isAllowedOrigin(request)) {
