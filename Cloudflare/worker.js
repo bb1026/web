@@ -8,7 +8,7 @@ const config = {
   ],
   get ALLOWED_ORIGINS() {
     return [
-      'http://localhost',
+      'http://localhost:9898',
       'http://127.0.0.1',
       'http://0.0.0.0',
       `https://${this.mainDomain}`,
