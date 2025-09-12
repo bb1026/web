@@ -118,65 +118,29 @@ async function handleRequest(request) {
   const url = new URL(request.url);
   const timestamp = Date.now();
 
-  // 1. 非主域子域名直接放行
-  if (!isSubdomainOfMain(request)) {
-    return fetch(request);
-  }
-
-  // 2. 来源在白名单内则放行
-  if (isAllowedOrigin(request)) {
-    return fetch(request);
-  }
-
-  // 3. 判断是否是受限资源
   if (isRestrictedFile(url)) {
-    // 3.1 浏览器直接访问禁止
-    if (isBrowserDirectAccess(request)) {
-      return createErrorResponse(
-        '禁止访问的文件，请通过合法程序并通过认证访问',
-        timestamp
-      );
-    }
+    // 1. 检查同源访问
+    const referer = request.headers.get('Referer');
+    const requestOrigin = new URL(request.url).origin;
+    const refererOrigin = referer ? new URL(referer).origin : null;
 
-    // 3.2 同源请求允许
-    if (isSameOrigin(request)) {
+    if (refererOrigin === requestOrigin) {
+      // 同源访问，放行
       return fetch(request);
     }
 
-    // 3.3 无效密钥拒绝
-    if (!hasValidAuthKey(request)) {
-      return createErrorResponse('密钥认证失败', timestamp);
+    // 2. 检查密钥
+    if (hasValidAuthKey(request)) {
+      return fetch(request);
     }
 
-    // 3.4 密钥访问成功，处理文件获取
-    try {
-      const response = await fetch(request);
-
-      if (response.status === 404) {
-        const fallbackScript = `
-Safari.open('https://www.0515364.xyz');
-// 创建 Scriptable 失败，请访问主页
-        `.trim();
-
-        return new Response(fallbackScript, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'X-Fallback': 'true'
-          }
-        });
-      }
-
-      return new Response(await response.body, {
-        status: response.status,
-        headers: response.headers
-      });
-
-    } catch (error) {
-      return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
-    }
+    // 3. 其他情况一律禁止
+    return createErrorResponse(
+      '禁止直接访问的文件，请通过本站或合法程序访问',
+      timestamp
+    );
   }
 
-  // 4. 非受限文件类型直接放行
+  // 非受限文件直接放行
   return fetch(request);
 }
