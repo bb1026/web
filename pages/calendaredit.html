@@ -832,10 +832,8 @@
              // 填充示例数据
              div.querySelector('.fillSample').onclick=()=>{
                  summaryInput.value='元旦';
-                 div.querySelector('.description').value = `元旦：新年第一天，新年快乐！🎉
-         中国的元旦，据传说起于三皇五帝之一的颛顼，距今已有3000多年的历史。
-         “元旦”一词最早出现于《晋书》：“颛帝以孟夏正月为元，其实正朔元旦之春”的诗中。
-         南北朝时，南朝萧子云的《介雅》诗中也有“四季新元旦，万寿初春朝”的记载。`;
+                 div.querySelector('.description').value = `元旦：新年第一天，新年快乐！🎉\n中国的元旦，据传说起于三皇五帝之一的颛顼，距今已有3000多年的历史。
+“元旦”一词最早出现于《晋书》：“颛帝以孟夏正月为元，其实正朔元旦之春”的诗中。南北朝时，南朝萧子云的《介雅》诗中也有“四季新元旦，万寿初春朝”的记载。`;
                  const thisYear = new Date().getFullYear();
                  dtstartInput.value=`${thisYear}-01-01`;
                  dtendInput.value=`${thisYear}-01-01`;
@@ -1012,8 +1010,8 @@
                      eventData.push({
                          uid,
                          name:festName,
-                         start:`${y}${m}${da}T000000`,
-                         end:`${y}${m}${da}T235900`,
+                         start:`${y}${m}${da}`,
+                         end:`${y}${m}${da}`,
                          dtstamp
                      });
                  }
@@ -1031,23 +1029,23 @@
                  return;
              }
              const events=eventData.map(e=>`
-         BEGIN:VEVENT
-         UID:${e.uid}
-         DTSTAMP:${e.dtstamp}
-         SUMMARY:${e.name}
-         DTSTART:${e.start}
-         DTEND:${e.end}
-         DESCRIPTION:${e.name}
-         END:VEVENT`).join("\n");
+BEGIN:VEVENT
+UID:${e.uid}
+DTSTAMP:${e.dtstamp}
+SUMMARY:${e.name}
+DTSTART:${e.start}
+DTEND:${e.end}
+DESCRIPTION:${e.name}
+END:VEVENT`).join("\n");
              const ics=`BEGIN:VCALENDAR
-         PRODID:-//0515364.xyz//My Calendar//CN
-         VERSION:2.0
-         CALSCALE:GREGORIAN
-         METHOD:PUBLISH
-         X-WR-CALNAME:${calName}
-         X-WR-TIMEZONE:${currentTimeZone}
-         ${events}
-         END:VCALENDAR`;
+PRODID:-//0515364.xyz//My Calendar//CN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:${calName}
+X-WR-TIMEZONE:${currentTimeZone}
+${events}\n
+END:VCALENDAR`;
              document.getElementById("output").value=ics;
              document.getElementById("count").textContent=`✅ 当前共有 ${eventData.length} 个事件`;
              renderEventList2();
@@ -1141,8 +1139,8 @@
              eventData.push({
                  uid,
                  name:festName,
-                 start:`${dateStr}T000000`,
-                 end:`${dateStr}T235900`,
+                 start:`${dateStr}`,
+                 end:`${dateStr}`,
                  dtstamp
              });
          document.getElementById("output").value = "";
