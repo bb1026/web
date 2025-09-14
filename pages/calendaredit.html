@@ -526,7 +526,7 @@
                  document.getElementById(tabId).classList.add('active');
              });
          });
-         // ---------------------- 原 calendaredit.html 脚本 ----------------------
+         // ---------------------- 选项一 ----------------------
          function showNotificationTab1(type, title, message, duration = 3000) {
              const notification = document.createElement('div');
              notification.className = `notification ${type}`;
@@ -979,7 +979,7 @@
          };
          // 初始化选项一事件
          createEventCard();
-         // ---------------------- 原 测试2.html 脚本 ----------------------
+         // ---------------------- 选项二 ----------------------
          function pad(n){ return n<10 ? "0"+n : n; }
          let eventData=[];
          let lastDayInfo=null;
@@ -1187,13 +1187,11 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          showNotificationTab1('success', '操作成功', "所有事件已清空");
          }
          });
-         
-         
          document.addEventListener('DOMContentLoaded', function() {
          const yearInput = document.getElementById('year');
          const calendarNameInput = document.getElementById('calendarName');
          
-         // 1. 获取当前系统年份（如2024），作为年份初始值
+         // 1. 获取当前系统年份
          const currentYear = new Date().getFullYear().toString();
          yearInput.value = currentYear;
          
@@ -1202,7 +1200,6 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          
          // 3. 监听年份变化，实时更新名称（非固定，随改随更）
          yearInput.addEventListener('input', function() {
-         // 若年份为空，默认显示当前年名称；否则显示输入年份名称
          const inputYear = yearInput.value.trim() || currentYear;
          calendarNameInput.value = `${inputYear}订阅日历`;
          });
