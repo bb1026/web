@@ -920,6 +920,7 @@
                  'CALSCALE:GREGORIAN',
                  'METHOD:PUBLISH',
                  `X-WR-CALNAME:${escapeText(calName)}`,
+                 'X-APPLE-CALENDAR-COLOR:#FF9500',
                  `X-WR-TIMEZONE:${tz}`
              ];
              const eventCards=Array.from(document.querySelectorAll('#events .card'));
@@ -1043,6 +1044,7 @@ VERSION:2.0
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:${calName}
+X-APPLE-CALENDAR-COLOR:#FF9500
 X-WR-TIMEZONE:${currentTimeZone}
 ${events}\n
 END:VCALENDAR`;
