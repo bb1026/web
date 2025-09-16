@@ -1214,37 +1214,44 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          document.getElementById("queryDate").addEventListener("change", e=>{
              querySingleDay(e.target.value);
          });
-            document.addEventListener("DOMContentLoaded", () => {
-        function showTabFromHash() {
-          const hash = window.location.hash || "#tab1"; 
-          const targetId = hash.substring(1);
+                  document.addEventListener("DOMContentLoaded", () => {
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const tabContents = document.querySelectorAll(".tab-content");
       
-          // 显示对应 tab
-          document.querySelectorAll(".tab-content").forEach(tab => {
-            tab.style.display = (tab.id === targetId) ? "block" : "none";
+        function activateTab(tabId) {
+          // 显示内容
+          tabContents.forEach(tab => {
+            tab.style.display = (tab.id === tabId) ? "block" : "none";
           });
       
           // 激活按钮
-          document.querySelectorAll(".tab-btn").forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.tab === targetId);
+          tabButtons.forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.tab === tabId);
           });
       
-          // 统一回到顶部
+          // 回到顶部
           setTimeout(() => {
             window.scrollTo(0, 0);
           }, 50);
         }
       
-        // 初始化
+        function showTabFromHash() {
+          const hash = window.location.hash || "#tab1";
+          const targetId = hash.substring(1);
+          activateTab(targetId);
+        }
+      
+        // 页面加载时根据 hash 激活 tab
         showTabFromHash();
       
-        // 监听 hash 改变
+        // hash 变化时切换 tab（例如从其他页面跳过来）
         window.addEventListener("hashchange", showTabFromHash);
       
-        // 给按钮绑定点击事件，点击时更新 hash
-        document.querySelectorAll(".tab-btn").forEach(btn => {
+        // 手动点击按钮切换 tab，不改变 URL
+        tabButtons.forEach(btn => {
           btn.addEventListener("click", () => {
-            location.hash = btn.dataset.tab; // 会自动触发 hashchange → showTabFromHash()
+            const tabId = btn.dataset.tab;
+            activateTab(tabId);
           });
         });
       });
