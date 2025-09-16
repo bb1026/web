@@ -1214,29 +1214,24 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          document.getElementById("queryDate").addEventListener("change", e=>{
              querySingleDay(e.target.value);
          });
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  function showTabFromHash() {
-    const hash = window.location.hash || "#tab1"; // 默认是 tab1
-    const targetId = hash.substring(1);
-
-    // 显示对应内容
-    document.querySelectorAll(".tab-content").forEach(tab => {
-      tab.style.display = (tab.id === targetId) ? "block" : "none";
-    });
-
-    // 让对应的 tab 按钮“选中”
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.tab === targetId);
-    });
-  }
-
-  showTabFromHash(); // 页面第一次加载时
-  window.addEventListener("hashchange", showTabFromHash); // URL hash 改变时
-});
-
+      document.addEventListener("DOMContentLoaded", () => {
+        function showTabFromHash() {
+          const hash = window.location.hash || "#tab1"; // 默认是 tab1
+          const targetId = hash.substring(1);
+          // 显示对应内容
+          document.querySelectorAll(".tab-content").forEach(tab => {
+            tab.style.display = (tab.id === targetId) ? "block" : "none";
+          });
+          // 让对应的 tab 按钮“选中”
+          document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.classList.toggle("active", btn.dataset.tab === targetId);
+          });
+         // 🔥 阻止默认锚点跳转带来的滚动
+         window.scrollTo(0, 0);
+        }
+        showTabFromHash(); // 页面第一次加载时
+        window.addEventListener("hashchange", showTabFromHash); // URL hash 改变时
+      });
 </script>
    </body>
 </html>
