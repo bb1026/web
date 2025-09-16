@@ -1217,10 +1217,20 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          document.addEventListener("DOMContentLoaded", () => {
         function showTabFromHash() {
           const hash = window.location.hash || "#tab1"; // 默认显示 tab1
+         
+          // 去掉#
+          const targetId = hash.substring(1);
+         
+         // 切换内容
           document.querySelectorAll(".tab-content").forEach(tab => {
             tab.classList.toggle("active", "#" + tab.id === hash);
           });
-        }
+         
+         // 切换按钮
+          document.querySelectorAll(".tab-link").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.tab === targetId);
+         })
+      }
       
         showTabFromHash(); // 页面加载时切换
         window.addEventListener("hashchange", showTabFromHash); // hash 改变时切换
