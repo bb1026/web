@@ -1219,23 +1219,22 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   function showTabFromHash() {
-    const hash = window.location.hash || "#tab1";
+    const hash = window.location.hash || "#tab1"; // 默认是 tab1
     const targetId = hash.substring(1);
 
-    // 切换内容
+    // 显示对应内容
     document.querySelectorAll(".tab-content").forEach(tab => {
       tab.style.display = (tab.id === targetId) ? "block" : "none";
     });
 
-    // 按钮不需要样式，只做逻辑对应即可
-    // 如果需要，你可以在这里设置一个属性表示“选中”
-    document.querySelectorAll(".tab-link").forEach(btn => {
-      btn.dataset.selected = (btn.dataset.tab === targetId) ? "true" : "false";
+    // 让对应的 tab 按钮“选中”
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.tab === targetId);
     });
   }
 
-  showTabFromHash();
-  window.addEventListener("hashchange", showTabFromHash);
+  showTabFromHash(); // 页面第一次加载时
+  window.addEventListener("hashchange", showTabFromHash); // URL hash 改变时
 });
 
 </script>
