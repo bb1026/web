@@ -1214,26 +1214,40 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          document.getElementById("queryDate").addEventListener("change", e=>{
              querySingleDay(e.target.value);
          });
-      document.addEventListener("DOMContentLoaded", () => {
+            document.addEventListener("DOMContentLoaded", () => {
         function showTabFromHash() {
-          const hash = window.location.hash || "#tab1"; // 默认是 tab1
+          const hash = window.location.hash || "#tab1"; 
           const targetId = hash.substring(1);
-          // 显示对应内容
+      
+          // 显示对应 tab
           document.querySelectorAll(".tab-content").forEach(tab => {
             tab.style.display = (tab.id === targetId) ? "block" : "none";
           });
-          // 让对应的 tab 按钮“选中”
+      
+          // 激活按钮
           document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.classList.toggle("active", btn.dataset.tab === targetId);
           });
-         // 🔥 无论电脑还是手机，强制回到页面顶部
-         setTimeout(() => {
+      
+          // 统一回到顶部
+          setTimeout(() => {
             window.scrollTo(0, 0);
           }, 50);
         }
-        showTabFromHash(); // 页面第一次加载时
-        window.addEventListener("hashchange", showTabFromHash); // URL hash 改变时
+      
+        // 初始化
+        showTabFromHash();
+      
+        // 监听 hash 改变
+        window.addEventListener("hashchange", showTabFromHash);
+      
+        // 给按钮绑定点击事件，点击时更新 hash
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            location.hash = btn.dataset.tab; // 会自动触发 hashchange → showTabFromHash()
+          });
+        });
       });
-</script>
+      </script>
    </body>
 </html>
