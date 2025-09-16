@@ -438,7 +438,7 @@
          <!-- 选项二内容（优化手机端布局） -->
          <div class="tab-content" id="tab2">
             <h2><i class="fa-solid fa-calendar-days"></i> 整年 ICS 生成器
-               <a href="calendar.html" style="margin-left: auto; font-size: 0.85rem; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 4px;">
+               <a href="calendar/" style="margin-left: auto; font-size: 0.85rem; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 4px;">
                <i class="fa-solid fa-calendar-days"></i> 订阅日历
                </a>
             </h2>
@@ -1223,7 +1223,7 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          
          // 切换内容
           document.querySelectorAll(".tab-content").forEach(tab => {
-            tab.classList.toggle("active", "#" + tab.id === hash);
+            tab.classList.toggle("active", tab.id === targetId);
           });
          
          // 切换按钮
