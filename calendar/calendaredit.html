@@ -1214,6 +1214,17 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          document.getElementById("queryDate").addEventListener("change", e=>{
              querySingleDay(e.target.value);
          });
+         document.addEventListener("DOMContentLoaded", () => {
+        function showTabFromHash() {
+          const hash = window.location.hash || "#tab1"; // 默认显示 tab1
+          document.querySelectorAll(".tab-content").forEach(tab => {
+            tab.classList.toggle("active", "#" + tab.id === hash);
+          });
+        }
+      
+        showTabFromHash(); // 页面加载时切换
+        window.addEventListener("hashchange", showTabFromHash); // hash 改变时切换
+      });
       </script>
    </body>
 </html>
