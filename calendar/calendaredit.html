@@ -1226,8 +1226,10 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
           document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.classList.toggle("active", btn.dataset.tab === targetId);
           });
-         // 🔥 阻止默认锚点跳转带来的滚动
-         window.scrollTo(0, 0);
+         // 🔥 无论电脑还是手机，强制回到页面顶部
+         setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 50);
         }
         showTabFromHash(); // 页面第一次加载时
         window.addEventListener("hashchange", showTabFromHash); // URL hash 改变时
