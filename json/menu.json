@@ -7,8 +7,8 @@
     ["单位换算", "/pages/unit-conversion.html"],
     ["色彩查询", "/pages/color.html"],
     ["个人网盘", "/pan/"],
-    ["日历订阅", "/pages/calendar.html"],
-    ["自制日历", "/pages/calendaredit.html"]
+    ["日历订阅", "/calendar/"],
+    ["自制日历", "/calendar/calendaredit.html"]
   ],
   "代码工具": [
     ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
