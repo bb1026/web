@@ -362,7 +362,7 @@ if (typeof module !== "undefined" && module.exports) {
 // console.log(LunarCalendar.getDayInfo(2026,12,25));
 
 // 如果在网页端或 Scriptable 中使用
-// <script src="https://raw.githack.com/bb1026/web/main/js/lunarCalendar.js"></script>
+// <script src="https://raw.githack.com/bb1026/web/main/calendar/js/lunarCalendar.js"></script>
 // module.exports = LunarCalendar; 
 // Node.js 可用
 // export default LunarCalendar;     
