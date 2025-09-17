@@ -191,7 +191,7 @@ function getFloatingFestival(year, month, day) {
       }
     }
   }
-  return null;
+  return "";
 }
 
 // ---------- 获取一年日历 ----------
