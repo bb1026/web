@@ -889,8 +889,8 @@
                  lines.push(`DTSTART;VALUE=DATE:${ev.dtstart}`);
                  lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
              }else{
-                 lines.push(`DTSTART:${ev.dtstart}`);
-                 lines.push(`DTEND:${ev.dtend}`);
+                 lines.push(`DTSTART;VALUE=DATE:${ev.dtstart}`);
+                 lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
              }
              if(ev.description)lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
              lines.push('END:VEVENT');
@@ -1028,8 +1028,8 @@ BEGIN:VEVENT
 UID:${e.uid}
 DTSTAMP:${e.dtstamp}
 SUMMARY:${e.name}
-DTSTART:${e.start}
-DTEND:${e.end}
+DTSTART;VALUE=DATE:${e.start}
+DTEND;VALUE=DATE:${e.end}
 DESCRIPTION:${e.name}
 END:VEVENT`).join("\n");
              const ics=`BEGIN:VCALENDAR
