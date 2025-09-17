@@ -18,3 +18,24 @@
   const lunar = LunarCalendar.solarToLunar(date);
   console.log(lunar); 
 </script>
+{
+  "date": "2025-09-17",
+  "weekday": "星期三",
+  "lunarYear": 2025,
+  "lunarMonth": 7,
+  "lunarDay": 25,
+  "lunarMonthName": "七",
+  "lunarDayName": "廿五",
+  "isLeapMonth": false,
+  "zodiac": "蛇",
+  "isLeapYear": false,
+  "leapMonth": 6,
+  "solarFestival": "",
+  "isSolarFestival": false,
+  "lunarFestival": "",
+  "isLunarFestival": false,
+  "otherFestival": null,
+  "isOtherFestival": true,
+  "solarTerm": "",
+  "isSolarTerm": false
+}
