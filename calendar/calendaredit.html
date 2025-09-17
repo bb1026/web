@@ -506,7 +506,7 @@
             <label style="margin-top: 8px;"><i class="fa-solid fa-code"></i> ICS 内容</label>
             <!-- 默认提示文本，与选项一预览区域风格统一 -->
             <textarea id="output" style="background: #0b1220; color: #e6eef8; border: none; font-family: monospace;">// 点击"生成整年事件"或"添加"按钮生成ICS内容
-// 生成后可复制或下载ICS文件</textarea>
+// 生成后可复制、编辑或下载ICS文件</textarea>
             <!-- 通知容器 -->
             <div id="notify" class="notification"></div>
             <!-- 事件预览区域：删除按钮紧凑 -->
@@ -514,7 +514,7 @@
             <div id="eventList" style="background: var(--white); padding: 10px; border-radius: 6px; border: 1px solid #ddd; margin-top: 6px;"></div>
          </div>
       </div>
-      <script src="js/lunarCalendar.js"></script>
+      <script src="http://www.0515364.xyz/calendar/js/lunarCalendar.js"></script>
       <script>
          // 选项卡切换逻辑
          document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -576,24 +576,11 @@
              const host=(base && base.includes('@')) ? base.split('@').pop() : '0515364.xyz';
              return `${now}-${rand}@${host}`;
          }
+			//拼音库
          function convertToPinyin(text) {
              if (!text) return '';
              const pinyinMap = {
-                 '教': 'jiao', '师': 'shi', '节': 'jie', '元': 'yuan', 
-                 '旦': 'dan', '春': 'chun', '清': 'qing', '明': 'ming', 
-                 '劳': 'lao', '动': 'dong', '端': 'duan', '午': 'wu', 
-                 '中': 'zhong', '秋': 'qiu', '国': 'guo', '庆': 'qing', 
-                 '耶': 'ye', '稣': 'su', '受': 'shou', '难': 'nan', 
-                 '日': 'ri', '卫': 'wei', '塞': 'sai', '屠': 'tu', 
-                 '妖': 'yao', '圣': 'sheng', '诞': 'dan', '开': 'kai', 
-                 '斋': 'zhai', '哈': 'ha', '芝': 'zhi', '新': 'xin', '农': 'nong', '历': 'li', 
-                 '年': 'nian', '际': 'ji', '人': 'ren', '民': 'min', 
-                 '共': 'gong', '和': 'he' , '植': 'zhi', '树': 'shu' ,'儿': 'er' ,'童': 'tong', 
-                 '建': 'jian', '党': 'dang', '军': 'jun', '青': 'qing', '护': 'hu', '士': 'shi', 
-                 '光': 'guang', '棍': 'gun', '夕': 'xi', '重': 'chong', '阳': 'yang', '腊': 'la', 
-                 '一': 'yi', '二': 'er', '三': 'san', '四': 'si', '五': 'wu', '六': 'liu', 
-                 '七': 'qi', '八': 'ba', '九': 'jiu', '十': 'shi', '零': 'ling'
-             };
+  '教':'jiao','师':'shi','节':'jie','元':'yuan','旦':'dan','春':'chun','清':'qing','明':'ming','劳':'lao','动':'dong','端':'duan','午':'wu','中':'zhong','秋':'qiu','国':'guo','庆':'qing', '耶':'ye','稣':'su','受':'shou','难':'nan','日':'ri','卫':'wei','塞':'sai','屠':'tu','妖':'yao','圣':'sheng','诞':'dan','开':'kai', '大':'da','斋':'zhai','哈':'ha','芝':'zhi','新':'xin','农':'nong','历':'li','年':'nian','际':'ji','人':'ren','民':'min','共':'gong','和':'he','植':'zhi','树':'shu','儿':'er','童':'tong','建':'jian','党':'dang','军':'jun','青':'qing','护':'hu','士':'shi','光':'guang','棍':'gun','夕':'xi','重':'chong','阳':'yang','腊':'la','一':'yi','二':'er','三':'san','四':'si','五':'wu','六':'liu','七':'qi','八':'ba','九':'jiu','十':'shi','零':'ling', '龙':'long','抬':'tai','头':'tou','上':'shang','巳':'si','下':'xia','北':'bei','方':'fang','小':'xiao','南':'nan','寒':'han','衣':'yi','宵':'xiao','中':'zhong','重':'chong','光':'guang','跨':'kua','平':'ping','安':'an','世':'shi','界':'jie','防':'fang','治':'zhi','麻':'ma','风':'feng','湿':'shi','抗':'kang','癌':'ai','情':'qing','海':'hai','豹':'bao','爱':'ai','耳':'er','学':'xue','雷':'lei','锋':'feng','妇':'fu','女':'nv','白':'bai','幸':'xing','福':'fu','睡':'shui','眠':'mian','水':'shui','气':'qi','象':'xiang','愚':'yu','生':'sheng','球':'qiu','无':'wu','烟':'yan','环':'huan','境':'jing','献':'xian','血':'xue','者':'zhe','瑜':'yu','伽':'jia','变':'bian','粮':'liang','联':'lian','合':'he','艾':'ai','滋':'zi','志':'zhi','愿':'yuan','权':'quan','跨':'kua','夜':'ye','夏':'xia','满':'man','芒':'mang','种':'zhong','至':'zhi','暑':'shu','露':'lu','霜':'shuang','冬':'dong','雪':'xue','全':'quan','除':'chu','色':'se','地':'di','家':'jia','庭':'ting','纪':'ji','念':'nian','母':'mu','亲':'qin','洋':'yang','立':'li','雨':'yu','惊':'jing','蛰':'zhe','分':'fen','谷':'gu','处':'chu','降':'jiang','事':'shi','父':'fu','博':'bo','物':'wu','馆':'guan','口':'kou','土':'tu','著':'zhu','本':'ben','投':'tou','战':'zhan','争':'zheng','胜':'sheng','利':'li','臭':'chou','氧':'yang','层':'ceng','保':'bao','旅':'lv','游':'you','辛':'xin','亥':'hai','革':'ge','命':'ming','食':'shi','病':'bing','员':'yuan','扫':'sao','盲':'mang'};
              let result = '';
              for (let i = 0; i < text.length; i++) {
                  const char = text[i];
@@ -602,6 +589,7 @@
              }
              return result;
          }
+
          function escapeText(s){
              return (s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
          }
@@ -1013,7 +1001,7 @@
                      const y=d.getFullYear();
                      const m=pad(d.getMonth()+1);
                      const da=pad(d.getDate());
-                     const uid=festName.replace(/\s+/g,"").toLowerCase()+"@0515364.xyz";
+                     const uid=convertToPinyin(festName)+"@0515364.xyz";
                      eventData.push({
                          uid,
                          name:festName,
@@ -1094,14 +1082,25 @@ END:VCALENDAR`;
              });
          }
          function deleteEvent(uid){
-             eventData=eventData.filter(e=>e.uid!==uid);
-             if(!eventData.length){
-                 document.getElementById("output").value="";
-                 document.getElementById("count").textContent="";
-             }
-             updateICS2();
-                 showNotificationTab1('success', '操作成功', "事件已删除");
-         }
+
+	 const eventToDelete = eventData.find(e => e.uid === uid);
+    const festName = eventToDelete ? eventToDelete.name : "未知事件";
+
+    eventData = eventData.filter(e => e.uid !== uid);
+
+    if (!eventData.length) {
+        document.getElementById("output").value =
+            '// 点击"生成整年事件"或"添加"按钮生成ICS内容\n' +
+            '// 生成后可复制、编辑或下载ICS文件';
+        document.getElementById("count").textContent = "";
+    } else {
+        updateICS2(); // 仅当还有事件时才更新
+    }
+
+    showNotificationTab1('success', '操作成功', `事件「${festName}」已删除`);
+    renderEventList2(); 
+// 保持和 updateICS2 一致，刷新列表
+}
          function querySingleDay(dateStr){
              const d=new Date(dateStr);
              const year=d.getFullYear();
@@ -1143,7 +1142,7 @@ END:VCALENDAR`;
          }
              const now=new Date();
              const dtstamp=now.toISOString().replace(/[-:]/g,"").split(".")[0];
-             const uid=festName.replace(/\s+/g,"").toLowerCase()+"-"+dateStr+"@0515364.xyz";
+             const uid=convertToPinyin(festName)+"@0515364.xyz";
              eventData.push({
                  uid,
                  name:festName,
@@ -1191,7 +1190,7 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
          if(confirm('确定清空所有事件吗？')){
          eventData = [];
          updateICS2();
-         document.getElementById("output").value = "// 点击\"生成整年事件\"或\"添加\"按钮生成ICS内容\n// 生成后可复制或下载ICS文件";
+         document.getElementById("output").value = "// 点击\"生成整年事件\"或\"添加\"按钮生成ICS内容\n// 生成后可复制、编辑或下载ICS文件";
          showNotificationTab1('success', '操作成功', "所有事件已清空");
          }
          });
