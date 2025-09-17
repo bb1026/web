@@ -985,6 +985,7 @@
          let eventData=[];
          let lastDayInfo=null;
          let currentTimeZone=Intl.DateTimeFormat().resolvedOptions().timeZone;
+         // 生成整年事件
          function generateICS2(){
              const year=parseInt(document.getElementById("year").value,10);
              if(isNaN(year)){ showNotificationTab1('error', '操作失败', "请输入有效年份！"); return; }
@@ -992,6 +993,11 @@
              const incLunar=document.getElementById("chkLunar").checked;
              const incOther=document.getElementById("chkOther").checked;
              const incTerm=document.getElementById("chkTerm").checked;
+            // ✅ 校验至少勾选一个
+             if (!incSolar && !incLunar && !incOther && !incTerm) {
+        showNotificationTab1('error', '操作失败', "请至少勾选一个事件类型！");
+        return;
+      }
              const data=LunarCalendar.getYearCalendar(year);
              const now=new Date();
              const dtstamp=now.toISOString().replace(/[-:]/g,"").split(".")[0];
