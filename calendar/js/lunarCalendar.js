@@ -96,7 +96,6 @@ const otherFestivals = {
   "12-24": "平安夜",
   "12-25": "圣诞节",
   "12-31": "跨年夜",
-  // 浮动节日（母亲节、父亲节）
   "母亲节": { month: 5, weekday: 0, weekIndex: 2 }, // 5月第二个星期日
   "父亲节": { month: 6, weekday: 0, weekIndex: 3 }  // 6月第三个星期日
 };
