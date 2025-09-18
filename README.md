@@ -35,8 +35,8 @@
   "isSolarFestival": true,
   "lunarFestival": "",
   "isLunarFestival": false,
-  "otherFestival": null,
-  "isOtherFestival": true,
+  "otherFestival": "",
+  "isOtherFestival": false,
   "solarTerm": "",
   "isSolarTerm": false
 }
