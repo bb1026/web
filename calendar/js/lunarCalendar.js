@@ -191,7 +191,7 @@ function getFloatingFestival(year, month, day) {
       }
     }
   }
-  return null;
+  return "";
 }
 
 // ---------- 获取一年日历 ----------
@@ -381,7 +381,7 @@ if (typeof module !== "undefined" && module.exports) {
 // console.log(JSON.stringify(weekInfo, null, 2));
 // 
 // 获取一天
-// const dayInfo = LunarCalendar.getDayInfo(2026, 12, 25);
+// const dayInfo = LunarCalendar.getDayInfo(2025, 09, 19);
 // console.log(JSON.stringify(dayInfo, null, 2));
 // 
 // 阳历 -> 农历
