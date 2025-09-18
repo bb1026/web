@@ -94,7 +94,7 @@ const icsEvents = [
  * @returns {string} description - 对应的描述，如果找不到返回输入
  */
 function getDescriptionBySummary(input, monthDay) {
-    if (!input || input.length < 2) return input;
+    if (!input || input.trim().length < 2) return input; // 最少2个字符
 
     // 完全匹配
     let event = icsEvents.find(ev => ev.summary === input && (!ev.monthDay || ev.monthDay === monthDay));
@@ -113,7 +113,6 @@ function getDescriptionBySummary(input, monthDay) {
             if (!event) event = candidates[0]; // 仍然取第一个
         }
     }
-
     return event ? event.description : input;
 }
 
