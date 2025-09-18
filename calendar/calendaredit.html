@@ -295,6 +295,30 @@
         .uid-status.manual {
             color: #f59e0b;
         }
+
+.desc-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: -4px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+}
+.desc-status.auto {
+    color: var(--success);
+}
+.desc-status.manual {
+    color: #f59e0b;
+}
+.rruleCustom {
+    width: 100% !important; 
+    height: 38px; 
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow-x: auto;
+    font-family: system-ui, -apple-system, sans-serif;
+    margin-bottom: 8px;
+}
         /* 农历JSON容器 */
         #dayJsonContainer {
             background: var(--white);
@@ -504,8 +528,8 @@
 		</div>
 	</div>
 </div>
-<script src="js/lunarCalendar.js"></script>
-<script src="js/icsDescription.js"></script>
+<script src="https://www.0515364.xyz/calendar/js/lunarCalendar.js"></script>
+<script src="https://www.0515364.xyz/calendar/js/icsDescription.js"></script>
 <script>
         // 选项卡切换逻辑
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -575,7 +599,32 @@
         '重要': 'zhongyao',
         '日本投降': 'ribentouxiang'
     };
-    const pinyinMap = {'教': 'jiao','师': 'shi','节': 'jie','元': 'yuan','旦': 'dan','春': 'chun','清': 'qing','明': 'ming','劳': 'lao','动': 'dong','端': 'duan','午': 'wu','中': 'zhong','秋': 'qiu','国': 'guo','庆': 'qing','耶': 'ye','稣': 'su','受': 'shou','难': 'nan','日': 'ri','卫': 'wei','塞': 'sai','屠': 'tu','妖': 'yao','圣': 'sheng','诞': 'dan','开': 'kai','大': 'da','斋': 'zhai','哈': 'ha','芝': 'zhi','新': 'xin','农': 'nong','历': 'li','年': 'nian','际': 'ji','人': 'ren','民': 'min','共': 'gong','和': 'he','植': 'zhi','树': 'shu','儿': 'er','童': 'tong','建': 'jian','党': 'dang','军': 'jun','青': 'qing','护': 'hu','士': 'shi','光': 'guang','棍': 'gun','夕': 'xi','重': 'chong','阳': 'yang','腊': 'la','一': 'yi','二': 'er','三': 'san','四': 'si','五': 'wu','六': 'liu','七': 'qi','八': 'ba','九': 'jiu','十': 'shi','零': 'ling','龙': 'long','抬': 'tai','头': 'tou','上': 'shang','巳': 'si','下': 'xia','北': 'bei','方': 'fang','小': 'xiao','南': 'nan','寒': 'han','衣': 'yi','宵': 'xiao','跨': 'kua','平': 'ping','安': 'an','世': 'shi','界': 'jie','防': 'fang','治': 'zhi','麻': 'ma','风': 'feng','湿': 'shi','抗': 'kang','癌': 'ai','情': 'qing','海': 'hai','豹': 'bao','爱': 'ai','耳': 'er','学': 'xue','雷': 'lei','锋': 'feng','妇': 'fu','女': 'nv','白': 'bai','幸': 'xing','福': 'fu','睡': 'shui','眠': 'mian','水': 'shui','气': 'qi','象': 'xiang','愚': 'yu','生': 'sheng','球': 'qiu','无': 'wu','烟': 'yan','环': 'huan','境': 'jing','献': 'xian','血': 'xue','者': 'zhe','瑜': 'yu','伽': 'jia','变': 'bian','粮': 'liang','联': 'lian','合': 'he','艾': 'ai','滋': 'zi','志': 'zhi','愿': 'yuan','权': 'quan','夜': 'ye','夏': 'xia','满': 'man','芒': 'mang','种': 'zhong','至': 'zhi','暑': 'shu','露': 'lu','霜': 'shuang','冬': 'dong','雪': 'xue','全': 'quan','除': 'chu','色': 'se','地': 'di','家': 'jia','庭': 'ting','纪': 'ji','念': 'nian','母': 'mu','亲': 'qin','洋': 'yang','立': 'li','雨': 'yu','惊': 'jing','蛰': 'zhe','分': 'fen','谷': 'gu','处': 'chu','降': 'jiang','事': 'shi','父': 'fu','博': 'bo','物': 'wu','馆': 'guan','口': 'kou','土': 'tu','著': 'zhu','本': 'ben','投': 'tou','战': 'zhan','争': 'zheng','胜': 'sheng','利': 'li','臭': 'chou','氧': 'yang','层': 'ceng','保': 'bao','旅': 'lv','游': 'you','辛': 'xin','亥': 'hai','革': 'ge','命': 'ming','食': 'shi','病': 'bing','员': 'yuan','扫': 'sao','盲': 'mang'
+    const pinyinMap = {
+        '教': 'jiao','师': 'shi','节': 'jie','元': 'yuan','旦': 'dan','春': 'chun','清': 'qing',
+        '明': 'ming','劳': 'lao','动': 'dong','端': 'duan','午': 'wu','中': 'zhong','秋': 'qiu',
+        '国': 'guo','庆': 'qing','耶': 'ye','稣': 'su','受': 'shou','难': 'nan','日': 'ri','卫': 'wei',
+        '塞': 'sai','屠': 'tu','妖': 'yao','圣': 'sheng','诞': 'dan','开': 'kai','大': 'da','斋': 'zhai',
+        '哈': 'ha','芝': 'zhi','新': 'xin','农': 'nong','历': 'li','年': 'nian','际': 'ji','人': 'ren',
+        '民': 'min','共': 'gong','和': 'he','植': 'zhi','树': 'shu','儿': 'er','童': 'tong','建': 'jian',
+        '党': 'dang','军': 'jun','青': 'qing','护': 'hu','士': 'shi','光': 'guang','棍': 'gun','夕': 'xi',
+        '重': 'chong','阳': 'yang','腊': 'la','一': 'yi','二': 'er','三': 'san','四': 'si','五': 'wu',
+        '六': 'liu','七': 'qi','八': 'ba','九': 'jiu','十': 'shi','零': 'ling','龙': 'long','抬': 'tai',
+        '头': 'tou','上': 'shang','巳': 'si','下': 'xia','北': 'bei','方': 'fang','小': 'xiao','南': 'nan',
+        '寒': 'han','衣': 'yi','宵': 'xiao','跨': 'kua','平': 'ping','安': 'an','世': 'shi','界': 'jie',
+        '防': 'fang','治': 'zhi','麻': 'ma','风': 'feng','湿': 'shi','抗': 'kang','癌': 'ai','情': 'qing',
+        '海': 'hai','豹': 'bao','爱': 'ai','耳': 'er','学': 'xue','雷': 'lei','锋': 'feng','妇': 'fu',
+        '女': 'nv','白': 'bai','幸': 'xing','福': 'fu','睡': 'shui','眠': 'mian','水': 'shui','气': 'qi',
+        '象': 'xiang','愚': 'yu','生': 'sheng','球': 'qiu','无': 'wu','烟': 'yan','环': 'huan','境': 'jing',
+        '献': 'xian','血': 'xue','者': 'zhe','瑜': 'yu','伽': 'jia','变': 'bian','粮': 'liang','联': 'lian',
+        '合': 'he','艾': 'ai','滋': 'zi','志': 'zhi','愿': 'yuan','权': 'quan','夜': 'ye','夏': 'xia',
+        '满': 'man','芒': 'mang','种': 'zhong','至': 'zhi','暑': 'shu','露': 'lu','霜': 'shuang','冬': 'dong',
+        '雪': 'xue','全': 'quan','除': 'chu','色': 'se','地': 'di','家': 'jia','庭': 'ting','纪': 'ji',
+        '念': 'nian','母': 'mu','亲': 'qin','洋': 'yang','立': 'li','雨': 'yu','惊': 'jing','蛰': 'zhe',
+        '分': 'fen','谷': 'gu','处': 'chu','降': 'jiang','事': 'shi','父': 'fu','博': 'bo','物': 'wu',
+        '馆': 'guan','口': 'kou','土': 'tu','著': 'zhu','本': 'ben','投': 'tou','战': 'zhan','争': 'zheng',
+        '胜': 'sheng','利': 'li','臭': 'chou','氧': 'yang','层': 'ceng','保': 'bao','旅': 'lv','游': 'you',
+        '辛': 'xin','亥': 'hai','革': 'ge','命': 'ming','食': 'shi','病': 'bing','员': 'yuan','扫': 'sao',
+        '盲': 'mang'
     };
     // 先查词组
     if (phraseMap[text]) {
@@ -694,7 +743,12 @@
                  <label><i class="fa-solid fa-heading"></i> 标题（SUMMARY）</label>
                  <input class="summary" type="text" value="${data?.summary||''}" placeholder="元旦">
                  <label><i class="fa-solid fa-align-left"></i> 说明（DESCRIPTION，可选）</label>
-                          <textarea class="description" rows="3" data-manual-edited="false" placeholder="自动获取描述...">${data?.description||''}</textarea>
+                       <textarea class="description" rows="3" data-manualEdited="${data?.description ? 'true' : 'false'}" placeholder="元旦（1月1日），公历新年，标志新一年的开始。🎉">${data?.description||''}</textarea>
+<!-- 新增说明状态提示 -->
+<div class="desc-status ${data?.description ? 'manual' : 'auto'}">
+    <i class="fa-solid ${data?.description ? 'fa-pen' : 'fa-bolt'}"></i> 
+    <span>${data?.description ? '手动输入说明' : '自动生成说明'}</span>
+</div>
                  <div class="date-row">
     <div>
         <label><i class="fa-solid fa-calendar-day"></i> 开始 (DTSTART)</label>
@@ -764,8 +818,25 @@
             const rruleCustom = div.querySelector('.rruleCustom');
             const uidStatus = div.querySelector('.uid-status');
 				const descTextarea = div.querySelector('.description'); 
+				const descStatus = div.querySelector('.desc-status');
+
+// 说明输入状态切换
+descTextarea.addEventListener('input', function() {
+    if (this.value.trim()) {
+        // 有内容 → 认为是手动输入
+        descStatus.className = 'desc-status manual';
+        descStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入说明</span>`;
+        this.dataset.manualEdited = 'true';
+    } else {
+        // 空内容 → 认为是自动生成
+        descStatus.className = 'desc-status auto';
+        descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明</span>`;
+        this.dataset.manualEdited = 'false';
+    }
+});
+				
             // UID输入状态切换
-        uidInput.addEventListener('input', function() {
+uidInput.addEventListener('input', function() {
                 if (this.value.trim()) {
                     uidStatus.className = 'uid-status manual';
                     uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入UID</span>`;
@@ -775,8 +846,10 @@
                 }
             });
             summaryInput.addEventListener('input', function() {
-                const summaryText = this.value.trim();
-        if (descTextarea.dataset.manualEdited === 'false' && summaryText) {
+    const summaryText = this.value.trim();
+    if (summaryText) {
+        if (descStatus.classList.contains('auto')) {  
+            // 只有在“自动模式”下才会覆盖
             const startDate = dtstartInput.value;
             let monthDay = '';
             if (startDate) {
@@ -787,20 +860,24 @@
             }
             const autoDesc = window.getDescriptionBySummary(summaryText, monthDay) || '';
             descTextarea.value = autoDesc;
+            descStatus.className = 'desc-status auto';
+            descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明</span>`;
+            descTextarea.dataset.manualEdited = 'false';
         }
+
+        if (uidStatus.classList.contains('auto')) {
+            const pinyinUid = convertToPinyin(summaryText);
+            uidInput.value = pinyinUid ? formatUID(pinyinUid) : '';
+        }
+    } else {
                 if (uidStatus.classList.contains('auto')) {
-                    if (summaryText) {
-                        const pinyinUid = convertToPinyin(summaryText);
-                        uidInput.value = pinyinUid ? formatUID(pinyinUid) : '';
-                    } else {
-                        uidInput.value = '';
-descTextarea.value = '';
-                    }
-                }
-            });
-descTextarea.addEventListener('input', function() {
-        this.dataset.manualEdited = 'true';
-    });
+            uidInput.value = '';
+        }
+        if (descStatus.classList.contains('auto')) {
+            descTextarea.value = '';
+        }
+    }
+});
             // 开始日期 <= 结束日期
             dtstartInput.onchange = dtendInput.onchange = () => {
                 const start = new Date(dtstartInput.value);
@@ -850,20 +927,23 @@ descTextarea.addEventListener('input', function() {
             };
             // 清空事件内容
             div.querySelector('.clearBtn').onclick = () => {
-                        							uidInput.value = '';
-			const uidStatus = div.querySelector('.uid-status');
+    uidInput.value = '';
     uidStatus.className = 'uid-status auto';
     uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID</span>`;
-        summaryInput.value = '';
-        descTextarea.value = '';
-        descTextarea.dataset.manualEdited = 'false';
-        dtstartInput.value = todayDate;
-        dtendInput.value = todayDate;
-        rruleSel.value = '';
-        rruleCustom.value = '';
-        hasTime.checked = false;
-        timeRow.style.display = 'none';
-            };
+
+    summaryInput.value = '';
+    descTextarea.value = '';
+    descTextarea.dataset.manualEdited = 'false';
+    descStatus.className = 'desc-status auto';
+    descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明</span>`;
+
+    dtstartInput.value = todayDate;
+    dtendInput.value = todayDate;
+    rruleSel.value = '';
+    rruleCustom.value = '';
+    hasTime.checked = false;
+    timeRow.style.display = 'none';
+};
             div.querySelector('.fillSample').onclick = () => {
                 summaryInput.value = '元旦';
                     const desc = window.getDescriptionBySummary('元旦');
@@ -916,7 +996,7 @@ descTextarea.addEventListener('input', function() {
             const hasTime = card.querySelector('.hasTime').checked;
             const tstart = card.querySelector('.tstart')?.value || "00:00";
             const tend = card.querySelector('.tend')?.value || "00:00";
-             const rrule = card.querySelector('.rruleCustom').value.trim();
+				const rrule = card.querySelector('.rruleCustom').value.trim();
             let dtstart = "",
                 dtend = "";
             if (dtstartRaw) {
@@ -932,7 +1012,7 @@ descTextarea.addEventListener('input', function() {
                 allDay: !hasTime,
                 dtstart,
                 dtend,
-                rrule
+					 rrule
             };
         }
         function buildSingleEventICS(ev) {
@@ -948,14 +1028,13 @@ descTextarea.addEventListener('input', function() {
                 lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
             }
             if (ev.description.trim()) {
-                lines.push(`DESCRIPTION:${
-                escapeText(ev.description)}`);
-        }
-        if (ev.rrule) {
+        lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
+    }
+				if (ev.rrule) {
         lines.push(`RRULE:${ev.rrule}`);
-        }
-        
-        lines.push('END:VEVENT');
+    }
+				
+lines.push('END:VEVENT');
             return lines.join('\r\n');
         }
         function buildCalendarICS() {
