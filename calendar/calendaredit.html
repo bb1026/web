@@ -916,6 +916,7 @@ descTextarea.addEventListener('input', function() {
             const hasTime = card.querySelector('.hasTime').checked;
             const tstart = card.querySelector('.tstart')?.value || "00:00";
             const tend = card.querySelector('.tend')?.value || "00:00";
+             const rrule = card.querySelector('.rruleCustom').value.trim();
             let dtstart = "",
                 dtend = "";
             if (dtstartRaw) {
@@ -930,7 +931,8 @@ descTextarea.addEventListener('input', function() {
                 description,
                 allDay: !hasTime,
                 dtstart,
-                dtend
+                dtend,
+                rrule
             };
         }
         function buildSingleEventICS(ev) {
@@ -946,9 +948,14 @@ descTextarea.addEventListener('input', function() {
                 lines.push(`DTEND;VALUE=DATE:${ev.dtend}`);
             }
             if (ev.description.trim()) {
-        lines.push(`DESCRIPTION:${escapeText(ev.description)}`);
-    }
-lines.push('END:VEVENT');
+                lines.push(`DESCRIPTION:${
+                escapeText(ev.description)}`);
+        }
+        if (ev.rrule) {
+        lines.push(`RRULE:${ev.rrule}`);
+        }
+        
+        lines.push('END:VEVENT');
             return lines.join('\r\n');
         }
         function buildCalendarICS() {
