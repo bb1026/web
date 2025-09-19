@@ -481,7 +481,7 @@
             <button class="tab-btn active" data-tab="tab1"><i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器</button>
             <button class="tab-btn" data-tab="tab2"><i class="fa-solid fa-calendar-days"></i> 整年节日 ICS 生成器</button>
         </div>
-        <!-- 选项一内容（优化手机端布局） -->
+        <!-- 选项一内容 -->
         <div class="tab-content active" id="tab1">
             <h1>
                 <i class="fa-solid fa-calendar-plus"></i> ICS 事件生成器 <a href="../calendar/"
@@ -529,20 +529,18 @@
                 </div>
             </div>
         </div>
-        <!-- 选项二内容（优化手机端布局） -->
+        <!-- 选项二内容 -->
         <div class="tab-content" id="tab2">
             <h2><i class="fa-solid fa-calendar-days"></i> 整年 ICS 生成器 <a href="../calendar/"
                     style="margin-left: auto; font-size: 0.85rem; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 4px;">
                     <i class="fa-solid fa-calendar-days"></i> 订阅日历 </a>
             </h2>
-            <!-- 年份选择 -->
             <div class="controls">
                 <label>
                     <i class="fa-solid fa-hashtag"></i> 年份: <input type="number" id="year" min="1900" max="2100"
                         style="width: 80px; margin-left: 8px; margin-top: 5px;" placeholder="2024">
                 </label>
                 <script>
-                    // 限制输入长度为4位
                     const yearInput = document.getElementById('year');
                     yearInput.addEventListener('input', function () {
                         if (this.value.length > 4) {
@@ -551,14 +549,12 @@
                     });
                 </script>
             </div>
-            <!-- 节日类型选择：手机端一行两个 -->
             <div class="festival-select">
                 <label><input type="checkbox" id="chkSolar" checked><i class="fa-solid fa-star"></i> 阳历节日</label>
                 <label><input type="checkbox" id="chkLunar" checked><i class="fa-solid fa-moon"></i> 农历节日</label>
                 <label><input type="checkbox" id="chkOther"><i class="fa-solid fa-heart"></i> 其他纪念日</label>
                 <label><input type="checkbox" id="chkTerm" checked><i class="fa-solid fa-sun"></i> 节气</label>
             </div>
-            <!-- 日历名称设置 -->
             <div class="controls">
                 <label><i class="fa-solid fa-file"></i> 日历名称: <input type="text" id="calendarName"
                         style="width: auto; flex: 1; margin-left: 8px; margin-top: 5px;">
@@ -586,13 +582,11 @@
                 <button id="clearAllEventsTab2" class="small secondary"><i class="fa-solid fa-trash"></i>
                     清空所有事件</button>
             </div>
-            <!-- 事件数量提示 -->
             <div id="count">
             </div>
             <label style="margin-top: 8px;"><i class="fa-solid fa-code"></i> ICS 内容</label>
             <textarea id="output" style="background: #0b1220; color: #e6eef8; border: none; font-family: monospace;">// 点击"生成整年事件"或"添加"按钮生成ICS内容
 // 生成后可复制、编辑或下载ICS文件</textarea>
-            <!-- 通知容器 -->
             <div id="notify" class="notification">
             </div>
             <h3><i class="fa-solid fa-list"></i> 事件预览</h3>
@@ -754,7 +748,6 @@
             const box = document.createElement('div');
             box.className = 'dialog-box';
             box.innerHTML = `<h3 style="margin-top:0; font-size: 1rem;">${title}</h3>`;
-            // 核心修复：给pre标签加white-space和word-break，支持自动换行
             if (typeof content === 'string') {
                 box.innerHTML += `<pre style="white-space: pre-wrap; word-break: break-all; font-size: 0.85rem; margin: 8px 0;">${content}</pre>`;
             } else {
@@ -793,7 +786,6 @@
             document.body.appendChild(backdrop);
             disableBodyScroll();
         }
-        // 创建事件卡片：优化按钮位置和时间排列
         function createEventCard(data) {
             const div = document.createElement('div');
             div.className = 'card';
@@ -817,7 +809,6 @@
                  <input class="summary" type="text" value="${data?.summary || ''}" placeholder="元旦">
                  <label><i class="fa-solid fa-align-left"></i> 说明（DESCRIPTION，可选）</label>
                        <textarea class="description" rows="3" data-manualEdited="${data?.description ? 'true' : 'false'}" placeholder="元旦（1月1日），公历新年，标志新一年的开始。🎉">${data?.description || ''}</textarea>
-<!-- 新增说明状态提示 -->
 <div class="desc-status ${data?.description ? 'manual' : 'auto'}">
     <i class="fa-solid ${data?.description ? 'fa-pen' : 'fa-bolt'}"></i> 
     <span>${data?.description ? '手动输入说明' : '自动生成说明'}</span>
@@ -875,8 +866,7 @@
                      <button class="previewEventBtn small primary"><i class="fa-solid fa-eye"></i> 预览事件</button>
                  </div>
              `;
-            // 时间选择框默认隐藏（优化初始状态）
-            const hasTime = div.querySelector('.hasTime');
+             const hasTime = div.querySelector('.hasTime');
             const timeRow = div.querySelector('.time-row');
             timeRow.style.display = 'none';
             hasTime.addEventListener('change', () => {
