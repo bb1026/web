@@ -297,111 +297,186 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             function initInputEvents() {
-                // RGB输入
-                [rInput, gInput, bInput].forEach(input => {
-                    input.addEventListener('change', function() {
-                        const r = parseInt(rInput.value) || 0;
-                        const g = parseInt(gInput.value) || 0;
-                        const b = parseInt(bInput.value) || 0;
-                        
-                        const hsv = rgbToHsv(r, g, b);
-                        
-                        currentColor = {
-                            h: hsv.h,
-                            s: hsv.s,
-                            v: hsv.v
-                        };
-                        
-                        setHueThumbPosition(hsv.h / 360);
-                        setPanelThumbPosition(hsv.s / 100, (100 - hsv.v) / 100);
-                        updateColorFromHSV();
-                        updateColorDisplay();
-                    });
-                });
-                
-                // CMYK输入
-                [cInput, mInput, yInput, kInput].forEach(input => {
-                    input.addEventListener('change', function() {
-                        const c = parseInt(cInput.value) || 0;
-                        const m = parseInt(mInput.value) || 0;
-                        const y = parseInt(yInput.value) || 0;
-                        const k = parseInt(kInput.value) || 0;
-                        
-                        const rgb = cmykToRgb(c, m, y, k);
-                        const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
-                        
-                        currentColor = {
-                            h: hsv.h,
-                            s: hsv.s,
-                            v: hsv.v
-                        };
-                        
-                        setHueThumbPosition(hsv.h / 360);
-                        setPanelThumbPosition(hsv.s / 100, (100 - hsv.v) / 100);
-                        updateColorFromHSV();
-                        updateColorDisplay();
-                    });
-                });
-                
-                // HSV输入
-                [hInput, sInput, vInput].forEach(input => {
-                    input.addEventListener('change', function() {
-                        const h = parseInt(hInput.value) || 0;
-                        const s = parseInt(sInput.value) || 0;
-                        const v = parseInt(vInput.value) || 0;
-                        
-                        currentColor = {
-                            h: h,
-                            s: s,
-                            v: v
-                        };
-                        
-                        setHueThumbPosition(h / 360);
-                        setPanelThumbPosition(s / 100, (100 - v) / 100);
-                        updateColorFromHSV();
-                        updateColorDisplay();
-                    });
-                });
+        // HEX输入
+        hexInput.addEventListener('change', function() {
+            let hexValue = hexInput.value.trim();
+            
+            // 确保有#前缀
+            if (!hexValue.startsWith('#')) {
+                hexValue = '#' + hexValue;
             }
             
-            function updateColorFromHSV() {
-                const rgb = hsvToRgb(currentColor.h, currentColor.s, currentColor.v);
-                const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
+            // 验证HEX格式
+            if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hexValue)) {
+                // 如果是3位HEX，转换为6位
+                if (hexValue.length === 4) {
+                    hexValue = '#' + hexValue[1] + hexValue[1] + hexValue[2] + hexValue[2] + hexValue[3] + hexValue[3];
+                }
                 
-                rInput.value = Math.round(rgb.r);
-                gInput.value = Math.round(rgb.g);
-                bInput.value = Math.round(rgb.b);
+                const rgb = hexToRgb(hexValue);
+                const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
                 
-                cInput.value = Math.round(cmyk.c);
-                mInput.value = Math.round(cmyk.m);
-                yInput.value = Math.round(cmyk.y);
-                kInput.value = Math.round(cmyk.k);
+                currentColor = {
+                    h: hsv.h,
+                    s: hsv.s,
+                    v: hsv.v
+                };
                 
-                hInput.value = Math.round(currentColor.h);
-                sInput.value = Math.round(currentColor.s);
-                vInput.value = Math.round(currentColor.v);
+                setHueThumbPosition(hsv.h / 360);
+                setPanelThumbPosition(hsv.s / 100, (100 - hsv.v) / 100);
+                updateColorFromHSV();
+                updateColorDisplay();
+            } else {
+                // 如果格式无效，恢复为当前颜色
+                updateHexInput();
+            }
+        });
+        
+        // HEX输入实时验证
+        hexInput.addEventListener('input', function() {
+            let hexValue = hexInput.value.trim();
+            
+            if (hexValue.startsWith('#')) {
+                if (hexValue.length > 7) {
+                    hexInput.value = hexValue.substring(0, 7);
+                }
+            } else {
+                if (hexValue.length > 6) {
+                    hexInput.value = hexValue.substring(0, 6);
+                }
             }
             
-            function updateColorDisplay() {
-                const rgb = hsvToRgb(currentColor.h, currentColor.s, currentColor.v);
-                const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+            // 实时验证并更新（可选）
+            if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hexValue) || 
+                /^[A-Fa-f0-9]{6}$/.test(hexValue) || 
+                /^[A-Fa-f0-9]{3}$/.test(hexValue)) {
+                hexInput.style.borderColor = '';
+            } else {
+                hexInput.style.borderColor = 'red';
+            }
+        });
+        
+        // RGB输入
+        [rInput, gInput, bInput].forEach(input => {
+            input.addEventListener('change', function() {
+                const r = parseInt(rInput.value) || 0;
+                const g = parseInt(gInput.value) || 0;
+                const b = parseInt(bInput.value) || 0;
                 
-                colorDisplay.style.backgroundColor = hex;
-            }
-            
-            // 颜色转换函数
-            function rgbToHex(r, g, b) {
-                return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-            }
-            
-            function hexToRgb(hex) {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : { r: 0, g: 0, b: 0 };
-            }
+                const hsv = rgbToHsv(r, g, b);
+                
+                currentColor = {
+                    h: hsv.h,
+                    s: hsv.s,
+                    v: hsv.v
+                };
+                
+                setHueThumbPosition(hsv.h / 360);
+                setPanelThumbPosition(hsv.s / 100, (100 - hsv.v) / 100);
+                updateColorFromHSV();
+                updateColorDisplay();
+            });
+        });
+        
+        // CMYK输入
+        [cInput, mInput, yInput, kInput].forEach(input => {
+            input.addEventListener('change', function() {
+                const c = parseInt(cInput.value) || 0;
+                const m = parseInt(mInput.value) || 0;
+                const y = parseInt(yInput.value) || 0;
+                const k = parseInt(kInput.value) || 0;
+                
+                const rgb = cmykToRgb(c, m, y, k);
+                const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+                
+                currentColor = {
+                    h: hsv.h,
+                    s: hsv.s,
+                    v: hsv.v
+                };
+                
+                setHueThumbPosition(hsv.h / 360);
+                setPanelThumbPosition(hsv.s / 100, (100 - hsv.v) / 100);
+                updateColorFromHSV();
+                updateColorDisplay();
+            });
+        });
+        
+        // HSV输入
+        [hInput, sInput, vInput].forEach(input => {
+            input.addEventListener('change', function() {
+                const h = parseInt(hInput.value) || 0;
+                const s = parseInt(sInput.value) || 0;
+                const v = parseInt(vInput.value) || 0;
+                
+                currentColor = {
+                    h: h,
+                    s: s,
+                    v: v
+                };
+                
+                setHueThumbPosition(h / 360);
+                setPanelThumbPosition(s / 100, (100 - v) / 100);
+                updateColorFromHSV();
+                updateColorDisplay();
+            });
+        });
+    }
+    
+    function updateColorFromHSV() {
+        const rgb = hsvToRgb(currentColor.h, currentColor.s, currentColor.v);
+        const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+        
+        hexInput.value = hex;
+        rInput.value = Math.round(rgb.r);
+        gInput.value = Math.round(rgb.g);
+        bInput.value = Math.round(rgb.b);
+        
+        cInput.value = Math.round(cmyk.c);
+        mInput.value = Math.round(cmyk.m);
+        yInput.value = Math.round(cmyk.y);
+        kInput.value = Math.round(cmyk.k);
+        
+        hInput.value = Math.round(currentColor.h);
+        sInput.value = Math.round(currentColor.s);
+        vInput.value = Math.round(currentColor.v);
+    }
+    
+    function updateHexInput() {
+        const rgb = hsvToRgb(currentColor.h, currentColor.s, currentColor.v);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+        hexInput.value = hex;
+    }
+    
+    function updateColorDisplay() {
+        const rgb = hsvToRgb(currentColor.h, currentColor.s, currentColor.v);
+        const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+        
+        colorDisplay.style.backgroundColor = hex;
+    }
+    
+    // 颜色转换函数
+    function rgbToHex(r, g, b) {
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+    }
+    
+    function hexToRgb(hex) {
+        // 移除#号
+        hex = hex.replace(/^#/, '');
+        
+        // 处理3位HEX
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        
+        const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+    }
             
             function rgbToHsv(r, g, b) {
                 r /= 255, g /= 255, b /= 255;
