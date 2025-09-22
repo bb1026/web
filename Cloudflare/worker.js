@@ -118,11 +118,6 @@ async function handleRequest(request) {
   const url = new URL(request.url);
   const timestamp = Date.now();
 
-  // 1. 如果有认证密钥，优先放行
-  if (hasValidAuthKey(request)) {
-    return fetch(request);
-  }
-
   // 2. 来源在白名单内则放行
   if (isAllowedOrigin(request)) {
     return fetch(request);
