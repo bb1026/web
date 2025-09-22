@@ -117,6 +117,19 @@ addEventListener('fetch', event => {
 async function handleRequest(request) {
   const url = new URL(request.url);
   const timestamp = Date.now();
+  
+  // 新增：处理OPTIONS预检请求，直接返回允许跨域的响应头
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204, // 预检请求成功无响应体，用204状态码
+      headers: {
+        'Access-Control-Allow-Origin': request.headers.get('Origin') || '*', // 允许请求来源
+        'Access-Control-Allow-Methods': 'GET, OPTIONS', // 允许的方法（包含预检请求的OPTIONS和实际的GET）
+        'Access-Control-Allow-Headers': 'X-Auth-Key', // 明确允许客户端携带的x-auth-key头
+        'Access-Control-Max-Age': '86400' // 预检结果缓存1天，减少重复预检
+      }
+    });
+  }
 
   // 2. 来源在白名单内则放行
   if (isAllowedOrigin(request)) {
