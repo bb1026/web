@@ -127,9 +127,9 @@ function getWeekday(date){return ["日","一","二","三","四","五","六"][dat
 // 阳历转农历
 function solarToLunar(y,m,d){
   let offset,temp=0;
-  const baseDate=new Date(1900,0,31);
-  const objDate=new Date(y,m-1,d);
-  offset=Math.floor((objDate-baseDate)/86400000);
+  const baseDate = new Date(Date.UTC(1900, 0, 31));
+  const objDate = new Date(Date.UTC(y, m - 1, d));
+  offset = Math.floor((objDate - baseDate) / 86400000);
   let lunarYear=1900,lunarMonth=1,lunarDay=1,isLeap=false;
   for(let i=1900;i<2101 && offset>0;i++){
     temp=lYearDays(i);
@@ -163,7 +163,7 @@ function lunarToSolar(lunarYear,lunarMonth,lunarDay,isLeapMonth=false){
   }
   if(isLeapMonth && leap===lunarMonth) offset+=monthDays(lunarYear,lunarMonth);
   offset+=lunarDay-1;
-  const baseDate=new Date(1900,0,31);
+  const baseDate=new Date(Date.UTC(1900,0,31));
   return new Date(baseDate.getTime()+offset*86400000);
 }
 
@@ -377,11 +377,11 @@ if (typeof module !== "undefined" && module.exports) {
 // console.log(JSON.stringify(december, null, 2));
 // 
 // 获取一周
-// const weekInfo = LunarCalendar.getWeekCalendar("2026-12-21");
+// const weekInfo = LunarCalendar.getWeekCalendar("2026-02-17");
 // console.log(JSON.stringify(weekInfo, null, 2));
 // 
 // 获取一天
-// const dayInfo = LunarCalendar.getDayInfo(2025, 09, 19);
+// const dayInfo = LunarCalendar.getDayInfo(2026, 02, 16);
 // console.log(JSON.stringify(dayInfo, null, 2));
 // 
 // 阳历 -> 农历
