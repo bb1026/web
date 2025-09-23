@@ -537,7 +537,7 @@
                 </div>
                 <div class="muted">
                     <i class="fa-solid fa-circle-info"></i> 说明：<br>
-                    • UID 可留空，系统会自动生成拼音格式的UID；<br>
+                    • UID 自动生成拼音格式的UID，留空则随机生成；<br>
                     • DTSTAMP 自动填写为当前本地时间；<br>
                     • 默认全天事件，可勾选"添加时间"设置具体时段；<br>
                     • 修改重复规则请查看"规则介绍"。
@@ -875,7 +875,7 @@
                        <textarea class="description" rows="3" data-manualEdited="${data?.description ? 'true' : 'false'}" placeholder="元旦（1月1日），公历新年，标志新一年的开始。🎉">${data?.description || ''}</textarea>
 <div class="desc-status ${data?.description ? 'manual' : 'auto'}">
     <i class="fa-solid ${data?.description ? 'fa-pen' : 'fa-bolt'}"></i> 
-    <span>${data?.description ? '手动输入说明' : '自动生成说明'}</span>
+    <span>${data?.description ? '手动生成说明...' : '自动生成说明...'}</span>
 </div>
                  <div class="date-row">
     <div>
@@ -949,14 +949,12 @@
             // 说明输入状态切换
             descTextarea.addEventListener('input', function () {
                 if (this.value.trim()) {
-                    // 有内容 → 认为是手动输入
                     descStatus.className = 'desc-status manual';
-                    descStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入说明</span>`;
+                    descStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动生成说明...</span>`;
                     this.dataset.manualEdited = 'true';
                 } else {
-                    // 空内容 → 认为是自动生成
                     descStatus.className = 'desc-status auto';
-                    descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明</span>`;
+                    descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明...</span>`;
                     this.dataset.manualEdited = 'false';
                 }
             });
@@ -965,17 +963,16 @@
             uidInput.addEventListener('input', function () {
                 if (this.value.trim()) {
                     uidStatus.className = 'uid-status manual';
-                    uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动输入UID</span>`;
+                    uidStatus.innerHTML = `<i class="fa-solid fa-pen"></i> <span>手动生成UID...</span>`;
                 } else {
                     uidStatus.className = 'uid-status auto';
-                    uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID</span>`;
+                    uidStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成UID...</span>`;
                 }
             });
             summaryInput.addEventListener('input', function () {
                 const summaryText = this.value.trim();
                 if (summaryText) {
                     if (descStatus.classList.contains('auto')) {
-                        // 只有在“自动模式”下才会覆盖
                         const startDate = dtstartInput.value;
                         let monthDay = '';
                         if (startDate) {
@@ -987,7 +984,7 @@
                         const autoDesc = window.getDescriptionBySummary(summaryText, monthDay) || '';
                         descTextarea.value = autoDesc;
                         descStatus.className = 'desc-status auto';
-                        descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明</span>`;
+                        descStatus.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>自动生成说明...</span>`;
                         descTextarea.dataset.manualEdited = 'false';
                     }
 
