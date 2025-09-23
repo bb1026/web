@@ -472,31 +472,32 @@
             gap: 8px;
             margin-top: 12px;
         }
-.day-shift-btn {
-  padding: 5px 12px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #fff;
-}
 
-.day-shift-btn.prev {
-  background-color: #ff9500; 
-}
+        .day-shift-btn {
+            padding: 5px 12px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #fff;
+        }
 
-.day-shift-btn.today {
-  background-color: #007aff;
-}
+        .day-shift-btn.prev {
+            background-color: #ff9500;
+        }
 
-.day-shift-btn.next {
-  background-color: #34c759;
-}
+        .day-shift-btn.today {
+            background-color: #007aff;
+        }
 
-.day-shift-btn:hover {
-  opacity: 0.85;
-}
+        .day-shift-btn.next {
+            background-color: #34c759;
+        }
+
+        .day-shift-btn:hover {
+            opacity: 0.85;
+        }
     </style>
 </head>
 
@@ -588,12 +589,12 @@
                     style="display: none; margin: -15px 0 0 0; padding: 5px 10px; align-self: center; height: 32px;">
                     <i class="fa-solid fa-plus"></i> 添加 </button>
             </div>
-<!-- ⬇️ 在查询日期下方新增按钮 -->
-<div style="margin: 6px 0; display: flex; gap: 10px; justify-content: center;">
-  <button id="prevDayBtn" class="day-shift-btn prev">◀ 前一天</button>
-  <button id="todayBtn" class="day-shift-btn today">今天</button>
-  <button id="nextDayBtn" class="day-shift-btn next">后一天 ▶</button>
-</div>
+            <!-- ⬇️ 在查询日期下方新增按钮 -->
+            <div style="margin: 6px 0; display: flex; gap: 10px; justify-content: center;">
+                <button id="prevDayBtn" class="day-shift-btn prev">◀ 前一天</button>
+                <button id="todayBtn" class="day-shift-btn today">今天</button>
+                <button id="nextDayBtn" class="day-shift-btn next">后一天 ▶</button>
+            </div>
             <div id="dayJsonContainer">
                 <span id="dayJsonToggle"><i class="fa-solid fa-chevron-down"></i> JSON 数据</span>
                 <pre id="dayJson">
@@ -622,44 +623,44 @@
     <script src="js/icsDescription.js"></script>
     <script>
 
-                    const yearInput = document.getElementById('year');
-                    yearInput.addEventListener('input', function () {
-                        if (this.value.length > 4) {
-                            this.value = this.value.slice(0, 4);
-                        }
-                    });
-                
-// 前一天后一天按钮
-function shiftDate(days) {
-  const input = document.getElementById("queryDate");
-  if (!input.value) return;
+        const yearInput = document.getElementById('year');
+        yearInput.addEventListener('input', function () {
+            if (this.value.length > 4) {
+                this.value = this.value.slice(0, 4);
+            }
+        });
 
-  const current = new Date(input.value);
-  current.setDate(current.getDate() + days);
+        // 前一天后一天按钮
+        function shiftDate(days) {
+            const input = document.getElementById("queryDate");
+            if (!input.value) return;
 
-  const yyyy = current.getFullYear();
-  const mm = String(current.getMonth() + 1).padStart(2, "0");
-  const dd = String(current.getDate()).padStart(2, "0");
-  input.value = `${yyyy}-${mm}-${dd}`;
+            const current = new Date(input.value);
+            current.setDate(current.getDate() + days);
 
-  input.dispatchEvent(new Event("change"));
-}
+            const yyyy = current.getFullYear();
+            const mm = String(current.getMonth() + 1).padStart(2, "0");
+            const dd = String(current.getDate()).padStart(2, "0");
+            input.value = `${yyyy}-${mm}-${dd}`;
 
-function setToday() {
-  const input = document.getElementById("queryDate");
-  const today = new Date();
+            input.dispatchEvent(new Event("change"));
+        }
 
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  input.value = `${yyyy}-${mm}-${dd}`;
+        function setToday() {
+            const input = document.getElementById("queryDate");
+            const today = new Date();
 
-  input.dispatchEvent(new Event("change"));
-}
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, "0");
+            const dd = String(today.getDate()).padStart(2, "0");
+            input.value = `${yyyy}-${mm}-${dd}`;
 
-document.getElementById("prevDayBtn").addEventListener("click", () => shiftDate(-1));
-document.getElementById("nextDayBtn").addEventListener("click", () => shiftDate(1));
-document.getElementById("todayBtn").addEventListener("click", setToday);
+            input.dispatchEvent(new Event("change"));
+        }
+
+        document.getElementById("prevDayBtn").addEventListener("click", () => shiftDate(-1));
+        document.getElementById("nextDayBtn").addEventListener("click", () => shiftDate(1));
+        document.getElementById("todayBtn").addEventListener("click", setToday);
 
         // 选项卡切换逻辑
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -929,7 +930,7 @@ document.getElementById("todayBtn").addEventListener("click", setToday);
                      <button class="previewEventBtn small primary"><i class="fa-solid fa-eye"></i> 预览事件</button>
                  </div>
              `;
-             const hasTime = div.querySelector('.hasTime');
+            const hasTime = div.querySelector('.hasTime');
             const timeRow = div.querySelector('.time-row');
             timeRow.style.display = 'none';
             hasTime.addEventListener('change', () => {
