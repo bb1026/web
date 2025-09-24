@@ -4,33 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>定位</title>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, Arial; margin:0; padding:0; }
 #controls { padding: 10px; text-align: center; }
-button { padding: 10px 16px; margin: 5px; border: none; border-radius: 6px; font-size: 14px; }
+button { padding: 10px 16px; margin: 5px; border: none; border-radius: 6px; font-size: 14px; cursor:pointer; }
 .start { background: #28a745; color: #fff; }
 .stop { background: #dc3545; color: #fff; }
 .mapbtn { background: #007bff; color: #fff; }
 #output, #address { padding: 10px; font-size: 14px; white-space: pre-line; }
 #address { color: #007bff; }
-#map { height: 400px; width: 100%; }
+#map { height: 400px; width: 100%; margin-top: 5px; }
+#output i, #address i { color: #007bff; margin-right: 5px; }
+
+#modalOverlay {
+  display: none;
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  background-color: rgba(0,0,0,0.5); z-index: 9999;
+}
+#modalBox {
+  position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  background-color:#fff; padding:20px 30px; border-radius:8px; text-align:center; max-width:80%;
+}
+#modalBox button { margin-top:15px; background:#007bff; color:#fff; padding:8px 14px; border-radius:6px; }
 </style>
 </head>
 <body>
+
 <div id="controls">
-<button class="start" onclick="startTracking()">开始追踪</button>
-<button class="stop" onclick="stopTracking()">停止追踪</button>
-<button class="mapbtn" onclick="openInMap()">在地图中打开</button>
+  <button class="start" onclick="startTracking()">
+    <i class="fa-solid fa-location-crosshairs"></i> 开始追踪
+  </button>
+  <button class="stop" onclick="stopTracking()">
+    <i class="fa-solid fa-stop"></i> 停止追踪
+  </button>
+  <button class="mapbtn" onclick="openInMap()">
+    <i class="fa-solid fa-map-location-dot"></i> 在地图中打开
+  </button>
 </div>
 
-<div id="output">等待操作...</div>
-<div id="address">🏠 地址: 未获取</div>
+<div id="output"><i class="fa-solid fa-location-crosshairs"></i> 等待操作...</div>
+<div id="address"><i class="fa-solid fa-house"></i> 地址: 未获取</div>
 <div id="map"></div>
+
+<div id="modalOverlay">
+  <div id="modalBox">
+    <div id="modalMessage"></div>
+    <button onclick="closeModal()">关闭</button>
+  </div>
+</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let watchId = null;
+let watchIdMap = null; // 地图实时跟随
+let watchIdFull = null; // 点击开始追踪后显示完整信息
 let lastCoords = null;
 let lastAddressTime = 0;
 let map, marker;
@@ -38,136 +68,126 @@ let firstLocate = true;
 let lastLatLng = null;
 
 // 初始化地图
-map = L.map('map').setView([0, 0], 2);
+map = L.map('map').setView([0,0],2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
-function getDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+// 弹窗
+function showModal(msg) {
+  document.getElementById('modalMessage').innerText = msg;
+  document.getElementById('modalOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.body.style.overflow = 'auto';
 }
 
-// 地址每10秒或移动≥10m更新
-function updateAddress(lat, lng) {
-  const now = Date.now();
-  if (now - lastAddressTime < 10000) return;
-  if (lastLatLng) {
-    const dist = getDistance(lat, lng, lastLatLng.lat, lastLatLng.lng);
-    if (dist < 10) return;
-  }
-  lastAddressTime = now;
-  lastLatLng = { lat, lng };
+function getDistance(lat1,lng1,lat2,lng2){
+  const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  return R*c;
+}
 
+function updateAddress(lat,lng){
+  const now=Date.now();
+  if(now-lastAddressTime<10000) return;
+  if(lastLatLng){
+    const dist=getDistance(lat,lng,lastLatLng.lat,lastLatLng.lng);
+    if(dist<10) return;
+  }
+  lastAddressTime=now;
+  lastLatLng={lat,lng};
   fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('address').innerText = `🏠 地址: ${data.display_name || "未获取到"}`;
+    .then(res=>res.json())
+    .then(data=>{
+      document.getElementById('address').innerHTML=`<i class="fa-solid fa-house"></i> 地址: ${data.display_name||"未获取到"}`;
     })
-    .catch(() => {
-      document.getElementById('address').innerText = "🏠 地址获取失败";
-    });
+    .catch(()=>{document.getElementById('address').innerHTML=`<i class="fa-solid fa-house"></i> 地址获取失败`;});
 }
 
-// 地面高度
-function updateHeight(lat, lng, gpsAlt) {
+function updateOutput(lat,lng,gpsAlt){
   fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`)
-    .then(res => res.json())
-    .then(data => {
-      const ground = data.results[0].elevation;
-      const relHeight = gpsAlt != null ? gpsAlt - ground : 0;
-      document.getElementById('output').innerText = 
-`📍 纬度: ${lat}
-📍 经度: ${lng}
-🎯 精度: ±${lastCoords.accuracy} 米
-⛰️ 海拔高度: ${gpsAlt != null ? gpsAlt.toFixed(1) : "—"} m
-🌍 相对地面高度: ${relHeight.toFixed(1)} m
-🚗 速度: ${lastCoords.speed || "—"} 
-🧭 航向: ${lastCoords.heading || "—"}
-⏱️ 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
+    .then(res=>res.json())
+    .then(data=>{
+      const ground=data.results[0].elevation;
+      const relHeight=gpsAlt!=null?gpsAlt-ground:0;
+      document.getElementById('output').innerHTML=
+`<i class="fa-solid fa-location-dot"></i> 纬度: ${lat}<br>
+<i class="fa-solid fa-location-dot"></i> 经度: ${lng}<br>
+<i class="fa-solid fa-bullseye"></i> 精度: ±${lastCoords.accuracy} 米<br>
+<i class="fa-solid fa-mountain"></i> 海拔高度: ${gpsAlt!=null?gpsAlt.toFixed(1):"—"} m<br>
+<i class="fa-solid fa-earth-asia"></i> 相对地面高度: ${relHeight.toFixed(1)} m<br>
+<i class="fa-solid fa-car"></i> 速度: ${lastCoords.speed||"—"}<br>
+<i class="fa-solid fa-compass"></i> 航向: ${lastCoords.heading||"—"}<br>
+<i class="fa-regular fa-clock"></i> 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
     })
-    .catch(() => {
-      document.getElementById('output').innerText = 
-`📍 纬度: ${lat}
-📍 经度: ${lng}
-🎯 精度: ±${lastCoords.accuracy} 米
-⛰️ 海拔高度: ${gpsAlt != null ? gpsAlt.toFixed(1) : "—"} m
-🌍 相对地面高度: — m
-🚗 速度: ${lastCoords.speed || "—"} 
-🧭 航向: ${lastCoords.heading || "—"}
-⏱️ 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
+    .catch(()=>{
+      document.getElementById('output').innerHTML=
+`<i class="fa-solid fa-location-dot"></i> 纬度: ${lat}<br>
+<i class="fa-solid fa-location-dot"></i> 经度: ${lng}<br>
+<i class="fa-solid fa-bullseye"></i> 精度: ±${lastCoords.accuracy} 米<br>
+<i class="fa-solid fa-mountain"></i> 海拔高度: ${gpsAlt!=null?gpsAlt.toFixed(1):"—"} m<br>
+<i class="fa-solid fa-earth-asia"></i> 相对地面高度: — m<br>
+<i class="fa-solid fa-car"></i> 速度: ${lastCoords.speed||"—"}<br>
+<i class="fa-solid fa-compass"></i> 航向: ${lastCoords.heading||"—"}<br>
+<i class="fa-regular fa-clock"></i> 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
     });
 }
 
-function startTracking() {
-  if (!navigator.geolocation) {
-    document.getElementById('output').innerText = "❌ 当前浏览器不支持定位";
-    return;
-  }
-
-  document.getElementById('output').innerText = "⏳ 正在追踪位置...";
-
-  watchId = navigator.geolocation.watchPosition(
-    pos => {
-      const c = pos.coords;
-      const lat = parseFloat(c.latitude).toFixed(6);
-      const lng = parseFloat(c.longitude).toFixed(6);
-      const acc = c.accuracy?.toFixed(1);
-      const alt = c.altitude != null ? c.altitude : 0;
-      const speed = c.speed != null ? (c.speed * 3.6).toFixed(1) + " km/h" : "—";
-      const heading = c.heading != null ? c.heading.toFixed(1) + "°" : "—";
-
-      lastCoords = { lat, lng, altitude: alt, accuracy: acc, speed, heading, timestamp: pos.timestamp };
-
-      const latNum = parseFloat(lat);
-      const lngNum = parseFloat(lng);
-
-      if (marker) {
-        marker.setLatLng([latNum, lngNum]);
-      } else {
-        marker = L.marker([latNum, lngNum]).addTo(map).bindPopup("你在这里").openPopup();
-      }
-
-      if (firstLocate) {
-        map.setView([latNum, lngNum], 16); 
-        firstLocate = false;
-      } else {
-        map.setView([latNum, lngNum], map.getZoom());
-      }
-
-      // 实时刷新高度和经纬度信息
-      updateHeight(latNum, lngNum, alt);
-
-      // 地址按原规则更新
-      updateAddress(latNum, lngNum);
-
+// 页面加载时地图实时跟随
+function initMapFollow(){
+  if(!navigator.geolocation) return;
+  watchIdMap=navigator.geolocation.watchPosition(
+    pos=>{
+      const lat=pos.coords.latitude;
+      const lng=pos.coords.longitude;
+      if(marker){ marker.setLatLng([lat,lng]); }
+      else{ marker=L.marker([lat,lng]).addTo(map).bindPopup("你在这里").openPopup(); }
+      map.setView([lat,lng],16);
     },
-    err => {
-      document.getElementById('output').innerText = "❌ 定位失败: " + err.message;
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    err=>{ console.log("地图跟随失败:",err.message); },
+    { enableHighAccuracy:true }
   );
 }
 
-function stopTracking() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-    document.getElementById('output').innerText = "✅ 已停止追踪";
-    document.getElementById('address').innerText = "🏠 地址: 未获取";
-  }
+// 点击开始显示完整信息
+function startTracking(){
+  if(!navigator.geolocation){ showModal("❌ 当前浏览器不支持定位"); return; }
+  document.getElementById('output').innerHTML='<i class="fa-solid fa-location-crosshairs"></i> 正在追踪位置...';
+  watchIdFull=navigator.geolocation.watchPosition(
+    pos=>{
+      const c=pos.coords;
+      const lat=parseFloat(c.latitude).toFixed(6);
+      const lng=parseFloat(c.longitude).toFixed(6);
+      const acc=c.accuracy?.toFixed(1);
+      const alt=c.altitude!=null?c.altitude:0;
+      const speed=c.speed!=null?(c.speed*3.6).toFixed(1)+" km/h":"—";
+      const heading=c.heading!=null?c.heading.toFixed(1)+"°":"—";
+      lastCoords={lat,lng,altitude:alt,accuracy:acc,speed,heading,timestamp:pos.timestamp};
+      updateOutput(lat,lng,alt);
+      updateAddress(lat,lng);
+    },
+    err=>{ showModal("❌ 定位失败: "+err.message); },
+    { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+  );
 }
 
-function openInMap() {
-  if (!lastCoords) {
-    alert("请先获取定位！");
-    return;
-  }
-  const { lat, lng } = lastCoords;
-  window.open(`https://maps.google.com/?q=${lat},${lng}`, "_blank");
+function stopTracking(){
+  if(watchIdFull!=null){ navigator.geolocation.clearWatch(watchIdFull); watchIdFull=null; }
+  document.getElementById('output').innerHTML='<i class="fa-solid fa-stop"></i> 已停止追踪';
+  document.getElementById('address').innerHTML=`<i class="fa-solid fa-house"></i> 地址: 未获取`;
 }
+
+function openInMap(){
+  if(!lastCoords){ showModal("⚠️ 请先获取定位！"); return; }
+  const {lat,lng}=lastCoords;
+  window.open(`https://maps.google.com/?q=${lat},${lng}`,"_blank");
+}
+
+// 页面加载启动地图跟随
+initMapFollow();
 </script>
+
 </body>
 </html>
