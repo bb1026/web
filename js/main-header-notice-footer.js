@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ==================== 菜单功能部分 ====================
   let allData = {};
-  const maxDisplay = 6;
+  const maxDisplay = 9;
   const excludedCategories = ['首页', '关于', '留言板'];
 
   function renderMenu() {
