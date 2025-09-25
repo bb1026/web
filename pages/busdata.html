@@ -64,7 +64,8 @@ const apiUrls = {
   busStops: "https://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="
 };
 const maxSkip = { busRoutes: 26000, busServices: 1000, busStops: 5500 };
-const headers = { AccountKey: atob("WFhQZ2RyNVFTZGlGZUROaGdoR0dydz09"), Accept: "application/json" };
+const headers = { AccountKey: process.env.LTA_API_KEY, 
+  Accept: "application/json" };
 
 const statusDiv = document.getElementById('status');
 function logStatus(msg) { statusDiv.innerText += msg + '\n'; }
