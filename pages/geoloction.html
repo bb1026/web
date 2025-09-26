@@ -27,16 +27,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, Arial; margin:0; padding:
 }
 #modalBox button { margin-top:15px; background:#007bff; color:#fff; padding:8px 14px; border-radius:6px; border:none; }
 
-/* 底部按钮栏 */
+/* 按钮栏：放在地址下方、地图上方 */
 .button-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: #f8f9fa;
   display: flex; flex-wrap: nowrap; overflow-x: auto;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;
+  background: #f8f9fa;
 }
 .button-bar button {
   flex: 1 0 auto;
-  padding: 12px 8px;
+  padding: 10px 6px;
   border: none;
   background: none;
   font-size: 14px;
@@ -49,6 +48,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, Arial; margin:0; padding:
 
 <div id="output"><i class="fa-solid fa-location-crosshairs"></i> 等待定位...</div>
 <div id="address"><i class="fa-solid fa-house"></i> 地址: 未获取</div>
+
+<!-- 按钮栏：地址下方 -->
+<div class="button-bar">
+  <button onclick="openGoogleMap()"><i class="fa-brands fa-google"></i> 谷歌</button>
+  <button onclick="openAppleMap()"><i class="fa-brands fa-apple"></i> 苹果</button>
+  <button onclick="openAmap()"><i class="fa-solid fa-location-dot"></i> 高德</button>
+  <button onclick="openTencentMap()"><i class="fa-brands fa-qq"></i> 腾讯</button>
+  <button onclick="openBaiduMap()"><i class="fa-solid fa-map"></i> 百度</button>
+</div>
+
 <div id="map"></div>
 
 <!-- 弹窗 -->
@@ -59,18 +68,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, Arial; margin:0; padding:
   </div>
 </div>
 
-<!-- 底部按钮栏 -->
-<div class="button-bar">
-  <button onclick="openGoogleMap()"><i class="fa-brands fa-google"></i> 谷歌</button>
-  <button onclick="openAppleMap()"><i class="fa-brands fa-apple"></i> 苹果</button>
-  <button onclick="openAmap()"><i class="fa-solid fa-location-dot"></i> 高德</button>
-  <button onclick="openTencentMap()"><i class="fa-brands fa-qq"></i> 腾讯</button>
-  <button onclick="openBaiduMap()"><i class="fa-solid fa-map"></i> 百度</button>
-</div>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let watchIdMap = null;
 let lastCoords = null;
 let lastAddressTime = 0;
 let map, marker;
