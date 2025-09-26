@@ -10,16 +10,12 @@
 
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, Arial; margin:0; padding:0; }
-#controls { padding: 10px; text-align: center; }
-button { padding: 10px 16px; margin: 5px; border: none; border-radius: 6px; font-size: 14px; cursor:pointer; }
-.start { background: #28a745; color: #fff; }
-.stop { background: #dc3545; color: #fff; }
-.mapbtn { background: #007bff; color: #fff; }
 #output, #address { padding: 10px; font-size: 14px; white-space: pre-line; }
 #address { color: #007bff; }
 #map { height: 400px; width: 100%; margin-top: 5px; }
 #output i, #address i { color: #007bff; margin-right: 5px; }
 
+/* 弹窗 */
 #modalOverlay {
   display: none;
   position: fixed; top:0; left:0; right:0; bottom:0;
@@ -29,27 +25,33 @@ button { padding: 10px 16px; margin: 5px; border: none; border-radius: 6px; font
   position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
   background-color:#fff; padding:20px 30px; border-radius:8px; text-align:center; max-width:80%;
 }
-#modalBox button { margin-top:15px; background:#007bff; color:#fff; padding:8px 14px; border-radius:6px; }
+#modalBox button { margin-top:15px; background:#007bff; color:#fff; padding:8px 14px; border-radius:6px; border:none; }
+
+/* 底部按钮栏 */
+.button-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #f8f9fa;
+  display: flex; flex-wrap: nowrap; overflow-x: auto;
+  border-top: 1px solid #ccc;
+}
+.button-bar button {
+  flex: 1 0 auto;
+  padding: 12px 8px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+.button-bar button i { margin-right: 5px; }
 </style>
 </head>
 <body>
 
-<div id="controls">
-  <button class="start" onclick="startTracking()">
-    <i class="fa-solid fa-location-crosshairs"></i> 开始追踪
-  </button>
-  <button class="stop" onclick="stopTracking()">
-    <i class="fa-solid fa-stop"></i> 停止追踪
-  </button>
-  <button class="mapbtn" onclick="openInMap()">
-    <i class="fa-solid fa-map-location-dot"></i> 在地图中打开
-  </button>
-</div>
-
-<div id="output"><i class="fa-solid fa-location-crosshairs"></i> 等待操作...</div>
+<div id="output"><i class="fa-solid fa-location-crosshairs"></i> 等待定位...</div>
 <div id="address"><i class="fa-solid fa-house"></i> 地址: 未获取</div>
 <div id="map"></div>
 
+<!-- 弹窗 -->
 <div id="modalOverlay">
   <div id="modalBox">
     <div id="modalMessage"></div>
@@ -57,14 +59,21 @@ button { padding: 10px 16px; margin: 5px; border: none; border-radius: 6px; font
   </div>
 </div>
 
+<!-- 底部按钮栏 -->
+<div class="button-bar">
+  <button onclick="openGoogleMap()"><i class="fa-brands fa-google"></i> 谷歌</button>
+  <button onclick="openAppleMap()"><i class="fa-brands fa-apple"></i> 苹果</button>
+  <button onclick="openAmap()"><i class="fa-solid fa-location-dot"></i> 高德</button>
+  <button onclick="openTencentMap()"><i class="fa-brands fa-qq"></i> 腾讯</button>
+  <button onclick="openBaiduMap()"><i class="fa-solid fa-map"></i> 百度</button>
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let watchIdMap = null; // 地图实时跟随
-let watchIdFull = null; // 点击开始追踪后显示完整信息
+let watchIdMap = null;
 let lastCoords = null;
 let lastAddressTime = 0;
 let map, marker;
-let firstLocate = true;
 let lastLatLng = null;
 
 // 初始化地图
@@ -82,6 +91,7 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
+// 计算距离
 function getDistance(lat1,lng1,lat2,lng2){
   const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
@@ -89,6 +99,7 @@ function getDistance(lat1,lng1,lat2,lng2){
   return R*c;
 }
 
+// 地址更新
 function updateAddress(lat,lng){
   const now=Date.now();
   if(now-lastAddressTime<10000) return;
@@ -106,7 +117,8 @@ function updateAddress(lat,lng){
     .catch(()=>{document.getElementById('address').innerHTML=`<i class="fa-solid fa-house"></i> 地址获取失败`;});
 }
 
-function updateOutput(lat,lng,gpsAlt){
+// 信息更新
+function updateOutput(lat,lng,gpsAlt,acc,speed,heading,timestamp){
   fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`)
     .then(res=>res.json())
     .then(data=>{
@@ -115,47 +127,30 @@ function updateOutput(lat,lng,gpsAlt){
       document.getElementById('output').innerHTML=
 `<i class="fa-solid fa-location-dot"></i> 纬度: ${lat}<br>
 <i class="fa-solid fa-location-dot"></i> 经度: ${lng}<br>
-<i class="fa-solid fa-bullseye"></i> 精度: ±${lastCoords.accuracy} 米<br>
+<i class="fa-solid fa-bullseye"></i> 精度: ±${acc} 米<br>
 <i class="fa-solid fa-mountain"></i> 海拔高度: ${gpsAlt!=null?gpsAlt.toFixed(1):"—"} m<br>
 <i class="fa-solid fa-earth-asia"></i> 相对地面高度: ${relHeight.toFixed(1)} m<br>
-<i class="fa-solid fa-car"></i> 速度: ${lastCoords.speed||"—"}<br>
-<i class="fa-solid fa-compass"></i> 航向: ${lastCoords.heading||"—"}<br>
-<i class="fa-regular fa-clock"></i> 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
+<i class="fa-solid fa-car"></i> 速度: ${speed}<br>
+<i class="fa-solid fa-compass"></i> 航向: ${heading}<br>
+<i class="fa-regular fa-clock"></i> 时间: ${new Date(timestamp).toLocaleTimeString()}`;
     })
     .catch(()=>{
       document.getElementById('output').innerHTML=
 `<i class="fa-solid fa-location-dot"></i> 纬度: ${lat}<br>
 <i class="fa-solid fa-location-dot"></i> 经度: ${lng}<br>
-<i class="fa-solid fa-bullseye"></i> 精度: ±${lastCoords.accuracy} 米<br>
+<i class="fa-solid fa-bullseye"></i> 精度: ±${acc} 米<br>
 <i class="fa-solid fa-mountain"></i> 海拔高度: ${gpsAlt!=null?gpsAlt.toFixed(1):"—"} m<br>
 <i class="fa-solid fa-earth-asia"></i> 相对地面高度: — m<br>
-<i class="fa-solid fa-car"></i> 速度: ${lastCoords.speed||"—"}<br>
-<i class="fa-solid fa-compass"></i> 航向: ${lastCoords.heading||"—"}<br>
-<i class="fa-regular fa-clock"></i> 时间: ${new Date(lastCoords.timestamp).toLocaleTimeString()}`;
+<i class="fa-solid fa-car"></i> 速度: ${speed}<br>
+<i class="fa-solid fa-compass"></i> 航向: ${heading}<br>
+<i class="fa-regular fa-clock"></i> 时间: ${new Date(timestamp).toLocaleTimeString()}`;
     });
 }
 
-// 页面加载时地图实时跟随
-function initMapFollow(){
-  if(!navigator.geolocation) return;
-  watchIdMap=navigator.geolocation.watchPosition(
-    pos=>{
-      const lat=pos.coords.latitude;
-      const lng=pos.coords.longitude;
-      if(marker){ marker.setLatLng([lat,lng]); }
-      else{ marker=L.marker([lat,lng]).addTo(map).bindPopup("你在这里").openPopup(); }
-      map.setView([lat,lng],16);
-    },
-    err=>{ console.log("地图跟随失败:",err.message); },
-    { enableHighAccuracy:true }
-  );
-}
-
-// 点击开始显示完整信息
-function startTracking(){
+// 定位函数
+function locateOnce(){
   if(!navigator.geolocation){ showModal("❌ 当前浏览器不支持定位"); return; }
-  document.getElementById('output').innerHTML='<i class="fa-solid fa-location-crosshairs"></i> 正在追踪位置...';
-  watchIdFull=navigator.geolocation.watchPosition(
+  navigator.geolocation.getCurrentPosition(
     pos=>{
       const c=pos.coords;
       const lat=parseFloat(c.latitude).toFixed(6);
@@ -165,7 +160,12 @@ function startTracking(){
       const speed=c.speed!=null?(c.speed*3.6).toFixed(1)+" km/h":"—";
       const heading=c.heading!=null?c.heading.toFixed(1)+"°":"—";
       lastCoords={lat,lng,altitude:alt,accuracy:acc,speed,heading,timestamp:pos.timestamp};
-      updateOutput(lat,lng,alt);
+
+      if(marker){ marker.setLatLng([lat,lng]); }
+      else{ marker=L.marker([lat,lng]).addTo(map).bindPopup("你在这里").openPopup(); }
+      map.setView([lat,lng],16);
+
+      updateOutput(lat,lng,alt,acc,speed,heading,pos.timestamp);
       updateAddress(lat,lng);
     },
     err=>{ showModal("❌ 定位失败: "+err.message); },
@@ -173,20 +173,31 @@ function startTracking(){
   );
 }
 
-function stopTracking(){
-  if(watchIdFull!=null){ navigator.geolocation.clearWatch(watchIdFull); watchIdFull=null; }
-  document.getElementById('output').innerHTML='<i class="fa-solid fa-stop"></i> 已停止追踪';
-  document.getElementById('address').innerHTML=`<i class="fa-solid fa-house"></i> 地址: 未获取`;
+// 打开地图函数
+function openGoogleMap() {
+  if (!lastCoords) { showModal("⚠️ 请先获取定位！"); return; }
+  window.open(`https://maps.google.com/?q=${lastCoords.lat},${lastCoords.lng}`, "_blank");
+}
+function openAppleMap() {
+  if (!lastCoords) { showModal("⚠️ 请先获取定位！"); return; }
+  window.open(`http://maps.apple.com/?ll=${lastCoords.lat},${lastCoords.lng}`, "_blank");
+}
+function openAmap() {
+  if (!lastCoords) { showModal("⚠️ 请先获取定位！"); return; }
+  window.open(`https://uri.amap.com/marker?position=${lastCoords.lng},${lastCoords.lat}`, "_blank");
+}
+function openTencentMap() {
+  if (!lastCoords) { showModal("⚠️ 请先获取定位！"); return; }
+  window.open(`https://map.qq.com/?type=marker&isopeninfowin=1&markertype=1&lat=${lastCoords.lat}&lng=${lastCoords.lng}`, "_blank");
+}
+function openBaiduMap() {
+  if (!lastCoords) { showModal("⚠️ 请先获取定位！"); return; }
+  window.open(`https://api.map.baidu.com/marker?location=${lastCoords.lat},${lastCoords.lng}&title=我的位置&output=html`, "_blank");
 }
 
-function openInMap(){
-  if(!lastCoords){ showModal("⚠️ 请先获取定位！"); return; }
-  const {lat,lng}=lastCoords;
-  window.open(`https://maps.google.com/?q=${lat},${lng}`,"_blank");
-}
-
-// 页面加载启动地图跟随
-initMapFollow();
+// 页面加载立即定位，并每分钟更新一次
+locateOnce();
+setInterval(locateOnce, 60000);
 </script>
 
 </body>
