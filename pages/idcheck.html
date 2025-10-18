@@ -123,68 +123,77 @@
   }
 
   async function validateID() {
-    const id = document.getElementById("idInput").value.trim();
-    const resultDiv = document.getElementById("result");
-    const qrDiv = document.getElementById("qrcode");
-    qrDiv.innerHTML = ''; // 清空二维码
+  const id = document.getElementById("idInput").value.trim();
+  const resultDiv = document.getElementById("result");
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = ''; // 清空二维码
 
-    if (!/^\d{17}[\dXx]$/.test(id)) {
-      resultDiv.innerHTML = `<div class="error">❌ 无效的身份证号码格式</div>`;
-      return;
-    }
-
-    if (!isValidChecksum(id)) {
-      resultDiv.innerHTML = `<div class="error">❌ 校验码错误：身份证号码不合法</div>`;
-      return;
-    }
-
-    const birth = id.substring(6, 14);
-    const year = birth.substring(0, 4);
-    const month = birth.substring(4, 6);
-    const day = birth.substring(6, 8);
-
-    const now = new Date();
-    let age = now.getFullYear() - parseInt(year);
-    if (parseInt(month) > now.getMonth() + 1 ||
-        (parseInt(month) === now.getMonth() + 1 && parseInt(day) > now.getDate())) {
-      age--;
-    }
-
-    const zodiac = ["猴", "鸡", "狗", "猪", "鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊"][parseInt(year) % 12];
-    const gender = parseInt(id.charAt(16)) % 2 === 1 ? "男" : "女";
+  let region = "未知地区";
+  try {
+    const res = await fetch("../json/region.json");
+    const data = await res.json();
     const code = id.substring(0, 6);
+    region = data[code] || "未知地区";
+  } catch (e) {
+    region = "（地区信息获取失败）";
+  }
 
-    let region = "未知地区";
-    try {
-      const res = await fetch("../json/region.json");
-      const data = await res.json();
-      region = data[code] || "未知地区";
-    } catch (e) {
-      region = "（地区信息获取失败）";
-    }
-
-    const summary = 
-      `身份证号码：${id}\n` +
-      `出生日期：${year}年${month}月${day}日\n` +
-      `年龄：${age}岁\n` +
-      `性别：${gender}\n` +
-      `生肖：${zodiac}\n` +
-      `地区：${region}`;
-
+  // 校验格式
+  if (!/^\d{17}[\dXx]$/.test(id)) {
     resultDiv.innerHTML = `
-      <div class="success">✅ 身份证号码验证成功</div>
-      <strong>出生日期：</strong>${year}年${month}月${day}日<br>
-      <strong>年龄：</strong>${age} 岁<br>
-      <strong>性别：</strong>${gender}<br>
-      <strong>生肖：</strong>${zodiac}<br>
+      <div class="error">❌ 无效的身份证号码格式</div>
       <strong>地区：</strong>${region}
     `;
-
-    // 生成二维码
-    QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
-      if (!err) qrDiv.appendChild(canvas);
-    });
+    return;
   }
+
+  // 校验校验码
+  if (!isValidChecksum(id)) {
+    resultDiv.innerHTML = `
+      <div class="error">❌ 校验码错误：身份证号码不合法</div>
+      <strong>地区：</strong>${region}
+    `;
+    return;
+  }
+
+  // 身份证合法，正常显示信息
+  const birth = id.substring(6, 14);
+  const year = birth.substring(0, 4);
+  const month = birth.substring(4, 6);
+  const day = birth.substring(6, 8);
+
+  const now = new Date();
+  let age = now.getFullYear() - parseInt(year);
+  if (parseInt(month) > now.getMonth() + 1 ||
+      (parseInt(month) === now.getMonth() + 1 && parseInt(day) > now.getDate())) {
+    age--;
+  }
+
+  const zodiac = ["猴", "鸡", "狗", "猪", "鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊"][parseInt(year) % 12];
+  const gender = parseInt(id.charAt(16)) % 2 === 1 ? "男" : "女";
+
+  const summary = 
+    `身份证号码：${id}\n` +
+    `出生日期：${year}年${month}月${day}日\n` +
+    `年龄：${age}岁\n` +
+    `性别：${gender}\n` +
+    `生肖：${zodiac}\n` +
+    `地区：${region}`;
+
+  resultDiv.innerHTML = `
+    <div class="success">✅ 身份证号码验证成功</div>
+    <strong>出生日期：</strong>${year}年${month}月${day}日<br>
+    <strong>年龄：</strong>${age} 岁<br>
+    <strong>性别：</strong>${gender}<br>
+    <strong>生肖：</strong>${zodiac}<br>
+    <strong>地区：</strong>${region}
+  `;
+
+  // 生成二维码
+  QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
+    if (!err) qrDiv.appendChild(canvas);
+  });
+}
 </script>
 </body>
 </html>
