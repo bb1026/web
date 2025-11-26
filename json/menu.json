@@ -9,7 +9,8 @@
     ["个人网盘", "/pan/"],
     ["日历订阅", "/calendar/"],
     ["自制日历", "/calendar/calendaredit.html"],
-    ["定位", "/pages/geoloction.html"]
+    ["定位", "/pages/geoloction.html"],
+    ["倒计时", "/pages/countdown.html"]
   ],
   "代码工具": [
     ["VBA 代码混淆器 / 还原器", "/pages/vba.html"],
