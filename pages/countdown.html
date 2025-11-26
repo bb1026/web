@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>倒计时管理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
+body{background:linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);color:white;min-height:100vh;padding:20px;}
+.container{max-width:1200px;margin:0 auto;}
+header{text-align:center;margin-bottom:30px;padding:20px;background:rgba(0,0,0,0.3);border-radius:15px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.2);}
+h1{font-size:2.5rem;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,0.5);}
+.subtitle{font-size:1.1rem;opacity:0.9;}
+
+#timeZoneBox{
+  margin-top:10px;
+  padding:10px 15px;
+  background:rgba(255,255,255,0.15);
+  border-radius:12px;
+  display:inline-block;
+  text-align:center;
+  font-size:0.95rem;
+  line-height:1.5;
+  box-shadow:0 4px 16px rgba(0,0,0,0.2);
+}
+#networkTime{
+  font-size:1.2rem;
+  font-weight:bold;
+  margin-top:5px;
+}
+
+.countdowns-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:25px;margin-bottom:40px;}
+.countdown-card{background:rgba(255,255,255,0.15);border-radius:15px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.2);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.18);transition:transform .3s,box-shadow .3s;cursor:move;position:relative;display:flex;flex-direction:column;height:100%;}
+.countdown-card.immutable{cursor:default;opacity:.95;}
+.countdown-card:hover{transform:translateY(-5px);box-shadow:0 12px 36px rgba(0,0,0,0.3);}
+.countdown-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
+.countdown-title{font-size:1.4rem;font-weight:600;}
+.countdown-date{font-size:.9rem;opacity:.8;}
+.countdown-days{font-size:1.2rem;text-align:center;margin:15px 0;font-weight:600;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
+.countdown-time{font-size:2rem;font-weight:700;text-align:center;margin:15px 0;text-shadow:2px 2px 4px rgba(0,0,0,0.3);}
+.countdown-content{font-size:.95rem;line-height:1.5;margin-bottom:15px;opacity:.9;flex-grow:1;}
+.countdown-actions{display:flex;justify-content:space-between;margin-top:auto;}
+.btn{padding:8px 15px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:.3s;}
+.btn-edit{background:rgba(255,255,255,0.2);color:white;}
+.btn-edit:hover{background:rgba(255,255,255,0.3);}
+.btn-delete{background:rgba(255,0,0,0.7);color:white;}
+.btn-delete:hover{background:rgba(255,0,0,0.9);}
+.add-countdown{display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,0.1);border-radius:15px;height:200px;cursor:pointer;transition:.3s;border:2px dashed rgba(255,255,255,0.3);user-select:none;}
+.add-countdown:hover{background:rgba(255,255,255,0.2);transform:scale(1.02);}
+.add-icon{font-size:4rem;font-weight:300;color:rgba(255,255,255,0.7);}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:100;justify-content:center;align-items:center;}
+.modal-content{background:linear-gradient(135deg,#1a2a6c,#b21f1f);padding:30px;border-radius:15px;width:90%;max-width:500px;box-shadow:0 15px 50px rgba(0,0,0,0.5);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-title{font-size:1.5rem;font-weight:600;}
+.close-modal{background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;}
+.form-group{margin-bottom:20px;}
+label{display:block;margin-bottom:8px;font-weight:500;}
+input,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:white;font-size:1rem;}
+textarea{min-height:100px;resize:vertical;}
+.btn-primary{background:#fdbb2d;color:#1a2a6c;padding:12px 25px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:.3s;}
+.btn-primary:hover{background:#ffcc44;transform:translateY(-2px);}
+.btn-secondary{background:rgba(255,255,255,0.2);color:white;margin-right:10px;padding:12px 25px;border:none;border-radius:8px;font-size:1rem;font-weight:600;}
+.dragging{opacity:.7;transform:rotate(5deg);}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <header>
+        <h1>倒计时管理</h1>
+        <p class="subtitle">记录重要时刻，不错过每一个精彩瞬间</p>
+
+        <div id="timeZoneBox">
+            <div id="zoneText">时区加载中...</div>
+            <div id="networkTime">时间加载中...</div>
+        </div>
+    </header>
+
+    <div class="countdowns-container" id="countdownsContainer"></div>
+</div>
+
+
+<div class="modal" id="countdownModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">添加新倒计时</h2>
+            <button class="close-modal" id="closeModal">&times;</button>
+        </div>
+
+        <form id="countdownForm">
+            <input type="hidden" id="editId">
+
+            <div class="form-group">
+                <label for="title">标题</label>
+                <input type="text" id="title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="date">日期</label>
+                <input type="datetime-local" id="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="content">描述</label>
+                <textarea id="content"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelBtn">取消</button>
+                <button type="submit" class="btn-primary" id="submitBtn">添加倒计时</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+/* ==========================================
+   #1 网络时间同步器（核心）
+========================================== */
+let networkNow = new Date();
+let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+let networkOffset = 0; // 网络时间 - 本地时间 的毫秒差
+
+async function syncNetworkTime() {
+    try {
+        const res = await fetch("https://worldtimeapi.org/api/ip", { cache: "no-store" });
+        const data = await res.json();
+
+        networkNow = new Date(data.datetime);
+        timezone = data.timezone;
+        const utcOffset = data.utc_offset; // e.g., "+08:00"
+
+        // 计算网络时间与本地时间差
+        networkOffset = networkNow.getTime() - Date.now();
+
+        document.getElementById("zoneText").textContent =
+            `当前时区：${timezone} (${utcOffset.replace(":","")})`; // +0800 格式
+
+    } catch {
+        networkOffset = 0;
+        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        const offsetMinutes = -new Date().getTimezoneOffset();
+        const sign = offsetMinutes >=0 ? "+" : "-";
+        const h = String(Math.floor(Math.abs(offsetMinutes)/60)).padStart(2,"0");
+        const m = String(Math.abs(offsetMinutes)%60).padStart(2,"0");
+
+        document.getElementById("zoneText").textContent =
+            `当前时区：${timezone} (${sign}${h}${m})`;
+    }
+}
+syncNetworkTime();
+// 每 30 秒同步一次网络时间
+setInterval(syncNetworkTime, 30000);
+
+// 获取真实现在时间（网络优先）
+function getRealNow() {
+    return new Date(Date.now() + networkOffset);
+}
+
+// 顶部每秒更新时间
+setInterval(() => {
+    document.getElementById("networkTime").textContent =
+        formatDateTime(getRealNow());
+}, 1000);
+
+
+// 格式化时间
+function formatDateTime(d) {
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const day=String(d.getDate()).padStart(2,"0");
+    const h=String(d.getHours()).padStart(2,"0");
+    const mi=String(d.getMinutes()).padStart(2,"0");
+    const s=String(d.getSeconds()).padStart(2,"0");
+    return `${y}-${m}-${day} ${h}:${mi}:${s}`;
+}
+
+
+/* ==========================================
+   #2 倒计时渲染逻辑
+========================================== */
+function formatForInput(date){
+    const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),
+    d=String(date.getDate()).padStart(2,'0'),
+    h=String(date.getHours()).padStart(2,'0'),
+    mm=String(date.getMinutes()).padStart(2,'0');
+    return`${y}-${m}-${d}T${h}:${mm}`;
+}
+
+function escapeHtml(str){return str?str
+ .replace(/&/g,'&amp;')
+ .replace(/</g,'&lt;')
+ .replace(/>/g,'&gt;')
+ .replace(/"/g,'&quot;')
+ .replace(/'/g,'&#39;'):"";}
+
+/* 🔥 使用网络时间计算剩余时间 */
+function calculateTimeRemaining(dt){
+    let [datePart,timePart]=dt.split("T");
+    let [y,m,d]=datePart.split("-").map(Number);
+    let [hh,mm]=timePart.split(":").map(Number);
+
+    let target=new Date(y,m-1,d,hh,mm);
+    let now=getRealNow(); 
+
+    let diff=target-now;
+    if(diff<=0) return{days:0,hours:0,minutes:0,seconds:0,isOver:true};
+
+    return{
+        days:Math.floor(diff/86400000),
+        hours:Math.floor(diff%86400000/3600000),
+        minutes:Math.floor(diff%3600000/60000),
+        seconds:Math.floor(diff%60000/1000),
+        isOver:false
+    };
+}
+
+function formatTimeRemaining(t){
+    if(t.isOver) return"已过期";
+    return`${String(t.hours).padStart(2,'0')}:${String(t.minutes).padStart(2,'0')}:${String(t.seconds).padStart(2,'0')}`;
+}
+
+function formatDisplayDate(dt){
+    let [d,t]=dt.split("T");
+    let[a,b,c]=d.split("-").map(Number);
+    let[hh,mm]=t.split(":").map(Number);
+    return`${a}年${b}月${c}日 ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+
+
+/* ========== 本地存储 ========= */
+let countdowns=JSON.parse(localStorage.getItem("countdowns"))||[];
+if(countdowns.length===0){
+    const nextNY=new Date(new Date().getFullYear()+1,0,1,0,0);
+    countdowns.push({
+        id:Date.now(),
+        title:"元旦",
+        date:formatForInput(nextNY),
+        content:"新的一年，新的开始！",
+        position:0,
+        immutable:true
+    });
+    saveCountdowns();
+}
+function saveCountdowns(){
+    localStorage.setItem("countdowns",JSON.stringify(countdowns));
+}
+
+/* ========== 渲染 ========= */
+const container=document.getElementById("countdownsContainer");
+const modal=document.getElementById("countdownModal");
+const form=document.getElementById("countdownForm");
+const modalTitle=document.getElementById("modalTitle");
+const submitBtn=document.getElementById("submitBtn");
+
+function renderCountdowns(){
+    countdowns.sort((a,b)=>a.position-b.position);
+    container.innerHTML="";
+
+    countdowns.forEach(cd=>{
+        const card=document.createElement("div");
+        card.className="countdown-card";
+        card.dataset.id=cd.id;
+        card.draggable=!cd.immutable;
+
+        let t=calculateTimeRemaining(cd.date);
+
+        card.innerHTML=`
+            <div class="countdown-header">
+                <div class="countdown-title">${escapeHtml(cd.title)}</div>
+                <div class="countdown-date">${formatDisplayDate(cd.date)}</div>
+            </div>
+            ${t.days>0?`<div class="countdown-days">${t.days} 天</div>`:""}
+            <div class="countdown-time" id="time-${cd.id}">
+                ${formatTimeRemaining(t)}
+            </div>
+            <div class="countdown-content">${escapeHtml(cd.content)}</div>
+            ${
+                cd.immutable
+                ? ""
+                : `
+                    <div class="countdown-actions">
+                        <button class="btn btn-edit" data-id="${cd.id}">修改</button>
+                        <button class="btn btn-delete" data-id="${cd.id}">删除</button>
+                    </div>
+                `
+            }
+        `;
+        container.appendChild(card);
+    });
+
+    const add=document.createElement("div");
+    add.className="add-countdown";
+    add.id="addCountdownBtn";
+    add.innerHTML='<div class="add-icon">+</div>';
+    container.appendChild(add);
+
+    document.getElementById("addCountdownBtn").onclick=openAddModal;
+
+    setupDragAndDrop();
+}
+
+/* ========== 拖拽 ========== */
+function setupDragAndDrop(){
+    const cards=document.querySelectorAll(".countdown-card:not(.immutable)");
+    let dragEl=null;
+
+    cards.forEach(card=>{
+        card.addEventListener("dragstart",()=>{
+            dragEl=card;
+            card.classList.add("dragging");
+        });
+
+        card.addEventListener("dragend",()=>{
+            dragEl.classList.remove("dragging");
+            dragEl=null;
+            saveOrder();
+        });
+    });
+
+    container.addEventListener("dragover",e=>{
+        e.preventDefault();
+        const after=getDragAfterElement(container,e.clientY);
+        if(after==null) container.appendChild(dragEl);
+        else container.insertBefore(dragEl,after);
+    });
+}
+
+function getDragAfterElement(container,y){
+    const els=[...container.querySelectorAll(".countdown-card:not(.dragging):not(.immutable)")];
+    return els.reduce((closest,child)=>{
+        const box=child.getBoundingClientRect();
+        const offset=y-box.top-box.height/2;
+        if(offset<0 && offset>closest.offset){
+            return{offset:offset,element:child};
+        }return closest;
+    },{offset:Number.NEGATIVE_INFINITY}).element;
+}
+
+function saveOrder(){
+    const order=[...document.querySelectorAll(".countdown-card")].map((el,i)=>({
+        id:Number(el.dataset.id),
+        position:i
+    }));
+    order.forEach(o=>{
+        const item=countdowns.find(c=>c.id===o.id);
+        if(item) item.position=o.position;
+    });
+    saveCountdowns();
+}
+
+
+/* ========== 添加 & 修改 & 删除 ========= */
+function openAddModal(){
+    modalTitle.textContent="添加新倒计时";
+    submitBtn.textContent="添加倒计时";
+    form.reset();
+    document.getElementById("editId").value="";
+    modal.style.display="flex";
+}
+
+function openEditModal(id){
+    let c=countdowns.find(x=>x.id===id);
+    if(!c||c.immutable) return;
+
+    modalTitle.textContent="修改倒计时";
+    submitBtn.textContent="保存修改";
+    document.getElementById("editId").value=id;
+    document.getElementById("title").value=c.title;
+    document.getElementById("date").value=c.date;
+    document.getElementById("content").value=c.content;
+    modal.style.display="flex";
+}
+
+function deleteCountdown(id){
+    let c=countdowns.find(x=>x.id===id);
+    if(!c||c.immutable) return;
+
+    if(confirm("确定删除？")){
+        countdowns=countdowns.filter(x=>x.id!==id);
+        countdowns.forEach((c,i)=>c.position=i);
+        saveCountdowns();
+        renderCountdowns();
+    }
+}
+
+form.onsubmit=e=>{
+    e.preventDefault();
+    let id=document.getElementById("editId").value;
+    let title=document.getElementById("title").value.trim();
+    let date=document.getElementById("date").value;
+    let content=document.getElementById("content").value.trim();
+
+    if(!id){
+        countdowns.push({
+            id:Date.now(),
+            title,date,content,
+            position:countdowns.length,
+            immutable:false
+        });
+    }else{
+        let c=countdowns.find(x=>x.id==id);
+        if(c&&!c.immutable){
+            c.title=title;
+            c.date=date;
+            c.content=content;
+        }
+    }
+
+    saveCountdowns();
+    renderCountdowns();
+    modal.style.display="none";
+};
+
+document.getElementById("closeModal").onclick=()=>modal.style.display="none";
+document.getElementById("cancelBtn").onclick=()=>modal.style.display="none";
+modal.onclick=e=>{if(e.target===modal) modal.style.display="none";};
+
+
+/* ========== 倒计时刷新（改用网络时间） ========== */
+setInterval(()=>{
+    countdowns.forEach(cd=>{
+        let el=document.getElementById(`time-${cd.id}`);
+        if(el){
+            let t=calculateTimeRemaining(cd.date);
+            el.textContent=formatTimeRemaining(t);
+
+            let daysEl=el.parentNode.querySelector(".countdown-days");
+            if(t.days>0){
+                if(!daysEl){
+                    daysEl=document.createElement("div");
+                    daysEl.className="countdown-days";
+                    el.parentNode.insertBefore(daysEl,el);
+                }
+                daysEl.textContent=`${t.days} 天`;
+            }else daysEl?.remove();
+        }
+    });
+},1000);
+
+
+/* 初始化 */
+renderCountdowns();
+
+/* 绑定按钮 */
+document.addEventListener("click",e=>{
+    if(e.target.classList.contains("btn-edit")){
+        openEditModal(Number(e.target.dataset.id));
+    }
+    if(e.target.classList.contains("btn-delete")){
+        deleteCountdown(Number(e.target.dataset.id));
+    }
+});
+</script>
+
+</body>
+</html>
