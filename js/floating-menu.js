@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 加载菜单数据（仅用于显示搜索建议）
     const loadMenuData = async () => {
         try {
-            const response = await fetch('/json/menu.json');
+            const response = await fetch(`./json/menu.json?timestamp=${Date.now()}`);
             if (!response.ok) throw new Error('网络响应不正常');
             const data = await response.json();
             
