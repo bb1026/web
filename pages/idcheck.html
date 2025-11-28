@@ -130,7 +130,7 @@
 
   let region = "未知地区";
   try {
-    const res = await fetch(`./json/region.json?timestamp=${Date.now()}`);
+    const res = await fetch(`/json/region.json?timestamp=${Date.now()}`);
     const data = await res.json();
     const code = id.substring(0, 6);
     region = data[code] || "未知地区";
