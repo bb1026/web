@@ -118,10 +118,27 @@ const lunarDayName=["","初一","初二","初三","初四","初五","初六","�
 
 function toFixed(n){return n<10?"0"+n:n;}
 function lYearDays(y){let sum=348;for(let i=0x8000;i>0x8;i>>=1){sum+=(lunarInfo[y-1900]&i)?1:0;}return sum+leapDays(y);}
+
 function leapMonth(y){return lunarInfo[y-1900]&0xf;}
+
 function leapDays(y){return leapMonth(y)?((lunarInfo[y-1900]&0x10000)?30:29):0;}
+
 function monthDays(y,m){return (lunarInfo[y-1900]&(0x10000>>m))?30:29;}
-function solarTerm(y,n){const base=new Date(Date.UTC(1900,0,6,2,5));const ms=31556925974.7*(y-1900)+sTermInfo[n]*60000;return new Date(base.getTime()+ms);}
+
+//function solarTerm(y,n){const base=new Date(Date.UTC(1900,0,6,2,5));const ms=31556925974.7*(y-1900)+sTermInfo[n]*60000;return new Date(base.getTime()+ms);}
+
+function solarTerm(y, n, timezoneOffset = 8) {
+  // 基础时间（UTC）
+  const base = new Date(Date.UTC(1900, 0, 6, 2, 5));
+  // 回归年毫秒数 + 节气偏移分钟数
+  const ms = 31556925974.7 * (y - 1900) + sTermInfo[n] * 60000;
+  // 计算 UTC 节气时刻
+  const utcTerm = new Date(base.getTime() + ms);
+  // 转换为目标时区时间（东八区默认 timezoneOffset=8）
+  const localTerm = new Date(utcTerm.getTime() + timezoneOffset * 3600 * 1000);
+  return localTerm;
+}
+
 function getWeekday(date){return ["日","一","二","三","四","五","六"][date.getDay()];}
 
 // 阳历转农历
@@ -229,7 +246,7 @@ function getYearCalendar(year) {
     let isSolarTerm = false;
     for (let i = 0; i < 24; i++) {
       const tDate = solarTerm(y, i);
-      if (tDate.getDate() === day && tDate.getMonth() + 1 === m) {
+      if (tDate.getFullYear() === y && tDate.getDate() === day && tDate.getMonth() + 1 === m) {
         term = solarTerms[i];
         isSolarTerm = true;
         break;
