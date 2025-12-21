@@ -125,18 +125,21 @@ function leapDays(y){return leapMonth(y)?((lunarInfo[y-1900]&0x10000)?30:29):0;}
 
 function monthDays(y,m){return (lunarInfo[y-1900]&(0x10000>>m))?30:29;}
 
-//function solarTerm(y,n){const base=new Date(Date.UTC(1900,0,6,2,5));const ms=31556925974.7*(y-1900)+sTermInfo[n]*60000;return new Date(base.getTime()+ms);}
+// ---------- 节气 ----------
+function solarTerm(y,n){
+  const baseDate = new Date(Date.UTC(1900,0,6,2,5)); // 基准时间
+  const sTermInfo=[0,21208,42467,63836,85337,107014,128867,150921,173149,195551,
+    218072,240693,263343,285989,308563,331033,353350,375494,397447,419210,
+    440795,462224,483532,504758];
+  const yearMs = 31556925974.7; // 平太阳年毫秒数
+  const ms = yearMs*(y-1900) + sTermInfo[n]*60000;
+  const dateUTC = new Date(baseDate.getTime() + ms);
 
-function solarTerm(y, n, timezoneOffset = 8) {
-  // 基础时间（UTC）
-  const base = new Date(Date.UTC(1900, 0, 6, 2, 5));
-  // 回归年毫秒数 + 节气偏移分钟数
-  const ms = 31556925974.7 * (y - 1900) + sTermInfo[n] * 60000;
-  // 计算 UTC 节气时刻
-  const utcTerm = new Date(base.getTime() + ms);
-  // 转换为目标时区时间（东八区默认 timezoneOffset=8）
-  const localTerm = new Date(utcTerm.getTime() + timezoneOffset * 3600 * 1000);
-  return localTerm;
+  // 转换为本地时间
+  const localDate = new Date(dateUTC.getTime() + dateUTC.getTimezoneOffset()*60000);
+
+  // 修正日期误差，取整到天
+  return new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate());
 }
 
 function getWeekday(date){return ["日","一","二","三","四","五","六"][date.getDay()];}
