@@ -93,7 +93,7 @@ const otherFestivals = {
   "12-01": "世界艾滋病日",
   "12-05": "国际志愿人员日",
   "12-10": "世界人权日",
-  "12-24": "长津湖胜利纪念日",
+  "12-24": ["长津湖胜利纪念日", "平安夜"],
   "12-25": "圣诞节",
   "12-31": "跨年夜",
   "母亲节": { month: 5, weekday: 0, weekIndex: 2 }, // 5月第二个星期日
@@ -241,8 +241,19 @@ function getYearCalendar(year) {
     const isLunarFestival = lunarF !== "";
 
     // 其他纪念日（固定日期 + 浮动节日）
-    let otherF = otherFestivals[toFixed(m) + "-" + toFixed(day)] || getFloatingFestival(y, m, day);
-    const isOtherFestival = otherF !== "";
+    let otherF = [];
+const fixedKey = toFixed(m) + "-" + toFixed(day);
+
+if (Array.isArray(otherFestivals[fixedKey])) {
+  otherF = otherFestivals[fixedKey];
+} else if (typeof otherFestivals[fixedKey] === "string") {
+  otherF = [otherFestivals[fixedKey]];
+}
+
+const floating = getFloatingFestival(y, m, day);
+if (floating) otherF.push(floating);
+
+const isOtherFestival = otherF.length > 0;
 
     // 节气
     let term = "";
@@ -256,6 +267,10 @@ function getYearCalendar(year) {
       }
     }
 
+    // ---------- 结果入库 ----------
+if (otherF.length > 0) {
+  // 有多个“其他节日”，拆成多条
+  otherF.forEach(festName => {
     result.push({
       date: `${y}-${toFixed(m)}-${toFixed(day)}`,
       weekday: `星期${weekday}`,
@@ -271,21 +286,51 @@ function getYearCalendar(year) {
       solarFestival: solarF,
       isSolarFestival: solarF !== "",
       lunarFestival: lunarF,
-      isLunarFestival: isLunarFestival,
-      otherFestival: otherF,
-      isOtherFestival: isOtherFestival,
+      isLunarFestival: lunarF !== "",
+      otherFestival: festName,
+      isOtherFestival: true,
       solarTerm: term,
-      isSolarTerm: isSolarTerm
+      isSolarTerm
     });
+  });
+} else {
+  // 没有 otherFestival，正常 push 一条
+  result.push({
+    date: `${y}-${toFixed(m)}-${toFixed(day)}`,
+    weekday: `星期${weekday}`,
+    lunarYear: lunar.lunarYear,
+    lunarMonth: lunar.lunarMonth,
+    lunarDay: lunar.lunarDay,
+    lunarMonthName: lunar.monthName,
+    lunarDayName: lunar.dayName,
+    isLeapMonth: lunar.isLeapMonth,
+    zodiac: getZodiac(lunar.lunarYear),
+    isLeapYear: isLeapYear(y),
+    leapMonth: leapMonth(y),
+    solarFestival: solarF,
+    isSolarFestival: solarF !== "",
+    lunarFestival: lunarF,
+    isLunarFestival: lunarF !== "",
+    otherFestival: "",
+    isOtherFestival: false,
+    solarTerm: term,
+    isSolarTerm
+  });
+}
   }
 
   return result;
 }
 
 // ---------- 获取某一天 ----------
-function getDayInfo(year, month, day) {
-  const calendar = getYearCalendar(year);
-  return calendar.find(d => d.date === `${year}-${toFixed(month)}-${toFixed(day)}`) || null;
+function getDayInfo(y, m, d) {
+  const dateStr = `${y}-${toFixed(m)}-${toFixed(d)}`;
+  const list = getYearCalendar(y).filter(x => x.date === dateStr);
+
+  if (list.length === 0) return null;
+  if (list.length === 1) return list[0];
+
+  return list; // ⭐ 多节日时返回数组
 }
 
 // ---------- 辅助函数：不足两位补零 ----------
@@ -396,12 +441,12 @@ if (typeof module !== "undefined" && module.exports) {
 // const december = LunarCalendar.getMonthCalendar(2026, 12);
 // console.log(JSON.stringify(december, null, 2));
 // 
-// 获取一周
-// const weekInfo = LunarCalendar.getWeekCalendar("2026-02-17");
+// 获取七天
+// const weekInfo = LunarCalendar.getWeekCalendar("2025-12-24");
 // console.log(JSON.stringify(weekInfo, null, 2));
 // 
 // 获取一天
-// const dayInfo = LunarCalendar.getDayInfo(2026, 02, 16);
+// const dayInfo = LunarCalendar.getDayInfo(2025, 12, 24);
 // console.log(JSON.stringify(dayInfo, null, 2));
 // 
 // 阳历 -> 农历
