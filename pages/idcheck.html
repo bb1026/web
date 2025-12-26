@@ -211,11 +211,11 @@
   		justify-content: center;
   		gap: 6px;
   		line-height: 1.6;
-    }
+	}
 
 	 .statement i {
 	  	color: #4caf50;
-    }
+	}
   </style>
 </head>
 <body>
@@ -231,11 +231,10 @@
     <div class="hint">
       <i class="fas fa-info-circle"></i>按 Enter 键或点击按钮验证
     </div>
-    
-    <div class="statement">
-      <i class="fas fa-shield-alt"></i>
-      本地检验，不会上传、保存或记录任何输入信息。
-    </div>
+	 <div class="statement">
+  		<i class="fas fa-shield-alt"></i>
+  本地检验，不会上传、保存或记录任何输入信息。
+	 </div>
     
     <button id="validateBtn" onclick="validateID()">
       <i class="fas fa-check-circle"></i>验证
@@ -380,13 +379,29 @@
                                <strong>地区：</strong>${region}
                              </div>`;
       resultDiv.style.display = "block";
+      
+      function randomDarkHexColor() {
+        const r = Math.floor(Math.random() * 120);
+        const g = Math.floor(Math.random() * 120);
+        const b = Math.floor(Math.random() * 120);
+        return (
+          '#' +
+          r.toString(16).padStart(2, '0') +
+          g.toString(16).padStart(2, '0') +
+          b.toString(16).padStart(2, '0')
+          );
+      }
+      
+      const darkColor = randomDarkHexColor();
 
       // 生成二维码
       QRCode.toString(summary, {
         type: 'svg',
         width: 220,
         margin: 1,
-        color: { dark: '#1e88e5', light: '#ffffff' }
+          color: {
+    dark: darkColor,
+    light: '#ffffff' }
       }, function(err, svg) {
         if (err) {
           console.error('生成二维码失败:', err);
