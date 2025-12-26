@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>身份证号码验证</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- 添加 Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -13,6 +15,11 @@
     h1 {
       text-align: center;
       color: #333;
+      margin-bottom: 25px;
+    }
+    h1 i {
+      margin-right: 12px;
+      color: #42a5f5;
     }
     .container {
       max-width: 500px;
@@ -23,9 +30,23 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
+    .input-group {
+      position: relative;
+      margin-bottom: 5px;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7873f5;
+      z-index: 1;
+    }
+
     input[type="text"] {
       width: 100%;
-      padding: 12px 16px;
+      padding: 12px 16px 12px 48px;
       font-size: 16px;
       border: 2px solid transparent;
       border-radius: 24px;
@@ -52,6 +73,10 @@
       background: linear-gradient(135deg, #42a5f5, #478ed1);
       color: white;
       transition: transform 0.2s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     button:hover {
@@ -62,47 +87,130 @@
     .result {
       display: none; /* 默认隐藏 */
       margin-top: 25px;
-      padding: 15px;
+      padding: 20px;
       background: #f8f9fa;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 15px;
       color: #333;
       box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
       line-height: 1.8;
+      border-left: 4px solid #42a5f5;
     }
 
     .success {
-      color: green;
+      color: #2e7d32;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .error {
-      color: red;
+      color: #d32f2f;
       font-weight: bold;
       padding: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
     }
 
-    #qrcode {
-      margin-top: 20px;
+    .result-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 0;
+    }
+
+    .result-line i {
+      width: 20px;
+      color: #7873f5;
+    }
+
+    .result-line strong {
+      min-width: 80px;
+      color: #555;
+    }
+
+    #qrcode-container {
+      display: none; /* 默认隐藏整个容器 */
+      margin-top: 25px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
       text-align: center;
+    }
+
+    #qrcode-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    #qrcode-content {
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
     }
 
     #saveQRBtn {
       display: none;
-      margin-top: 12px;
+      margin-top: 15px;
+      background: linear-gradient(135deg, #4CAF50, #45a049);
     }
 
+    #saveQRBtn:hover {
+      box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>身份证号码验证</h1>
-    <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
-    <button id="validateBtn" onclick="validateID()">验证</button>
-    <button id="saveQRBtn">保存二维码</button>
+    <h1><i class="fas fa-id-card"></i>身份证号码验证</h1>
+    
+    <div class="input-group">
+      <i class="fas fa-id-card"></i>
+      <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
+    </div>
+    
+    <div class="hint">
+      <i class="fas fa-info-circle"></i>按 Enter 键或点击按钮验证
+    </div>
+    
+    <button id="validateBtn" onclick="validateID()">
+      <i class="fas fa-check-circle"></i>验证
+    </button>
+    
+    <button id="saveQRBtn">
+      <i class="fas fa-download"></i>保存二维码
+    </button>
+    
     <div class="result" id="result"></div>
-    <div id="qrcode"></div>
+    
+    <div id="qrcode-container">
+      <div id="qrcode-title">
+        <i class="fas fa-qrcode"></i>身份证信息二维码
+      </div>
+      <div id="qrcode-content"></div>
+    </div>
   </div>
 
   <!-- 引入二维码库 -->
@@ -131,12 +239,17 @@
       validating = true;
       const btn = document.getElementById("validateBtn");
       btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>验证中...';
 
       const id = document.getElementById("idInput").value.trim();
       const resultDiv = document.getElementById("result");
-      const qrDiv = document.getElementById("qrcode");
+      const qrContainer = document.getElementById("qrcode-container");
+      const qrContent = document.getElementById("qrcode-content");
       const saveBtn = document.getElementById("saveQRBtn");
-      qrDiv.innerHTML = '';
+      
+      // 清空并隐藏二维码区域
+      qrContent.innerHTML = '';
+      qrContainer.style.display = "none";
       saveBtn.style.display = "none";
       resultDiv.style.display = "none";
 
@@ -152,21 +265,29 @@
 
       // 校验格式
       if (!/^\d{17}[\dXx]$/.test(id)) {
-        resultDiv.innerHTML = `<div class="error">❌ 无效的身份证号码格式</div>
-                               <strong>地区：</strong>${region}`;
+        resultDiv.innerHTML = `<div class="error"><i class="fas fa-times-circle"></i>无效的身份证号码格式</div>
+                               <div class="result-line">
+                                 <i class="fas fa-map-marker-alt"></i>
+                                 <strong>地区：</strong>${region}
+                               </div>`;
         resultDiv.style.display = "block";
         validating = false;
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i>验证';
         return;
       }
 
       // 校验校验码
       if (!isValidChecksum(id)) {
-        resultDiv.innerHTML = `<div class="error">❌ 校验码错误：身份证号码不合法</div>
-                               <strong>地区：</strong>${region}`;
+        resultDiv.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i>校验码错误：身份证号码不合法</div>
+                               <div class="result-line">
+                                 <i class="fas fa-map-marker-alt"></i>
+                                 <strong>地区：</strong>${region}
+                               </div>`;
         resultDiv.style.display = "block";
         validating = false;
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i>验证';
         return;
       }
 
@@ -184,12 +305,27 @@
 
       const summary = `身份证号码：${id}\n出生日期：${year}年${month}月${day}日\n年龄：${age}岁\n性别：${gender}\n生肖：${zodiac}\n地区：${region}`;
 
-      resultDiv.innerHTML = `<div class="success">✅ 身份证号码验证成功</div>
-                             <strong>出生日期：</strong>${year}年${month}月${day}日<br>
-                             <strong>年龄：</strong>${age} 岁<br>
-                             <strong>性别：</strong>${gender}<br>
-                             <strong>生肖：</strong>${zodiac}<br>
-                             <strong>地区：</strong>${region}`;
+      resultDiv.innerHTML = `<div class="success"><i class="fas fa-check-circle"></i>身份证号码验证成功</div>
+                             <div class="result-line">
+                               <i class="fas fa-calendar-alt"></i>
+                               <strong>出生日期：</strong>${year}年${month}月${day}日
+                             </div>
+                             <div class="result-line">
+                               <i class="fas fa-birthday-cake"></i>
+                               <strong>年龄：</strong>${age} 岁
+                             </div>
+                             <div class="result-line">
+                               <i class="fas fa-venus-mars"></i>
+                               <strong>性别：</strong>${gender}
+                             </div>
+                             <div-line class="result-line">
+                               <i class="fas fa-paw"></i>
+                               <strong>生肖：</strong>${zodiac}
+                             </div-line>
+                             <div class="result-line">
+                               <i class="fas fa-map-marker-alt"></i>
+                               <strong>地区：</strong>${region}
+                             </div>`;
       resultDiv.style.display = "block";
 
       // 生成二维码
@@ -199,8 +335,17 @@
         margin: 1,
         color: { dark: '#1e88e5', light: '#ffffff' }
       }, function(err, svg) {
-        if (err) return;
-        qrDiv.innerHTML = svg;
+        if (err) {
+          console.error('生成二维码失败:', err);
+          validating = false;
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check-circle"></i>验证';
+          return;
+        }
+        
+        // 显示二维码容器并设置内容
+        qrContent.innerHTML = svg;
+        qrContainer.style.display = "block";
         saveBtn.style.display = "block";
 
         saveBtn.onclick = function() {
@@ -212,10 +357,11 @@
           a.click();
           URL.revokeObjectURL(url);
         };
+        
+        validating = false;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i>验证';
       });
-
-      validating = false;
-      btn.disabled = false;
     }
   </script>
 </body>
