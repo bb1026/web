@@ -96,7 +96,7 @@
   <div class="container">
     <h1>身份证号码验证</h1>
     <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
-    <button onclick="validateID()">验证</button>
+    <button id="validateBtn" onclick="validateID()">验证</button>
     <div class="result" id="result"></div>
     <div id="qrcode"></div>
   </div>
@@ -122,7 +122,14 @@
     return code === id[17].toUpperCase();
   }
 
-  async function validateID() {
+  let validating = false;
+
+async function validateID() {
+  if (validating) return; // 🚫 防止重复执行
+  validating = true;
+
+  const btn = document.getElementById("validateBtn");
+  btn.disabled = true;
   const id = document.getElementById("idInput").value.trim();
   const resultDiv = document.getElementById("result");
   const qrDiv = document.getElementById("qrcode");
@@ -190,10 +197,21 @@
   `;
 
   // 生成二维码
-  QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
-    if (!err) qrDiv.appendChild(canvas);
-  });
-}
+  //QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
+    //if (!err) qrDiv.appendChild(canvas);
+//  });
+qrDiv.innerHTML = ''; // 确保只有一个
+
+QRCode.toString(summary, {
+  type: 'svg',
+  width: 220,
+  margin: 1
+  }, function (err, svg) {
+    if (!err) {
+      qrDiv.innerHTML = svg;
+      }
+    });
+  }
 </script>
 </body>
 </html>
