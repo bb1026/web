@@ -19,6 +19,7 @@ const icsEvents = [
     { summary: "教师节", description: "教师节（9月10日）：尊师重道，表彰教师的贡献。"},
     { summary: "万圣节", description: "万圣节（10月31日），源自西方的纪念亡灵节日，儿童会化妆“讨糖”。" },
     { summary: "感恩节", description: "感恩节（每年11月第四个星期四），起源于美国，感谢收获与祝福。" },
+    { summary: "平安夜", description: "平安夜（12月24日）：圣诞节前夕，象征祥和与宁静，是家人朋友团聚祈福的夜晚。" },
     { summary: "圣诞节", description: "圣诞节（12月25日）：纪念耶稣基督诞生，庆祝爱与团聚。" },
     
     { summary: "开斋节", description: "开斋节（Hari Raya Puasa），伊斯兰教节日，标志斋戒月结束，庆祝与家人团聚。" },
