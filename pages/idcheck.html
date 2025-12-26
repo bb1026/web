@@ -205,13 +205,13 @@ QRCode.toString(summary, {
   width: 220,
   margin: 1,
   color: {
-    dark: '#1e88e5',   // 二维码颜色（可改）
-    light: '#ffffff'  // 背景色
+    dark: '#1e88e5',   // 二维码颜色
+    light: '#ffffff'   // 背景色
   }
 }, function (err, svg) {
   if (err) return;
 
-  // 🌈 插入渐变（可选，想要高级就留着）
+  // 可选渐变（高级）
   svg = svg.replace(
     '<svg',
     `<svg>
@@ -225,10 +225,9 @@ QRCode.toString(summary, {
 
   qrDiv.innerHTML = svg;
 
-  // 保存按钮显示
+  // 显示保存按钮
   document.getElementById("saveQRBtn").style.display = "block";
 
-  // 保存 SVG
   document.getElementById("saveQRBtn").onclick = function () {
     const blob = new Blob([svg], { type: "image/svg+xml" });
     const url = URL.createObjectURL(blob);
@@ -240,8 +239,8 @@ QRCode.toString(summary, {
 
     URL.revokeObjectURL(url);
   };
-});});
-  }
+});
+}
 </script>
 </body>
 </html>
