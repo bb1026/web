@@ -5,91 +5,22 @@
   <title>身份证号码验证</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      padding: 20px;
-      background: #f2f2f2;
+    body { font-family: system-ui, sans-serif; padding:20px; background:#f2f2f2; }
+    h1 { text-align:center; color:#333; }
+    .container { max-width:500px; margin:auto; background:#fff; padding:30px 25px; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.08);}
+    input[type="text"] { width:100%; padding:12px 16px; font-size:16px; border:2px solid transparent; border-radius:24px;
+      background: linear-gradient(white,white) padding-box, linear-gradient(135deg,#ff6ec4,#7873f5) border-box;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease; outline:none; box-sizing:border-box;
     }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: #fff;
-      padding: 30px 25px;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 12px 16px;
-      font-size: 16px;
-      border: 2px solid transparent;
-      border-radius: 24px;
-      background: linear-gradient(white, white) padding-box,
-                  linear-gradient(135deg, #ff6ec4, #7873f5) border-box;
-      transition: box-shadow 0.3s ease, border-color 0.3s ease;
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    input[type="text"]:focus {
-      box-shadow: 0 0 10px rgba(255, 110, 196, 0.5);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 20px;
-      font-size: 16px;
-      font-weight: bold;
-      border: none;
-      border-radius: 24px;
-      cursor: pointer;
-      background: linear-gradient(135deg, #42a5f5, #478ed1);
-      color: white;
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(66, 165, 245, 0.4);
-    }
-
-    .result {
-      margin-top: 25px;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      font-size: 15px;
-      color: #333;
-      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
-      line-height: 1.8;
-    }
-
-    .success {
-      color: green;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .error {
-      color: red;
-      font-weight: bold;
-      padding: 10px 0;
-    }
-
-    #qrcode {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    canvas {
-      margin-top: 10px;
-    }
+    input[type="text"]:focus { box-shadow:0 0 10px rgba(255,110,196,0.5);}
+    button { width:100%; padding:12px; margin-top:20px; font-size:16px; font-weight:bold; border:none; border-radius:24px; cursor:pointer;
+      background: linear-gradient(135deg,#42a5f5,#478ed1); color:white; transition: transform 0.2s ease, box-shadow 0.3s ease;}
+    button:hover { transform: translateY(-2px); box-shadow:0 6px 16px rgba(66,165,245,0.4);}
+    .result { margin-top:25px; padding:15px; background:#f8f9fa; border-radius:8px; font-size:15px; color:#333; box-shadow: inset 0 0 6px rgba(0,0,0,0.05); line-height:1.8;}
+    .success { color:green; font-weight:bold; margin-bottom:10px; }
+    .error { color:red; font-weight:bold; padding:10px 0; }
+    #qrcode { margin-top:20px; text-align:center;}
+    #saveQRBtn { display:none; margin-top:12px; }
   </style>
 </head>
 <body>
@@ -97,153 +28,105 @@
     <h1>身份证号码验证</h1>
     <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
     <button id="validateBtn" onclick="validateID()">验证</button>
-    <button id="saveQRBtn" style="display:none; margin-top:12px;">
-  保存二维码
-</button>
+    <button id="saveQRBtn">保存二维码</button>
     <div class="result" id="result"></div>
     <div id="qrcode"></div>
   </div>
 
-  <!-- 引入二维码库（qrcode.min.js） -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    let validating = false;
 
-<script>
-  document.getElementById("idInput").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-      validateID();
+    document.getElementById("idInput").addEventListener("keydown", function(e){
+      if(e.key==="Enter") validateID();
+    });
+
+    function isValidChecksum(id){
+      const weights=[7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2];
+      const checkCodes=['1','0','X','9','8','7','6','5','4','3','2'];
+      let sum=0;
+      for(let i=0;i<17;i++) sum+=parseInt(id[i])*weights[i];
+      return checkCodes[sum%11]===id[17].toUpperCase();
     }
-  });
 
-  function isValidChecksum(id) {
-    const weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-    const checkCodes = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
-    let sum = 0;
-    for (let i = 0; i < 17; i++) {
-      sum += parseInt(id[i]) * weights[i];
+    async function validateID(){
+      if(validating) return;
+      validating = true;
+      const btn=document.getElementById("validateBtn");
+      btn.disabled=true;
+
+      const id=document.getElementById("idInput").value.trim();
+      const resultDiv=document.getElementById("result");
+      const qrDiv=document.getElementById("qrcode");
+      const saveBtn=document.getElementById("saveQRBtn");
+
+      qrDiv.innerHTML='';
+      saveBtn.style.display="none";
+
+      let region="未知地区";
+      try{
+        const res=await fetch(`/json/region.json?timestamp=${Date.now()}`);
+        const data=await res.json();
+        const code=id.substring(0,6);
+        region=data[code]||"未知地区";
+      }catch(e){
+        region="（地区信息获取失败）";
+      }
+
+      try{
+        if(!/^\d{17}[\dXx]$/.test(id)){
+          resultDiv.innerHTML=`<div class="error">❌ 无效的身份证号码格式</div><strong>地区：</strong>${region}`;
+          return;
+        }
+        if(!isValidChecksum(id)){
+          resultDiv.innerHTML=`<div class="error">❌ 校验码错误：身份证号码不合法</div><strong>地区：</strong>${region}`;
+          return;
+        }
+
+        const birth=id.substring(6,14);
+        const year=birth.substring(0,4);
+        const month=birth.substring(4,6);
+        const day=birth.substring(6,8);
+
+        const now=new Date();
+        let age=now.getFullYear()-parseInt(year);
+        if(parseInt(month)>now.getMonth()+1 || (parseInt(month)===now.getMonth()+1 && parseInt(day)>now.getDate())) age--;
+
+        const gender=parseInt(id.charAt(16))%2===1?"男":"女";
+        const zodiac=["猴","鸡","狗","猪","鼠","牛","虎","兔","龙","蛇","马","羊"][parseInt(year)%12];
+
+        resultDiv.innerHTML=`
+          <div class="success">✅ 身份证号码验证成功</div>
+          <strong>出生日期：</strong>${year}年${month}月${day}日<br>
+          <strong>年龄：</strong>${age} 岁<br>
+          <strong>性别：</strong>${gender}<br>
+          <strong>生肖：</strong>${zodiac}<br>
+          <strong>地区：</strong>${region}
+        `;
+
+        // 生成彩色 SVG 二维码
+        const summary=`身份证号：${id}\n出生：${year}-${month}-${day}\n性别：${gender}\n地区：${region}`;
+        QRCode.toString(summary,{
+          type:'svg', width:220, margin:1,
+          color:{dark:'#1e88e5',light:'#ffffff'}
+        },function(err,svg){
+          if(err) return;
+          qrDiv.innerHTML=svg;
+          saveBtn.style.display="block";
+          saveBtn.onclick=function(){
+            const blob=new Blob([svg],{type:"image/svg+xml"});
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement("a");
+            a.href=url; a.download="身份证二维码.svg"; a.click();
+            URL.revokeObjectURL(url);
+          };
+        });
+
+      }finally{
+        validating=false;
+        btn.disabled=false;
+      }
     }
-    const code = checkCodes[sum % 11];
-    return code === id[17].toUpperCase();
-  }
-
-  let validating = false;
-
-async function validateID() {
-  if (validating) return; // 🚫 防止重复执行
-  validating = true;
-
-  const btn = document.getElementById("validateBtn");
-  btn.disabled = true;
-  const id = document.getElementById("idInput").value.trim();
-  const resultDiv = document.getElementById("result");
-  const qrDiv = document.getElementById("qrcode");
-  qrDiv.innerHTML = ''; // 清空二维码
-
-  let region = "未知地区";
-  try {
-    const res = await fetch(`/json/region.json?timestamp=${Date.now()}`);
-    const data = await res.json();
-    const code = id.substring(0, 6);
-    region = data[code] || "未知地区";
-  } catch (e) {
-    region = "（地区信息获取失败）";
-  }
-
-  // 校验格式
-  if (!/^\d{17}[\dXx]$/.test(id)) {
-    resultDiv.innerHTML = `
-      <div class="error">❌ 无效的身份证号码格式</div>
-      <strong>地区：</strong>${region}
-    `;
-    return;
-  }
-
-  // 校验校验码
-  if (!isValidChecksum(id)) {
-    resultDiv.innerHTML = `
-      <div class="error">❌ 校验码错误：身份证号码不合法</div>
-      <strong>地区：</strong>${region}
-    `;
-    return;
-  }
-
-  // 身份证合法，正常显示信息
-  const birth = id.substring(6, 14);
-  const year = birth.substring(0, 4);
-  const month = birth.substring(4, 6);
-  const day = birth.substring(6, 8);
-
-  const now = new Date();
-  let age = now.getFullYear() - parseInt(year);
-  if (parseInt(month) > now.getMonth() + 1 ||
-      (parseInt(month) === now.getMonth() + 1 && parseInt(day) > now.getDate())) {
-    age--;
-  }
-
-  const zodiac = ["猴", "鸡", "狗", "猪", "鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊"][parseInt(year) % 12];
-  const gender = parseInt(id.charAt(16)) % 2 === 1 ? "男" : "女";
-
-  const summary = 
-    `身份证号码：${id}\n` +
-    `出生日期：${year}年${month}月${day}日\n` +
-    `年龄：${age}岁\n` +
-    `性别：${gender}\n` +
-    `生肖：${zodiac}\n` +
-    `地区：${region}`;
-
-  resultDiv.innerHTML = `
-    <div class="success">✅ 身份证号码验证成功</div>
-    <strong>出生日期：</strong>${year}年${month}月${day}日<br>
-    <strong>年龄：</strong>${age} 岁<br>
-    <strong>性别：</strong>${gender}<br>
-    <strong>生肖：</strong>${zodiac}<br>
-    <strong>地区：</strong>${region}
-  `;
-
-  // 生成二维码
-qrDiv.innerHTML = '';
-document.getElementById("saveQRBtn").style.display = "none";
-
-QRCode.toString(summary, {
-  type: 'svg',
-  width: 220,
-  margin: 1,
-  color: {
-    dark: '#1e88e5',   // 二维码颜色
-    light: '#ffffff'   // 背景色
-  }
-}, function (err, svg) {
-  if (err) return;
-
-  // 可选渐变（高级）
-  svg = svg.replace(
-    '<svg',
-    `<svg>
-      <defs>
-        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"/>
-          <stop offset="100%"/>
-        </linearGradient>
-      </defs>`
-  );
-
-  qrDiv.innerHTML = svg;
-
-  // 显示保存按钮
-  document.getElementById("saveQRBtn").style.display = "block";
-
-  document.getElementById("saveQRBtn").onclick = function () {
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "身份证二维码.svg";
-    a.click();
-
-    URL.revokeObjectURL(url);
-  };
-});
-}
-</script>
+  </script>
 </body>
 </html>
