@@ -200,6 +200,22 @@
       justify-content: center;
       gap: 8px;
     }
+
+	 .statement {
+  		margin-top: 10px;
+  		font-size: 12px;
+  		color: #888;
+  		text-align: center;
+  		display: flex;
+  		align-items: center;
+  		justify-content: center;
+  		gap: 6px;
+  		line-height: 1.6;
+    }
+
+	 .statement i {
+	  	color: #4caf50;
+    }
   </style>
 </head>
 <body>
@@ -214,6 +230,11 @@
     
     <div class="hint">
       <i class="fas fa-info-circle"></i>按 Enter 键或点击按钮验证
+    </div>
+    
+    <div class="statement">
+      <i class="fas fa-shield-alt"></i>
+      本地检验，不会上传、保存或记录任何输入信息。
     </div>
     
     <button id="validateBtn" onclick="validateID()">
