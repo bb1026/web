@@ -197,20 +197,50 @@ async function validateID() {
   `;
 
   // 生成二维码
-  //QRCode.toCanvas(document.createElement("canvas"), summary, { width: 220 }, function (err, canvas) {
-    //if (!err) qrDiv.appendChild(canvas);
-//  });
-qrDiv.innerHTML = ''; // 确保只有一个
+qrDiv.innerHTML = '';
+document.getElementById("saveQRBtn").style.display = "none";
 
 QRCode.toString(summary, {
   type: 'svg',
   width: 220,
-  margin: 1
-  }, function (err, svg) {
-    if (!err) {
-      qrDiv.innerHTML = svg;
-      }
-    });
+  margin: 1,
+  color: {
+    dark: '#1e88e5',   // 二维码颜色（可改）
+    light: '#ffffff'  // 背景色
+  }
+}, function (err, svg) {
+  if (err) return;
+
+  // 🌈 插入渐变（可选，想要高级就留着）
+  svg = svg.replace(
+    '<svg',
+    `<svg>
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"/>
+          <stop offset="100%"/>
+        </linearGradient>
+      </defs>`
+  );
+
+  qrDiv.innerHTML = svg;
+
+  // 保存按钮显示
+  document.getElementById("saveQRBtn").style.display = "block";
+
+  // 保存 SVG
+  document.getElementById("saveQRBtn").onclick = function () {
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "身份证二维码.svg";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+});});
   }
 </script>
 </body>
