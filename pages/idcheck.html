@@ -37,16 +37,31 @@
 
     .input-group i {
       position: absolute;
-      left: 18px;
       top: 50%;
       transform: translateY(-50%);
-      color: #7873f5;
       z-index: 1;
+    }
+
+    .input-group i.fa-id-card {
+      left: 18px;
+      color: #7873f5;
+    }
+
+    .input-group i#clearBtn {
+      right: 12px;
+      color: #bbb;
+      cursor: pointer;
+      display: none; /* 默认隐藏 */
+      transition: color 0.2s;
+    }
+
+    .input-group i#clearBtn:hover {
+      color: #ff6b6b;
     }
 
     input[type="text"] {
       width: 100%;
-      padding: 12px 16px 12px 48px;
+      padding: 12px 48px 12px 48px; /* 左右留空间给图标 */
       font-size: 16px;
       border: 2px solid transparent;
       border-radius: 24px;
@@ -55,6 +70,11 @@
       transition: box-shadow 0.3s ease, border-color 0.3s ease;
       outline: none;
       box-sizing: border-box;
+    }
+
+    input[type="text"]:focus + #clearBtn,
+    input[type="text"]:not(:placeholder-shown) + #clearBtn {
+      display: block;
     }
 
     input[type="text"]:focus {
@@ -189,6 +209,7 @@
     <div class="input-group">
       <i class="fas fa-id-card"></i>
       <input type="text" id="idInput" placeholder="请输入18位身份证号码" />
+      <i class="fas fa-times-circle" id="clearBtn" title="清空"></i>
     </div>
     
     <div class="hint">
@@ -217,6 +238,20 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
   <script>
+    const input = document.getElementById("idInput");
+    const clearBtn = document.getElementById("clearBtn");
+    const resultDiv = document.getElementById("result");
+    const qrContainer = document.getElementById("qrcode-container");
+    const saveBtn = document.getElementById("saveQRBtn");
+
+    clearBtn.addEventListener("click", function() {
+      input.value = "";
+      resultDiv.style.display = "none";
+      qrContainer.style.display = "none";
+      saveBtn.style.display = "none";
+      input.focus();
+    });
+
     document.getElementById("idInput").addEventListener("keydown", function(e) {
       if (e.key === "Enter") validateID();
     });
@@ -241,15 +276,12 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>验证中...';
 
-      const id = document.getElementById("idInput").value.trim();
-      const resultDiv = document.getElementById("result");
-      const qrContainer = document.getElementById("qrcode-container");
-      const qrContent = document.getElementById("qrcode-content");
-      const saveBtn = document.getElementById("saveQRBtn");
+      const id = input.value.trim();
       
       // 清空并隐藏二维码区域
-      qrContent.innerHTML = '';
       qrContainer.style.display = "none";
+      qrContent = document.getElementById("qrcode-content");
+      qrContent.innerHTML = '';
       saveBtn.style.display = "none";
       resultDiv.style.display = "none";
 
