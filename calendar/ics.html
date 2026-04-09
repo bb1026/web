@@ -1,18 +1,14 @@
-<script src="js/lunarCalendar.js"></script>
+<script src="https://raw.githack.com/bb1026/web/main/calendar/js/lunarCalendar.js"></script>
 <script>
-// 1. 获取年份
-const urlParams = new URLSearchParams(location.search);
-const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
+const year = new URLSearchParams(location.search).get('year') || new Date().getFullYear();
 
 let events = [];
 
-// 2. 循环每一天
 for (let m = 0; m < 12; m++) {
   for (let d = 1; d <= 31; d++) {
     const date = new Date(year, m, d);
     if (date.getMonth() !== m) continue;
 
-    // 完全按你给的正确用法
     const lunar = LunarCalendar.solarToLunar(date);
 
     let title = '';
@@ -21,34 +17,65 @@ for (let m = 0; m < 12; m++) {
     else if (lunar.isSolarFestival) title = lunar.solarFestival;
 
     if (title) {
-      events.push({ date: lunar.date, title });
+      events.push({
+        date: lunar.date,
+        title
+      });
     }
   }
 }
 
-// 3. 输出 ICS
+// 日期+1函数（关键）
+function nextDay(dateStr) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0,10).replace(/-/g, '');
+}
+
+// 当前时间戳
+function nowUTC() {
+  return new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+// 生成 ICS
 let ics = `BEGIN:VCALENDAR
-PRODID:-//My Calendar//CN
 VERSION:2.0
+PRODID:-//My Calendar//CN
+CALSCALE:GREGORIAN
 X-WR-CALNAME:中国节气节日 ${year}
 X-WR-TIMEZONE:Asia/Shanghai
 `;
 
 events.forEach((e, i) => {
   const dt = e.date.replace(/-/g, '');
+  const dtEnd = nextDay(e.date);
+
   ics += `BEGIN:VEVENT
+UID:${dt}-${i}@lunar
+DTSTAMP:${nowUTC()}
 DTSTART;VALUE=DATE:${dt}
-DTEND;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dtEnd}
 SUMMARY:${e.title}
-UID:${dt}-${i}
 END:VEVENT
 `;
 });
 
-ics += "END:VCALENDAR";
+ics += `END:VCALENDAR`;
 
-// 强制输出文本
-document.write("<pre>");
-document.write(ics);
-document.write("</pre>");
+// ✅ 方式1：下载文件（推荐测试）
+const blob = new Blob([ics], { type: 'text/calendar' });
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement('a');
+a.href = url;
+a.download = `lunar_${year}.ics`;
+a.click();
+
+// ✅ 方式2：如果你用 Cloudflare Worker，就返回这个：
+// return new Response(ics, {
+//   headers: {
+//     "Content-Type": "text/calendar; charset=utf-8"
+//   }
+// });
+
 </script>
