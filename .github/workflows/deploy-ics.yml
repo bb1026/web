@@ -1,4 +1,4 @@
-name: Deploy Worker
+name: 日历订阅
 
 on:
   push:
