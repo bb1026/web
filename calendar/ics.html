@@ -1,63 +1,54 @@
 <script src="js/lunarCalendar.js"></script>
 <script>
+// 1. 获取年份
 const urlParams = new URLSearchParams(location.search);
-const targetYear = parseInt(urlParams.get('year')) || new Date().getFullYear();
+const year = parseInt(urlParams.get('year')) || new Date().getFullYear();
 
 let events = [];
 
+// 2. 循环每一天
 for (let m = 0; m < 12; m++) {
   for (let d = 1; d <= 31; d++) {
-    const date = new Date(targetYear, m, d);
+    const date = new Date(year, m, d);
     if (date.getMonth() !== m) continue;
 
-    // 完全用你给的正确调用方式
+    // 完全按你给的正确用法
     const lunar = LunarCalendar.solarToLunar(date);
 
     let title = '';
-    if (lunar.isSolarTerm) {
-      title = lunar.solarTerm;
-    } else if (lunar.isLunarFestival) {
-      title = lunar.lunarFestival;
-    } else if (lunar.isSolarFestival) {
-      title = lunar.solarFestival;
-    }
+    if (lunar.isSolarTerm) title = lunar.solarTerm;
+    else if (lunar.isLunarFestival) title = lunar.lunarFestival;
+    else if (lunar.isSolarFestival) title = lunar.solarFestival;
 
     if (title) {
-      events.push({
-        date: lunar.date,
-        title: title
-      });
+      events.push({ date: lunar.date, title });
     }
   }
 }
 
-// 生成标准ICS
+// 3. 输出 ICS
 let ics = `BEGIN:VCALENDAR
-PRODID:-//BB1026//CN Holiday//ZH
+PRODID:-//My Calendar//CN
 VERSION:2.0
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:中国节气节假日 ${targetYear}
+X-WR-CALNAME:中国节气节日 ${year}
 X-WR-TIMEZONE:Asia/Shanghai
-BEGIN:VTIMEZONE
-TZID:Asia/Shanghai
-END:VTIMEZONE
 `;
 
-events.forEach((ev, i) => {
-  const dt = ev.date.replace(/-/g, '');
+events.forEach((e, i) => {
+  const dt = e.date.replace(/-/g, '');
   ics += `BEGIN:VEVENT
 DTSTART;VALUE=DATE:${dt}
 DTEND;VALUE=DATE:${dt}
-SUMMARY:${ev.title}
-UID:${dt}-${i}@cn
-TRANSP:TRANSPARENT
+SUMMARY:${e.title}
+UID:${dt}-${i}
 END:VEVENT
 `;
 });
 
 ics += "END:VCALENDAR";
 
-// 输出纯文本，日历可直接订阅
-document.body.textContent = ics;
+// 强制输出文本
+document.write("<pre>");
+document.write(ics);
+document.write("</pre>");
 </script>
