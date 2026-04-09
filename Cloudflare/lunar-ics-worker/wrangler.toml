@@ -1,9 +1,19 @@
-name = "lunar-ics"
-main = "worker.js"
-compatibility_date = "2024-01-01"
-
+# Worker 名称
+name = "calendar-subscribe"              # 你想要的 Worker 名称
+main = "worker.js"                        # Worker 入口文件，和 toml 同目录无需路径
+type = "javascript"                       # JS 类型 Worker
 account_id = "4796a78c1804791b739f97bb336bab79"
+zone_id = "df09b3a563bde936907cc7c4a710f942"
+compatibility_date = "2026-04-09"        # 当前日期或你的项目初始日期
 
+# Workers.dev 是否启用（这里不用）
+workers_dev = false
+
+# 路由配置（可以访问二级域名 calendar.0515364.xyz）
 routes = [
-  { pattern = "calendar.0515364.xyz/*", zone_id = "df09b3a563bde936907cc7c4a710f942" }
+  "calendar.0515364.xyz/*"
 ]
+
+# 日志监控
+[observability.logs]
+enabled = true
