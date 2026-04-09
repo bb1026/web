@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - uses: actions/checkout@v3
@@ -17,10 +19,21 @@ jobs:
         with:
           node-version: 24
 
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - run: npm install
 
       - name: Generate ICS
-        run: node generate/generate.js
+        run: |
+          echo "Generating calendar ICS..."
+          node generate/generate.js
+          echo "ICS generation complete."
 
       - name: Commit & Push
         run: |
