@@ -1,4 +1,4 @@
-name: 日历订阅
+name: Deploy Worker
 
 on:
   push:
@@ -12,8 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Cloudflare
+      - name: 部署日历订阅
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: Cloudflare/lunar-ics-worker
