@@ -1,5 +1,5 @@
 # Worker 名称
-name = "calendar-subscribe"              # 你想要的 Worker 名称
+name = "lunar-ics"              # 你想要的 Worker 名称
 main = "worker.js"                        # Worker 入口文件，和 toml 同目录无需路径
 type = "javascript"                       # JS 类型 Worker
 account_id = "4796a78c1804791b739f97bb336bab79"
