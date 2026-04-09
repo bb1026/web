@@ -1,4 +1,4 @@
-name: 生成中新节假日ICS
+name: 生成中国节气节假日ICS
 
 on:
   schedule:
@@ -13,23 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 安装依赖
-        run: npm install axios cheerio date-fns
-
       - name: 生成ICS
         run: node calendar/build-ics.js
 
-      - name: 提交并推送
+      - name: 提交更新
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add calendar/sino-sg-holiday.ics
-          git commit -m "Update holiday calendar $(date +'%Y-%m-%d')" || exit 0
+          git add calendar/cn-holiday.ics
+          git commit -m "Update cn-holiday.ics" || exit 0
           git push
