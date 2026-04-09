@@ -4,11 +4,11 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const { parse, format } = require('date-fns');
 
-// 加载你的农历库（路径已修正）
-const lunarCode = fs.readFileSync('./calendar/js/lunarCalendar.js', 'utf8');
-vm.runInNewContext(lunarCode, global);
+// 加载农历库（从仓库根目录找）
+const lunarCode = fs.readFileSync('calendar/js/lunarCalendar.js', 'utf8');
+vm.runInThisContext(lunarCode);
 
-// 抓取新加坡MOM所有年份公假（无硬编码年份）
+// 抓取新加坡公假，自动识别所有年份
 async function fetchSGHolidays() {
   const url = 'https://www.mom.gov.sg/employment-practices/public-holidays';
   const res = await axios.get(url, {
@@ -19,7 +19,7 @@ async function fetchSGHolidays() {
 
   $('.public-holiday__year').each((i, yearEl) => {
     const yearText = $(yearEl).find('h2').text().trim();
-    const yearMatch = yearText.match(/\b(20\d{2})\b/);
+    const yearMatch = yearText.match(/20\d{2}/);
     if (!yearMatch) return;
 
     $(yearEl).find('tbody tr').each((i, tr) => {
@@ -46,7 +46,7 @@ async function fetchSGHolidays() {
   return events;
 }
 
-// 自动生成：去年 ~ 未来5年 节气+农历+中国假日
+// 中国节气、农历节日、法定假日（自动年份）
 function getCNEvents() {
   const events = [];
   const currentYear = new Date().getFullYear();
@@ -62,12 +62,14 @@ function getCNEvents() {
 
   years.forEach(y => {
     for (let m = 1; m <= 12; m++) {
-      const days = lunarSolar(y, m);
-      days.forEach(day => {
-        const date = `${y}-${String(m).padStart(2, '0')}-${String(day.k).padStart(2, '0')}`;
-        if (day.jq) events.push({ date, title: `节气·${day.jq}` });
-        if (day.lunarFestival) events.push({ date, title: `农历·${day.lunarFestival}` });
-      });
+      try {
+        const days = lunarSolar(y, m);
+        days.forEach(day => {
+          const date = `${y}-${String(m).padStart(2, '0')}-${String(day.k).padStart(2, '0')}`;
+          if (day.jq) events.push({ date, title: `节气·${day.jq}` });
+          if (day.lunarFestival) events.push({ date, title: `农历·${day.lunarFestival}` });
+        });
+      } catch (e) {}
     }
 
     try {
@@ -81,10 +83,10 @@ function getCNEvents() {
   return events;
 }
 
-// 生成ICS到 calendar/ 目录
+// 生成 ICS 到 calendar/sino-sg-holiday.ics
 function generateICS(events) {
   let ics = `BEGIN:VCALENDAR
-PRODID:-//BB1026//CN-SG Holiday Calendar//ZH
+PRODID:-//BB1026//CN-SG Holiday//ZH
 VERSION:2.0
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
@@ -101,25 +103,25 @@ END:VTIMEZONE
 DTSTART;VALUE=DATE:${dt}
 DTEND;VALUE=DATE:${dt}
 SUMMARY:${e.title}
-UID:${dt}-${i}@bb1026.github.io
+UID:${dt}-${i}@bb1026
 TRANSP:TRANSPARENT
 END:VEVENT
 `;
   });
 
   ics += 'END:VCALENDAR';
-  fs.writeFileSync('./calendar/sino-sg-holiday.ics', ics, 'utf8');
+  fs.writeFileSync('calendar/sino-sg-holiday.ics', ics, 'utf8');
+  console.log('✅ ICS 已生成：calendar/sino-sg-holiday.ics');
 }
 
 // 执行
 (async () => {
   try {
-    const sgEvents = await fetchSGHolidays();
-    const cnEvents = getCNEvents();
-    generateICS([...cnEvents, ...sgEvents]);
-    console.log('✅ 生成完成：calendar/sino-sg-holiday.ics');
+    const sg = await fetchSGHolidays();
+    const cn = getCNEvents();
+    generateICS([...cn, ...sg]);
   } catch (err) {
-    console.error('❌ 生成失败', err);
+    console.error('❌ 错误：', err);
     process.exit(1);
   }
 })();
