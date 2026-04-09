@@ -1,0 +1,62 @@
+<script src="js/lunarCalendar.js"></script>
+<script>
+function getQueryParam(name) {
+  const urlParams = new URLSearchParams(location.search);
+  return urlParams.get(name) || new Date().getFullYear();
+}
+
+const year = parseInt(getQueryParam('year'), 10);
+const events = [];
+
+for (let m = 0; m < 12; m++) {
+  for (let d = 1; d <= 31; d++) {
+    const date = new Date(year, m, d);
+    if (date.getMonth() !== m) continue;
+
+    const lunar = LunarCalendar.solarToLunar(date);
+    let title = '';
+
+    if (lunar.isSolarTerm) title = lunar.solarTerm;
+    else if (lunar.isLunarFestival) title = lunar.lunarFestival;
+    else if (lunar.isSolarFestival) title = lunar.solarFestival;
+
+    if (title) {
+      events.push({
+        date: lunar.date,
+        title: title
+      });
+    }
+  }
+}
+
+// 输出 ICS
+let ics = `BEGIN:VCALENDAR
+PRODID:-//BB1026//CN Holiday//ZH
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:中国节假日(${year})
+X-WR-TIMEZONE:Asia/Shanghai
+BEGIN:VTIMEZONE
+TZID:Asia/Shanghai
+END:VTIMEZONE
+`;
+
+events.forEach((ev, i) => {
+  const dt = ev.date.replace(/-/g, '');
+  ics += `BEGIN:VEVENT
+DTSTART;VALUE=DATE:${dt}
+DTEND;VALUE=DATE:${dt}
+SUMMARY:${ev.title}
+UID:${dt}-${i}@china
+TRANSP:TRANSPARENT
+END:VEVENT
+`;
+});
+
+ics += "END:VCALENDAR";
+
+// 当作 .ics 下载/订阅
+document.write(`<pre>${ics}</pre>`);
+document.title = `cn-holiday-${year}.ics`;
+</script>
