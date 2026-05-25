@@ -6,8 +6,6 @@
 <title>0515364.xyz</title>
 
 <link rel="manifest" href="/json/manifest.json">
-
-<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -18,13 +16,14 @@ body {
   color:#e5e7eb;
 }
 
+/* container */
 .container{
   max-width:1100px;
   margin:auto;
   padding:24px;
 }
 
-/* NAV */
+/* nav */
 .nav{
   display:flex;
   justify-content:space-between;
@@ -37,14 +36,11 @@ body {
   display:flex;
   align-items:center;
   gap:8px;
-  font-size:18px;
 }
 
-.logo i{
-  color:#60a5fa;
-}
+.logo i{color:#60a5fa}
 
-/* NAV LINKS */
+/* links */
 .nav-links a{
   color:#9ca3af;
   text-decoration:none;
@@ -53,26 +49,19 @@ body {
 }
 .nav-links a:hover{color:#fff}
 
-/* SEARCH */
+/* search */
 .search-box input{
   width:100%;
   padding:12px;
   border-radius:12px;
-  border:1px solid #333;
+  border:1px solid #2a2a2a;
   background:#111;
   color:#fff;
-  outline:none;
 }
 
-/* SECTION */
+/* section */
 .section{
   margin-top:28px;
-  animation:fade .25s ease;
-}
-
-@keyframes fade{
-  from{opacity:0;transform:translateY(6px)}
-  to{opacity:1;transform:translateY(0)}
 }
 
 .section-title{
@@ -81,16 +70,17 @@ body {
   cursor:pointer;
   font-weight:600;
   margin-bottom:10px;
+  color:#e5e7eb;
 }
 
-/* GRID */
+/* grid */
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
 
-/* CARD */
+/* card */
 .card{
   padding:14px;
   border-radius:14px;
@@ -105,40 +95,55 @@ body {
   border-color:#3b82f6;
 }
 
+/* title */
 .card-title{
   font-size:14px;
-  font-weight:500;
+  font-weight:600;
   display:flex;
   align-items:center;
   gap:10px;
+  color:#e5e7eb;
 }
 
 .card-desc{
   font-size:12px;
-  color:#888;
+  color:#9ca3af; 
   margin-top:6px;
 }
 
-/* ICON */
+/* icon */
 .card i{
   width:18px;
   color:#60a5fa;
 }
 
-/* STAR */
+/* star */
 .star{
   position:absolute;
   right:10px;
   top:10px;
   cursor:pointer;
-  color:#666;
+  color:#6b7280;
 }
 
-.star.active{color:gold}
+.star.active{
+  color:#facc15;
+}
 
+/* hidden */
 .hidden{display:none}
 
-/* MOBILE */
+/* footer */
+footer{
+  margin-top:40px;
+  padding:20px 0;
+  border-top:1px solid #222;
+  font-size:12px;
+  color:#9ca3af;
+  text-align:center;
+}
+
+/* mobile */
 @media(max-width:768px){
   .grid{grid-template-columns:1fr}
 }
@@ -158,12 +163,8 @@ body {
   </div>
 
   <div class="nav-links">
-    <a href="/pages/about.html">
-      <i class="fa-solid fa-circle-info"></i> 关于
-    </a>
-    <a href="/pages/message.html">
-      <i class="fa-solid fa-message"></i> 留言板
-    </a>
+    <a href="/pages/about.html"><i class="fa-solid fa-circle-info"></i> 关于</a>
+    <a href="/pages/message.html"><i class="fa-solid fa-message"></i> 留言板</a>
   </div>
 
 </div>
@@ -175,8 +176,14 @@ body {
 
 <div id="recent"></div>
 <div id="favorites"></div>
-
 <div id="menu"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2026 0515364.xyz · All Rights Reserved</div>
+  <div>Built with JSON CMS · GitHub: bb1026</div>
+  <div>本网站代码由AI提供</div>
+</footer>
 
 </div>
 
@@ -186,19 +193,17 @@ let rawData = {};
 let favorites = JSON.parse(localStorage.getItem("fav")||"[]");
 let recent = JSON.parse(localStorage.getItem("recent")||"[]");
 
-/* 分类图标 */
 const categoryIcons = {
-  "小工具": "fa-solid fa-screwdriver-wrench",
-  "代码工具": "fa-solid fa-code",
-  "文字工具": "fa-solid fa-font",
-  "图片工具": "fa-solid fa-image",
-  "小游戏": "fa-solid fa-gamepad",
-  "Scriptable": "fa-solid fa-mobile-screen",
-  "关于": "fa-solid fa-circle-info",
-  "留言板": "fa-solid fa-message"
+  "小工具":"fa-solid fa-screwdriver-wrench",
+  "代码工具":"fa-solid fa-code",
+  "文字工具":"fa-solid fa-font",
+  "图片工具":"fa-solid fa-image",
+  "小游戏":"fa-solid fa-gamepad",
+  "Scriptable":"fa-solid fa-mobile-screen",
+  "关于":"fa-solid fa-circle-info",
+  "留言板":"fa-solid fa-message"
 };
 
-/* LOAD */
 async function load(){
   const res = await fetch("/json/menu.json");
   rawData = await res.json();
@@ -206,25 +211,27 @@ async function load(){
 }
 load();
 
-/* RECENT */
-function addRecent(name,url){
-  recent = [{name,url}, ...recent.filter(i=>i.url!==url)].slice(0,8);
+/* recent */
+function addRecent(name,url,icon,desc){
+  recent = [{name,url,icon,desc}, ...recent.filter(i=>i.url!==url)].slice(0,8);
   localStorage.setItem("recent",JSON.stringify(recent));
 }
 
-/* FAVORITE */
-function toggleFav(name,url){
+/* fav */
+function toggleFav(name,url,icon,desc){
   const exists = favorites.find(i=>i.url===url);
+
   if(exists){
     favorites = favorites.filter(i=>i.url!==url);
   }else{
-    favorites.push({name,url});
+    favorites.push({name,url,icon,desc});
   }
+
   localStorage.setItem("fav",JSON.stringify(favorites));
   render();
 }
 
-/* CARD */
+/* card */
 function card(item,small=false){
   const name = item[0];
   const url = item[1];
@@ -234,11 +241,11 @@ function card(item,small=false){
   const fav = favorites.find(f=>f.url===url);
 
   return `
-  <a href="${url}" onclick="addRecent('${name}','${url}')">
+  <a href="${url}" onclick="addRecent('${name}','${url}','${icon}','${desc}')">
     <div class="card">
 
       <div class="star ${fav?'active':''}"
-        onclick="event.preventDefault();toggleFav('${name}','${url}')">
+        onclick="event.preventDefault();toggleFav('${name}','${url}','${icon}','${desc}')">
         <i class="fa-solid fa-star"></i>
       </div>
 
@@ -253,38 +260,34 @@ function card(item,small=false){
   </a>`;
 }
 
-/* RENDER */
+/* render */
 function render(){
   const menu = document.getElementById("menu");
   menu.innerHTML="";
 
   const keyword = document.getElementById("search").value.toLowerCase();
 
-  /* RECENT */
+  /* recent */
   document.getElementById("recent").innerHTML =
     recent.length ? `
     <div class="section">
-      <div class="section-title">
-        <span><i class="fa-solid fa-clock"></i> 最近使用</span>
-      </div>
+      <div class="section-title"><i class="fa-solid fa-clock"></i> 最近使用</div>
       <div class="grid">
-        ${recent.map(i=>card([i.name,i.url,"",""],true)).join("")}
+        ${recent.map(i=>card([i.name,i.url,i.desc||"",i.icon||""],true)).join("")}
       </div>
     </div>` : "";
 
-  /* FAVORITES */
+  /* fav */
   document.getElementById("favorites").innerHTML =
     favorites.length ? `
     <div class="section">
-      <div class="section-title">
-        <span><i class="fa-solid fa-star"></i> 收藏</span>
-      </div>
+      <div class="section-title"><i class="fa-solid fa-star"></i> 收藏</div>
       <div class="grid">
-        ${favorites.map(i=>card([i.name,i.url,"",""],true)).join("")}
+        ${favorites.map(i=>card([i.name,i.url,i.desc||"",i.icon||""],true)).join("")}
       </div>
     </div>` : "";
 
-  /* MENU */
+  /* menu */
   for(const k in rawData){
     const arr = rawData[k];
     if(!Array.isArray(arr)) continue;
@@ -300,10 +303,7 @@ function render(){
       <div class="section">
 
         <div class="section-title" onclick="toggle(this)">
-          <span>
-            <i class="${categoryIcons[k] || "fa-solid fa-folder"}"></i>
-            ${k}
-          </span>
+          <span><i class="${categoryIcons[k]||"fa-solid fa-folder"}"></i> ${k}</span>
           <span><i class="fa-solid fa-chevron-down"></i></span>
         </div>
 
@@ -315,15 +315,15 @@ function render(){
   }
 }
 
-/* COLLAPSE */
+/* toggle */
 function toggle(el){
   el.nextElementSibling.classList.toggle("hidden");
 }
 
-/* SEARCH */
+/* search */
 document.getElementById("search").addEventListener("input",render);
 
-/* SHORTCUTS */
+/* shortcut */
 document.addEventListener("keydown",(e)=>{
   if(e.key=="/"){
     e.preventDefault();
@@ -335,7 +335,7 @@ document.addEventListener("keydown",(e)=>{
   }
 });
 
-/* PWA */
+/* pwa */
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("/js/sw.js");
 }
