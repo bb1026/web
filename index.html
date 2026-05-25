@@ -16,6 +16,30 @@ body {
   color:#e5e7eb;
 }
 
+/* 📢 NOTICE BAR */
+.notice-bar{
+  background:#111;
+  border-bottom:1px solid #222;
+  color:#facc15;
+  font-size:13px;
+  padding:8px 0;
+  overflow:hidden;
+  white-space:nowrap;
+}
+
+.notice-content{
+  display:inline-block;
+  padding-left:100%;
+  animation:scroll 12s linear infinite;
+}
+
+@keyframes scroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-100%)}
+}
+
+.hidden{display:none}
+
 /* container */
 .container{
   max-width:1100px;
@@ -95,7 +119,6 @@ body {
   border-color:#3b82f6;
 }
 
-/* title */
 .card-title{
   font-size:14px;
   font-weight:600;
@@ -107,7 +130,7 @@ body {
 
 .card-desc{
   font-size:12px;
-  color:#9ca3af; 
+  color:#9ca3af;
   margin-top:6px;
 }
 
@@ -126,11 +149,8 @@ body {
   color:#6b7280;
 }
 
-.star.active{
-  color:#facc15;
-}
+.star.active{color:#facc15}
 
-/* hidden */
 .hidden{display:none}
 
 /* footer */
@@ -151,6 +171,11 @@ footer{
 </head>
 
 <body>
+
+<!-- 📢 公告栏 -->
+<div id="noticeBar" class="notice-bar hidden">
+  <div id="noticeContent" class="notice-content"></div>
+</div>
 
 <div class="container">
 
@@ -211,6 +236,33 @@ async function load(){
 }
 load();
 
+/* =========================
+   📢 NOTICE SYSTEM
+========================= */
+async function loadNotice(){
+  try {
+    const res = await fetch("notice.html");
+    const text = await res.text();
+
+    const clean = text.replace(/<[^>]*>/g,'').trim();
+
+    const bar = document.getElementById("noticeBar");
+    const content = document.getElementById("noticeContent");
+
+    if(clean.length > 0){
+      content.innerText = clean;
+      bar.classList.remove("hidden");
+    }else{
+      bar.classList.add("hidden");
+    }
+
+  } catch(e){
+    document.getElementById("noticeBar").classList.add("hidden");
+  }
+}
+
+loadNotice();
+
 /* recent */
 function addRecent(name,url,icon,desc){
   recent = [{name,url,icon,desc}, ...recent.filter(i=>i.url!==url)].slice(0,8);
@@ -267,7 +319,6 @@ function render(){
 
   const keyword = document.getElementById("search").value.toLowerCase();
 
-  /* recent */
   document.getElementById("recent").innerHTML =
     recent.length ? `
     <div class="section">
@@ -277,7 +328,6 @@ function render(){
       </div>
     </div>` : "";
 
-  /* fav */
   document.getElementById("favorites").innerHTML =
     favorites.length ? `
     <div class="section">
@@ -287,7 +337,6 @@ function render(){
       </div>
     </div>` : "";
 
-  /* menu */
   for(const k in rawData){
     const arr = rawData[k];
     if(!Array.isArray(arr)) continue;
@@ -320,10 +369,8 @@ function toggle(el){
   el.nextElementSibling.classList.toggle("hidden");
 }
 
-/* search */
 document.getElementById("search").addEventListener("input",render);
 
-/* shortcut */
 document.addEventListener("keydown",(e)=>{
   if(e.key=="/"){
     e.preventDefault();
@@ -335,7 +382,6 @@ document.addEventListener("keydown",(e)=>{
   }
 });
 
-/* pwa */
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("/js/sw.js");
 }
