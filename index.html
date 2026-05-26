@@ -7,10 +7,8 @@
 
 <link rel="icon" href="/imgs/logo.png">
 <link rel="apple-touch-icon" href="/imgs/logo.png">
-<link rel="manifest" href="/json/manifest.json">
 <meta name="theme-color" content="#0a0a0a">
 
-<link rel="manifest" href="/json/manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -21,7 +19,6 @@
 
 :root{
 
-  /* LIGHT */
   --bg:#f5f5f5;
   --text:#111827;
   --card:#ffffff;
@@ -30,11 +27,11 @@
   --input:#ffffff;
   --nav:#4b5563;
   --notice:#92400e;
+
 }
 
 [data-theme="dark"]{
 
-  /* DARK */
   --bg:#0a0a0a;
   --text:#e5e7eb;
   --card:#141414;
@@ -43,6 +40,7 @@
   --input:#111;
   --nav:#9ca3af;
   --notice:#facc15;
+
 }
 
 body{
@@ -61,21 +59,43 @@ body{
   background:var(--card);
   border-bottom:1px solid var(--border);
   color:var(--notice);
-  font-size:13px;
-  padding:8px 0;
+  font-size:14px;
+  font-weight:500;
+  padding:10px 0;
   overflow:hidden;
   white-space:nowrap;
+  position:relative;
 }
 
 .notice-content{
   display:inline-block;
   padding-left:100%;
-  animation:scroll 15s linear infinite;
+  animation:scroll 22s linear infinite;
+  will-change:transform;
+}
+
+.notice-bar:hover .notice-content{
+  animation-play-state:paused;
+}
+
+@media(min-width:769px){
+
+  .notice-content{
+    animation-duration:28s;
+  }
+
 }
 
 @keyframes scroll{
-  from{transform:translateX(0)}
-  to{transform:translateX(-100%)}
+
+  0%{
+    transform:translateX(0);
+  }
+
+  100%{
+    transform:translateX(-100%);
+  }
+
 }
 
 .hidden{
@@ -117,10 +137,6 @@ body{
   border-radius:10px;
 }
 
-.logo i{
-  color:#60a5fa;
-}
-
 .nav-right{
   display:flex;
   align-items:center;
@@ -131,6 +147,7 @@ body{
   text-decoration:none;
   margin-left:14px;
   font-size:14px;
+  transition:.2s;
 }
 
 .nav-links a:hover{
@@ -169,6 +186,7 @@ body{
   color:var(--text);
   outline:none;
   box-sizing:border-box;
+  font-size:14px;
 }
 
 /* =========================
@@ -236,6 +254,15 @@ body{
 .card i{
   width:18px;
   color:#60a5fa;
+}
+
+/* =========================
+   LINK
+========================= */
+
+a{
+  text-decoration:none;
+  color:inherit;
 }
 
 /* =========================
@@ -334,13 +361,17 @@ footer{
   <div class="nav-right">
 
     <div class="nav-links">
+
       <a href="/pages/about.html">
-        <i class="fa-solid fa-circle-info"></i> 关于
+        <i class="fa-solid fa-circle-info"></i>
+        关于
       </a>
 
       <a href="/pages/message.html">
-        <i class="fa-solid fa-message"></i> 留言板
+        <i class="fa-solid fa-message"></i>
+        留言板
       </a>
+
     </div>
 
     <button id="themeToggle" class="theme-btn">
@@ -376,28 +407,58 @@ footer{
 ========================= */
 
 let rawData = {};
-let favorites = JSON.parse(localStorage.getItem("fav")||"[]");
-let recent = JSON.parse(localStorage.getItem("recent")||"[]");
+
+let favorites =
+JSON.parse(localStorage.getItem("fav") || "[]");
+
+let recent =
+JSON.parse(localStorage.getItem("recent") || "[]");
 
 const categoryIcons = {
+
   "小工具":"fa-solid fa-screwdriver-wrench",
   "代码工具":"fa-solid fa-code",
   "文字工具":"fa-solid fa-font",
   "图片工具":"fa-solid fa-image",
   "小游戏":"fa-solid fa-gamepad",
   "Scriptable":"fa-solid fa-mobile-screen"
+
 };
 
 const expandedSections = {};
+
+/* =========================
+   SAFE STRING
+========================= */
+
+function safe(str){
+
+  return (str || "")
+    .replace(/'/g,"\\'")
+    .replace(/"/g,'\\"');
+
+}
 
 /* =========================
    LOAD MENU
 ========================= */
 
 async function load(){
-  const res = await fetch("/json/menu.json");
-  rawData = await res.json();
-  render();
+
+  try{
+
+    const res = await fetch("/json/menu.json");
+
+    rawData = await res.json();
+
+    render();
+
+  }catch(e){
+
+    console.error(e);
+
+  }
+
 }
 
 load();
@@ -410,17 +471,23 @@ async function loadNotice(){
 
   try{
 
-    const res = await fetch("/notice.html");
+    const res = await fetch("notice.html");
+
     const text = await res.text();
 
-    const clean = text.replace(/<[^>]*>/g,'').trim();
+    const clean =
+      text.replace(/<[^>]*>/g,'').trim();
 
-    const bar = document.getElementById("noticeBar");
-    const content = document.getElementById("noticeContent");
+    const bar =
+      document.getElementById("noticeBar");
+
+    const content =
+      document.getElementById("noticeContent");
 
     if(clean.length > 0){
 
       content.innerText = clean;
+
       bar.classList.remove("hidden");
 
     }else{
@@ -447,8 +514,11 @@ loadNotice();
 function addRecent(name,url,icon,desc){
 
   recent = [
+
     {name,url,icon,desc},
+
     ...recent.filter(i=>i.url!==url)
+
   ].slice(0,8);
 
   localStorage.setItem(
@@ -464,11 +534,13 @@ function addRecent(name,url,icon,desc){
 
 function toggleFav(name,url,icon,desc){
 
-  const exists = favorites.find(i=>i.url===url);
+  const exists =
+    favorites.find(i=>i.url===url);
 
   if(exists){
 
-    favorites = favorites.filter(i=>i.url!==url);
+    favorites =
+      favorites.filter(i=>i.url!==url);
 
   }else{
 
@@ -489,24 +561,38 @@ function toggleFav(name,url,icon,desc){
    CARD
 ========================= */
 
-function card(item,small=false){
+function card(item){
 
   const name = item[0];
   const url = item[1];
   const desc = item[2] || "";
   const icon = item[3] || "fa-solid fa-circle";
 
-  const fav = favorites.find(f=>f.url===url);
+  const fav =
+    favorites.find(f=>f.url===url);
 
   return `
+
   <a href="${url}"
-     onclick="addRecent('${name}','${url}','${icon}','${desc}')">
+     onclick="addRecent(
+      '${safe(name)}',
+      '${safe(url)}',
+      '${safe(icon)}',
+      '${safe(desc)}'
+     )">
 
     <div class="card">
 
-      <div class="star ${fav?'active':''}"
+      <div class="star ${fav ? 'active' : ''}"
+
         onclick="event.preventDefault();
-        toggleFav('${name}','${url}','${icon}','${desc}')">
+                 event.stopPropagation();
+                 toggleFav(
+                  '${safe(name)}',
+                  '${safe(url)}',
+                  '${safe(icon)}',
+                  '${safe(desc)}'
+                 )">
 
         <i class="fa-solid fa-star"></i>
 
@@ -521,13 +607,19 @@ function card(item,small=false){
       </div>
 
       ${desc ? `
+
       <div class="card-desc">
+
         ${desc}
-      </div>` : ""}
+
+      </div>
+
+      ` : ""}
 
     </div>
 
   </a>
+
   `;
 
 }
@@ -538,7 +630,9 @@ function card(item,small=false){
 
 function render(){
 
-  const menu = document.getElementById("menu");
+  const menu =
+    document.getElementById("menu");
+
   menu.innerHTML = "";
 
   const keyword =
@@ -550,51 +644,79 @@ function render(){
 
   document.getElementById("recent").innerHTML =
 
-    recent.length ? `
+  recent.length ? `
 
-    <div class="section">
+  <div class="section">
 
-      <div class="section-title">
-        <span>
-          <i class="fa-solid fa-clock"></i>
-          最近使用
-        </span>
-      </div>
+    <div class="section-title">
 
-      <div class="grid">
-        ${recent.map(i=>
-          card([i.name,i.url,i.desc||"",i.icon||""],true)
-        ).join("")}
-      </div>
+      <span>
+
+        <i class="fa-solid fa-clock"></i>
+
+        最近使用
+
+      </span>
 
     </div>
 
-    ` : "";
+    <div class="grid">
+
+      ${recent.map(i=>
+
+        card([
+          i.name,
+          i.url,
+          i.desc || "",
+          i.icon || ""
+        ])
+
+      ).join("")}
+
+    </div>
+
+  </div>
+
+  ` : "";
 
   /* favorite */
 
   document.getElementById("favorites").innerHTML =
 
-    favorites.length ? `
+  favorites.length ? `
 
-    <div class="section">
+  <div class="section">
 
-      <div class="section-title">
-        <span>
-          <i class="fa-solid fa-star"></i>
-          收藏
-        </span>
-      </div>
+    <div class="section-title">
 
-      <div class="grid">
-        ${favorites.map(i=>
-          card([i.name,i.url,i.desc||"",i.icon||""],true)
-        ).join("")}
-      </div>
+      <span>
+
+        <i class="fa-solid fa-star"></i>
+
+        收藏
+
+      </span>
 
     </div>
 
-    ` : "";
+    <div class="grid">
+
+      ${favorites.map(i=>
+
+        card([
+          i.name,
+          i.url,
+          i.desc || "",
+          i.icon || ""
+        ])
+
+      ).join("")}
+
+    </div>
+
+  </div>
+
+  ` : "";
 
   /* menu */
 
@@ -606,9 +728,11 @@ function render(){
 
     let items = arr.filter(i=>
 
-      i[0].toLowerCase().includes(keyword) ||
+      i[0].toLowerCase().includes(keyword)
 
-      (i[2]||"")
+      ||
+
+      (i[2] || "")
       .toLowerCase()
       .includes(keyword)
 
@@ -616,7 +740,8 @@ function render(){
 
     if(!items.length) continue;
 
-    const expanded = expandedSections[k];
+    const expanded =
+      expandedSections[k];
 
     const visibleItems =
       expanded ? items : items.slice(0,6);
@@ -625,16 +750,14 @@ function render(){
 
     <div class="section">
 
-      <div class="section-title"
-           onclick="toggle(this)">
+      <div class="section-title">
 
         <span>
+
           <i class="${categoryIcons[k] || "fa-solid fa-folder"}"></i>
-          ${k}
-        </span>
 
-        <span>
-          <i class="fa-solid fa-chevron-down"></i>
+          ${k}
+
         </span>
 
       </div>
@@ -648,9 +771,12 @@ function render(){
       ${items.length > 6 ? `
 
       <button class="more-btn"
-        onclick="toggleMore('${k}')">
+        onclick="toggleMore('${safe(k)}')">
 
-        ${expanded ? '收起' : '查看更多'}
+        ${expanded
+          ? '收起'
+          : `查看更多 (${items.length - 6})`
+        }
 
       </button>
 
@@ -678,21 +804,31 @@ function toggleMore(category){
 }
 
 /* =========================
-   COLLAPSE
-========================= */
-
-function toggle(el){
-
-  el.nextElementSibling.classList.toggle("hidden");
-
-}
-
-/* =========================
    SEARCH
 ========================= */
 
+function debounce(fn,delay=150){
+
+  let t;
+
+  return (...args)=>{
+
+    clearTimeout(t);
+
+    t = setTimeout(
+      ()=>fn(...args),
+      delay
+    );
+
+  }
+
+}
+
 document.getElementById("search")
-.addEventListener("input",render);
+.addEventListener(
+  "input",
+  debounce(render,150)
+);
 
 /* =========================
    SHORTCUT
@@ -700,17 +836,19 @@ document.getElementById("search")
 
 document.addEventListener("keydown",(e)=>{
 
-  if(e.key=="/"){
+  if(e.key==="/"){
 
     e.preventDefault();
 
-    document.getElementById("search").focus();
+    document.getElementById("search")
+      .focus();
 
   }
 
   if(e.key==="Escape"){
 
-    document.getElementById("search").value="";
+    document.getElementById("search")
+      .value = "";
 
     render();
 
@@ -728,7 +866,10 @@ const savedTheme =
 if(savedTheme){
 
   document.documentElement
-    .setAttribute("data-theme", savedTheme);
+    .setAttribute(
+      "data-theme",
+      savedTheme
+    );
 
 }else{
 
@@ -737,7 +878,10 @@ if(savedTheme){
   ).matches){
 
     document.documentElement
-      .setAttribute("data-theme","dark");
+      .setAttribute(
+        "data-theme",
+        "dark"
+      );
 
   }
 
@@ -749,11 +893,16 @@ function updateThemeIcon(){
     document.getElementById("themeToggle");
 
   const dark =
+
     document.documentElement
-    .getAttribute("data-theme")==="dark";
+    .getAttribute("data-theme")
+
+    === "dark";
 
   btn.innerHTML = dark
+
     ? '<i class="fa-solid fa-sun"></i>'
+
     : '<i class="fa-solid fa-moon"></i>';
 
 }
@@ -764,38 +913,38 @@ document.getElementById("themeToggle")
 .addEventListener("click",()=>{
 
   const current =
+
     document.documentElement
     .getAttribute("data-theme");
 
-  if(current==="dark"){
+  if(current === "dark"){
 
     document.documentElement
       .removeAttribute("data-theme");
 
-    localStorage.setItem("theme","light");
+    localStorage.setItem(
+      "theme",
+      "light"
+    );
 
   }else{
 
     document.documentElement
-      .setAttribute("data-theme","dark");
+      .setAttribute(
+        "data-theme",
+        "dark"
+      );
 
-    localStorage.setItem("theme","dark");
+    localStorage.setItem(
+      "theme",
+      "dark"
+    );
 
   }
 
   updateThemeIcon();
 
 });
-
-/* =========================
-   PWA
-========================= */
-
-/*if("serviceWorker" in navigator){
-
-  navigator.serviceWorker.register("/js/sw.js");
-
-}*/
 
 </script>
 
