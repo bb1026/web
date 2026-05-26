@@ -2,186 +2,388 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="google-adsense-account" content="ca-pub-7777281841149510">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7777281841149510"
-     crossorigin="anonymous"></script>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   <title>条形码生成器</title>
+
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
-  <link rel="stylesheet" href="/css/floating-menu.css">
+
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f7f7f7;
-      color: #333;
+
+    *{
+      box-sizing:border-box;
     }
 
-    header {
-      background-color: #4CAF50;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.5rem;
+    body{
+      font-family:"Segoe UI",sans-serif;
+      margin:0;
+      padding:0;
+      background:#f7f7f7;
+      color:#333;
     }
 
-    main {
-      max-width: 600px;
-      margin: 2rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid #e5e5e5;
+      padding:12px 16px;
     }
 
-    fieldset {
-      border: none;
-      margin-bottom: 1.2rem;
+    .home-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:10px;
+      background:#fff;
+      border:1px solid #ddd;
+      color:#333;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:500;
+      transition:.2s;
+      box-shadow:0 1px 2px rgba(0,0,0,.05);
     }
 
-    label {
-      display: block;
-      margin-bottom: 0.4rem;
-      font-weight: bold;
+    .home-btn:hover{
+      background:#f3f4f6;
+      transform:translateY(-1px);
     }
 
-    input, select {
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-      box-sizing: border-box;
+    /* =========================
+       HEADER
+    ========================= */
+
+    header{
+      background-color:#4CAF50;
+      color:white;
+      padding:1rem;
+      text-align:center;
+      font-size:1.5rem;
+      font-weight:600;
     }
 
-    .controls {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
+    /* =========================
+       MAIN
+    ========================= */
+
+    main{
+      max-width:600px;
+      margin:2rem auto;
+      background:white;
+      padding:2rem;
+      border-radius:16px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.08);
     }
 
-    .controls button {
-      flex: 1;
-      min-width: 100px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 0.8rem 1rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+    fieldset{
+      border:none;
+      margin-bottom:1.2rem;
+      padding:0;
     }
 
-    .controls button:hover {
-      background-color: #45a049;
+    label{
+      display:block;
+      margin-bottom:0.4rem;
+      font-weight:bold;
     }
 
-    #barcode-container {
-      text-align: center;
-      margin-top: 2rem;
+    input,
+    select{
+      width:100%;
+      padding:0.75rem;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:1rem;
+      background:#fff;
     }
 
-    #barcode {
-      max-width: 100%;
+    input:focus,
+    select:focus{
+      outline:none;
+      border-color:#4CAF50;
+      box-shadow:0 0 0 3px rgba(76,175,80,.15);
     }
 
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #777;
+    /* =========================
+       BUTTONS
+    ========================= */
+
+    .controls{
+      display:flex;
+      gap:1rem;
+      flex-wrap:wrap;
+      margin-top:1.5rem;
     }
+
+    .controls button{
+      flex:1;
+      min-width:120px;
+      background-color:#4CAF50;
+      color:white;
+      border:none;
+      padding:0.9rem 1rem;
+      font-size:1rem;
+      border-radius:10px;
+      cursor:pointer;
+      transition:.2s;
+      font-weight:600;
+    }
+
+    .controls button:hover{
+      background-color:#45a049;
+      transform:translateY(-1px);
+    }
+
+    /* =========================
+       BARCODE
+    ========================= */
+
+    #barcode-container{
+      text-align:center;
+      margin-top:2rem;
+      overflow:auto;
+    }
+
+    #barcode{
+      max-width:100%;
+      background:white;
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer{
+      margin-top:40px;
+      padding:25px 20px;
+      text-align:center;
+      font-size:13px;
+      color:#666;
+      line-height:1.8;
+      border-top:1px solid #ddd;
+      background:#fff;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media(max-width:768px){
+
+      body{
+        padding:0;
+      }
+
+      main{
+        margin:1rem;
+        padding:1.2rem;
+        border-radius:14px;
+      }
+
+      header{
+        font-size:1.3rem;
+      }
+
+      .controls{
+        flex-direction:column;
+      }
+
+      .controls button{
+        width:100%;
+      }
+
+    }
+
   </style>
 </head>
+
 <body>
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
 
-<header>条形码生成器</header>
+  <!-- 返回首页 -->
+  <div class="topbar">
 
-<main>
-  <fieldset>
-    <label for="barcodeText">条码内容</label>
-    <input type="text" id="barcodeText" placeholder="请输入条码数据" />
-  </fieldset>
+    <a href="/" class="home-btn">
+      ← 返回首页
+    </a>
 
-  <fieldset>
-    <label for="barcodeFormat">条码格式</label>
-    <select id="barcodeFormat">
-      <option value="CODE128">CODE128（推荐）</option>
-      <option value="CODE39">CODE39</option>
-    </select>
-  </fieldset>
-
-  <div class="controls">
-    <button onclick="generateBarcode()">生成条码</button>
-    <button onclick="downloadBarcode()">保存图片</button>
   </div>
 
-  <div id="barcode-container">
-    <svg id="barcode"></svg>
-  </div>
-</main>
+  <!-- 标题 -->
+  <header>
+    条形码生成器
+  </header>
 
-<!-- 声明信息 -->
-<hr style="margin-top:40px; border:none; border-top:1px solid #ccc;" />
-<footer style="text-align:center; margin-top:20px; font-size:13px; color:#666;">
-  本工具仅供学习与个人使用，条形码内容生成后请自行核对准确性。<br>
-  © 2025 条形码生成器
-</footer>
+  <!-- 主体 -->
+  <main>
 
-<script>
-  function generateBarcode() {
-    const value = document.getElementById("barcodeText").value.trim();
-    const format = document.getElementById("barcodeFormat").value;
-    if (!value) {
-      alert("请输入条码内容");
-      return;
+    <fieldset>
+
+      <label for="barcodeText">
+        条码内容
+      </label>
+
+      <input
+        type="text"
+        id="barcodeText"
+        placeholder="请输入条码数据"
+      />
+
+    </fieldset>
+
+    <fieldset>
+
+      <label for="barcodeFormat">
+        条码格式
+      </label>
+
+      <select id="barcodeFormat">
+
+        <option value="CODE128">
+          CODE128（推荐）
+        </option>
+
+        <option value="CODE39">
+          CODE39
+        </option>
+
+      </select>
+
+    </fieldset>
+
+    <div class="controls">
+
+      <button onclick="generateBarcode()">
+        生成条码
+      </button>
+
+      <button onclick="downloadBarcode()">
+        保存图片
+      </button>
+
+    </div>
+
+    <div id="barcode-container">
+
+      <svg id="barcode"></svg>
+
+    </div>
+
+  </main>
+
+  <!-- 页脚 -->
+  <footer>
+
+    本工具仅供学习与个人使用，
+    条形码内容生成后请自行核对准确性。
+
+    <br>
+
+    © 2026 条形码生成器
+
+  </footer>
+
+  <script>
+
+    function generateBarcode(){
+
+      const value =
+        document.getElementById("barcodeText")
+        .value
+        .trim();
+
+      const format =
+        document.getElementById("barcodeFormat")
+        .value;
+
+      if(!value){
+
+        alert("请输入条码内容");
+        return;
+
+      }
+
+      try{
+
+        JsBarcode("#barcode", value, {
+
+          format: format,
+          lineColor: "#000",
+          width: 2,
+          height: 100,
+          displayValue: true,
+          fontSize: 16,
+          margin: 10
+
+        });
+
+      }catch(e){
+
+        alert("生成失败，请检查内容与格式是否匹配！");
+        console.error(e);
+
+      }
+
     }
 
-    try {
-      JsBarcode("#barcode", value, {
-        format: format,
-        lineColor: "#000",
-        width: 2,
-        height: 100,
-        displayValue: true,
-        fontSize: 16,
-        margin: 10,
+    function downloadBarcode(){
+
+      const svg =
+        document.querySelector("#barcode");
+
+      if(!svg || svg.children.length === 0){
+
+        alert("请先生成条码");
+        return;
+
+      }
+
+      const canvas =
+        document.createElement("canvas");
+
+      canvas.width =
+        svg.clientWidth;
+
+      canvas.height =
+        svg.clientHeight;
+
+      const ctx =
+        canvas.getContext("2d");
+
+      const svgString =
+        new XMLSerializer()
+        .serializeToString(svg);
+
+      const v =
+        canvg.Canvg
+        .fromString(ctx, svgString);
+
+      v.start().then(()=>{
+
+        const link =
+          document.createElement("a");
+
+        link.download = "barcode.png";
+
+        link.href =
+          canvas.toDataURL("image/png");
+
+        link.click();
+
       });
-    } catch (e) {
-      alert("生成失败，检查内容与格式是否匹配！");
-      console.error(e);
-    }
-  }
 
-  function downloadBarcode() {
-    const svg = document.querySelector("#barcode");
-    if (!svg || svg.children.length === 0) {
-      alert("请先生成条码");
-      return;
     }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = svg.clientWidth;
-    canvas.height = svg.clientHeight;
-    const ctx = canvas.getContext("2d");
-
-    const svgString = new XMLSerializer().serializeToString(svg);
-    const v = canvg.Canvg.fromString(ctx, svgString);
-    v.start().then(() => {
-      const link = document.createElement("a");
-      link.download = "barcode.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
-  }
-</script>
-
-<script src="/js/floating-menu.js"></script>
+  </script>
 
 </body>
 </html>
