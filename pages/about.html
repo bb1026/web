@@ -4,186 +4,340 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#444">
-  
+
   <title>关于本站</title>
-  
+
   <!-- 样式 -->
   <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/floating-menu.css">
+
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-      padding: 20px 15px;
-      max-width: 700px;
-      width: 100%;
-      margin: 0 auto;
-      line-height: 1.7;
-      background-color: #f9f9f9;
-      color: #333;
-      box-sizing: border-box;
-      overflow-x: hidden;
-		padding-top: 10px;
-    }
-    
-    h1 {
-      text-align: center;
-      margin: 20px 0 25px;
-      font-size: 26px;
-    }
-    
-    h2 {
-      margin-top: 25px;
-      font-size: 20px;
-      color: #007acc;
-      padding-left: 10px;
-      border-left: 3px solid #007acc;
-    }
-    
-    p, ul {
-      margin: 12px 0;
-      padding: 0 10px;
-    }
-    
-    ul {
-      padding-left: 30px;
-    }
-    
-    li {
-      margin-bottom: 8px;
-    }
-    
-    a {
-      color: #007acc;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    
-    a:hover {
-      text-decoration: underline;
-    }
-    
-    .qr-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 15px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      z-index: 1000;
-      text-align: center;
-      width: 90%;
-      max-width: 320px;
-      box-sizing: border-box;
-    }
-    
-    .qr-popup img {
-      width: 100%;
-      max-width: 280px;
-      height: auto;
-      margin: 10px 0;
-    }
-    
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.4);
-      z-index: 999;
+
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+      padding:20px 15px;
+      padding-top:10px;
+      max-width:700px;
+      width:100%;
+      margin:0 auto;
+      line-height:1.7;
+      background-color:#f9f9f9;
+      color:#333;
+      box-sizing:border-box;
+      overflow-x:hidden;
     }
 
-    /* 响应式调整 */
-    @media (min-width: 768px) {
-      body {
-        padding: 30px 20px;
-      }
-      
-      h1 {
-        font-size: 28px;
-        margin-bottom: 30px;
-      }
-      
-      h2 {
-        font-size: 22px;
-        margin-top: 30px;
-      }
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      margin-bottom:10px;
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(249,249,249,.92);
+      backdrop-filter:blur(10px);
+      padding:10px 0;
     }
+
+    .home-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:10px;
+      background:#ffffff;
+      border:1px solid #ddd;
+      color:#333;
+      font-size:14px;
+      font-weight:500;
+      text-decoration:none;
+      transition:.2s;
+      box-shadow:0 1px 2px rgba(0,0,0,.04);
+    }
+
+    .home-btn:hover{
+      background:#f3f4f6;
+      transform:translateY(-1px);
+      text-decoration:none;
+    }
+
+    h1{
+      text-align:center;
+      margin:20px 0 25px;
+      font-size:26px;
+    }
+
+    h2{
+      margin-top:25px;
+      font-size:20px;
+      color:#007acc;
+      padding-left:10px;
+      border-left:3px solid #007acc;
+    }
+
+    p,
+    ul{
+      margin:12px 0;
+      padding:0 10px;
+    }
+
+    ul{
+      padding-left:30px;
+    }
+
+    li{
+      margin-bottom:8px;
+    }
+
+    a{
+      color:#007acc;
+      text-decoration:none;
+      cursor:pointer;
+    }
+
+    a:hover{
+      text-decoration:underline;
+    }
+
+    /* =========================
+       QR POPUP
+    ========================= */
+
+    .qr-popup{
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      padding:15px;
+      background:white;
+      border:1px solid #ccc;
+      border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.15);
+      z-index:1000;
+      text-align:center;
+      width:90%;
+      max-width:320px;
+      box-sizing:border-box;
+    }
+
+    .qr-popup img{
+      width:100%;
+      max-width:280px;
+      height:auto;
+      margin:10px 0;
+      border-radius:8px;
+    }
+
+    #overlay{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,.45);
+      z-index:999;
+      backdrop-filter:blur(2px);
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (min-width:768px){
+
+      body{
+        padding:30px 20px;
+      }
+
+      h1{
+        font-size:28px;
+        margin-bottom:30px;
+      }
+
+      h2{
+        font-size:22px;
+        margin-top:30px;
+      }
+
+    }
+
   </style>
 </head>
+
 <body>
-  
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
+
+  <!-- 顶部导航 -->
+  <div class="topbar">
+
+    <a href="/" class="home-btn">
+      ← 返回首页
+    </a>
+
+  </div>
 
   <h1>关于本站</h1>
 
-  <p>欢迎使用 <strong>在线工具箱</strong>，本网站致力于提供便捷高效的前端实用工具，涵盖开发、图像处理、编码转换等多个领域，适用于开发者、设计师及日常用户。</p>
+  <p>
+    欢迎使用
+    <strong>在线工具箱</strong>，
+    本网站致力于提供便捷高效的前端实用工具，
+    涵盖开发、图像处理、编码转换等多个领域，
+    适用于开发者、设计师及日常用户。
+  </p>
 
   <h2>联系方式</h2>
-  <p>如果您有任何建议、意见或合作意向，欢迎通过以下方式联系：</p>
+
+  <p>
+    如果您有任何建议、意见或合作意向，
+    欢迎通过以下方式联系：
+  </p>
+
   <ul>
-    <li>邮箱：<a href="mailto:admin@0515364.xyz?subject=反馈建议&body=网页开发者你好：%0D%0A%0D%0A我有以下建议：%0D%0A1. 优化界面设计%0D%0A2. 增加新功能%0D%0A%0D%0A谢谢！">发送反馈邮件</a></li>
+
     <li>
-      QQ：<a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">添加好友</a>
-      <a onclick="showQr('qq')" style="margin-left: 10px;">显示二维码</a>
+      邮箱：
+      <a href="mailto:admin@0515364.xyz?subject=反馈建议&body=网页开发者你好：%0D%0A%0D%0A我有以下建议：%0D%0A1. 优化界面设计%0D%0A2. 增加新功能%0D%0A%0D%0A谢谢！">
+        发送反馈邮件
+      </a>
     </li>
-    <li>微信：<a onclick="showQr('wechat')">显示二维码</a></li>
+
+    <li>
+
+      QQ：
+
+      <a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">
+        添加好友
+      </a>
+
+      <a onclick="showQr('qq')" style="margin-left:10px;">
+        显示二维码
+      </a>
+
+    </li>
+
+    <li>
+
+      微信：
+
+      <a onclick="showQr('wechat')">
+        显示二维码
+      </a>
+
+    </li>
+
   </ul>
 
   <h2>使用声明</h2>
-  <p>本站工具大部分由 <a href="https://chat.openai.com/" target="_blank">ChatGPT</a> 和 <a href="https://www.deepseek.com/" target="_blank">DeepSeek</a>自动生成，仅供学习和个人使用。</p>
-  <p>我们不对因使用本站工具所产生的任何直接或间接损失承担责任，使用者需自行对生成内容的准确性和适用性进行核对。</p>
-  <p>如涉及第三方资源，版权归原作者所有。</p>
+
+  <p>
+    本站工具大部分由
+    <a href="https://chat.openai.com/" target="_blank">
+      ChatGPT
+    </a>
+    和
+    <a href="https://www.deepseek.com/" target="_blank">
+      DeepSeek
+    </a>
+    自动生成，仅供学习和个人使用。
+  </p>
+
+  <p>
+    我们不对因使用本站工具所产生的任何直接或间接损失承担责任，
+    使用者需自行对生成内容的准确性和适用性进行核对。
+  </p>
+
+  <p>
+    如涉及第三方资源，版权归原作者所有。
+  </p>
 
   <h2>开源协议</h2>
-  <p>本项目以 MIT 协议开源，您可自由使用、修改、分发源码，唯需保留原作者信息和许可证声明。</p>
-  
-  <!-- 添加页脚容器 -->
+
+  <p>
+    本项目以 MIT 协议开源，
+    您可自由使用、修改、分发源码，
+    唯需保留原作者信息和许可证声明。
+  </p>
+
+  <!-- 页脚 -->
   <div id="footerContainer"></div>
 
   <!-- 遮罩层 -->
   <div id="overlay" onclick="hideQr()"></div>
 
-  <!-- QQ 二维码弹窗 -->
+  <!-- QQ 二维码 -->
   <div id="qqQr" class="qr-popup">
+
     <p>扫码添加 QQ 好友</p>
-    <img src="https://bing.0515364.xyz/imgs/QQqrcode.jpeg" alt="QQ二维码">
-    <p><a onclick="hideQr()">关闭</a></p>
+
+    <img
+      src="https://bing.0515364.xyz/imgs/QQqrcode.jpeg"
+      alt="QQ二维码"
+    >
+
+    <p>
+      <a onclick="hideQr()">关闭</a>
+    </p>
+
   </div>
 
-  <!-- 微信 二维码弹窗 -->
+  <!-- 微信二维码 -->
   <div id="wechatQr" class="qr-popup">
+
     <p>扫码添加微信好友</p>
-    <img src="https://bing.0515364.xyz/imgs/WeChatQR.jpg" alt="微信二维码">
-    <p><a onclick="hideQr()">关闭</a></p>
+
+    <img
+      src="https://bing.0515364.xyz/imgs/WeChatQR.jpg"
+      alt="微信二维码"
+    >
+
+    <p>
+      <a onclick="hideQr()">关闭</a>
+    </p>
+
   </div>
-  
+
   <script>
-    function showQr(type) {
-      document.getElementById('overlay').style.display = 'block';
-      if (type === 'qq') {
-        document.getElementById('qqQr').style.display = 'block';
-      } else if (type === 'wechat') {
-        document.getElementById('wechatQr').style.display = 'block';
+
+    function showQr(type){
+
+      document.getElementById("overlay")
+        .style.display = "block";
+
+      if(type === "qq"){
+
+        document.getElementById("qqQr")
+          .style.display = "block";
+
       }
+
+      if(type === "wechat"){
+
+        document.getElementById("wechatQr")
+          .style.display = "block";
+
+      }
+
     }
 
-    function hideQr() {
-      document.getElementById('overlay').style.display = 'none';
-      document.getElementById('qqQr').style.display = 'none';
-      document.getElementById('wechatQr').style.display = 'none';
+    function hideQr(){
+
+      document.getElementById("overlay")
+        .style.display = "none";
+
+      document.getElementById("qqQr")
+        .style.display = "none";
+
+      document.getElementById("wechatQr")
+        .style.display = "none";
+
     }
+
   </script>
-  
-  <!-- 加载js脚本 -->
-  <script src="/js/floating-menu.js" defer></script>
-  <script src="/js/main-header-notice-footer.js"></script>
-  
+
 </body>
 </html>
