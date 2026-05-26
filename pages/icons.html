@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <title>Font Awesome 图标选择器</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="/css/floating-menu.css">
   <link rel="stylesheet" href="/css/style.css">
+
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -14,13 +15,16 @@
       max-width: 960px;
       margin: auto;
     }
+
     h2 {
       text-align: center;
     }
+
     .search-wrapper {
       position: relative;
       margin: 20px 0;
     }
+
     #iconSearch {
       padding: 10px 40px 10px 10px;
       width: 100%;
@@ -29,6 +33,7 @@
       border-radius: 6px;
       box-sizing: border-box;
     }
+
     .clear-btn {
       position: absolute;
       right: 10px;
@@ -40,27 +45,14 @@
       color: #999;
       cursor: pointer;
       display: none;
-      padding: 0;
-      line-height: 1;
-      -webkit-tap-highlight-color: transparent;
     }
-    .clear-btn:focus,
-    .clear-btn:active {
-      background: none;
-      outline: none;
-    }
-    .clear-btn i {
-      font-size: 24px;
-      transition: color 0.3s ease;
-    }
-    .clear-btn:hover {
-      color: #000;
-    }
+
     .icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
       gap: 12px;
     }
+
     .icon-box {
       text-align: center;
       padding: 12px 6px;
@@ -69,81 +61,52 @@
       cursor: pointer;
       transition: transform 0.15s, background 0.2s;
     }
+
     .icon-box:hover {
       background: #f0f8ff;
       transform: scale(1.08);
     }
+
     .icon-box i {
       font-size: 24px;
-      transition: color 0.4s ease;
     }
+
     .icon-name {
       font-size: 12px;
       margin-top: 6px;
       word-break: break-word;
     }
+
     .status {
       margin-bottom: 10px;
       color: #888;
       font-size: 14px;
       text-align: center;
     }
+
     #topBtn {
       position: fixed;
       bottom: 30px;
       left: 30px;
-      background: none;
       border: none;
-      border-radius: 6px;
       font-size: 30px;
       cursor: pointer;
       display: none;
       z-index: 999;
-      padding: 6px 10px;
-      transition: background 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
-    #topBtn:hover {
       background: none;
     }
-    #topBtn i {
-      color: white;
-      transition: color 0.3s ease;
-      filter: brightness(1.3);
-    }
+
     #randomColorBtn {
       position: fixed;
       top: 20px;
       left: 5px;
-      background: none;
       border: none;
       font-size: 30px;
       cursor: pointer;
       z-index: 1000;
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
-    #randomColorBtn:active,
-    #randomColorBtn:focus {
       background: none;
-      outline: none;
     }
-    #randomColorBtn i {
-      color: white;
-      transition: transform 0.2s, color 0.3s;
-    }
-    #randomColorBtn:hover i {
-      transform: rotate(90deg);
-      color: none;
-    }
-    .rotate {
-      animation: rotateOnce 0.6s ease;
-    }
-    @keyframes rotateOnce {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+
     .copy-notification {
       position: fixed;
       bottom: 20px;
@@ -156,243 +119,124 @@
       align-items: center;
       transform: translateY(100px);
       opacity: 0;
-      transition: all 0.3s ease;
+      transition: 0.3s;
       z-index: 1000;
       max-width: 300px;
-      border: 1px solid #eee;
     }
+
     .copy-notification.show {
       transform: translateY(0);
       opacity: 1;
     }
-    .copy-notification i {
-      font-size: 28px;
-      margin-right: 12px;
-      flex-shrink: 0;
-    }
-    .copy-content {
-      flex-grow: 1;
-    }
-    .copy-title {
-      font-weight: bold;
-      margin-bottom: 4px;
-      color: #333;
-    }
-    .copy-text {
-      font-size: 14px;
-      color: #666;
-      word-break: break-all;
-    }
-    .copy-close {
-      background: none;
-      border: none;
-      color: #999;
-      font-size: 18px;
-      cursor: pointer;
-      margin-left: 12px;
-      padding: 0;
-      line-height: 1;
-    }
-    .copy-close:hover {
-      color: #666;
-    }
   </style>
 </head>
+
 <body>
 
 <h2>Font Awesome 图标选择器</h2>
-<div class="status" id="status">正在加载图标，请稍候...</div>
 
-<div id="fm-container"></div>
+<div class="status" id="status">正在加载图标...</div>
 
 <div class="search-wrapper">
-  <input type="text" id="iconSearch" placeholder="搜索图标名称，例如：rocket / code / file">
-  <button class="clear-btn" id="clearBtn" title="清空">
-    <i class="fas fa-times-circle"></i>
-  </button>
+  <input type="text" id="iconSearch" placeholder="搜索图标">
+  <button class="clear-btn" id="clearBtn">✕</button>
 </div>
 
 <div class="icon-grid" id="iconGrid"></div>
 
-<button id="topBtn" title="返回顶部">
-  <i class="fas fa-arrow-alt-circle-up"></i>
-</button>
-
-<button id="randomColorBtn" title="随机更换所有图标颜色">
-  <i class="fas fa-yin-yang"></i>
-</button>
+<button id="topBtn">⬆</button>
+<button id="randomColorBtn">🎨</button>
 
 <div id="copyNotification" class="copy-notification">
-  <i id="copyIcon" class="fas"></i>
-  <div class="copy-content">
-    <div class="copy-title">已复制图标</div>
-    <div class="copy-text" id="copyText"></div>
-  </div>
-  <button class="copy-close" id="copyCloseBtn">
-    <i class="fas fa-times"></i>
-  </button>
+  <div id="copyText"></div>
 </div>
 
+<!-- ✅ 自动注入系统（核心） -->
+<script src="/js/layout.js"></script>
+
 <script>
-  let allIcons = [];
-  let notificationTimer = null;
+let allIcons = [];
 
-  async function fetchIcons() {
-    try {
-      const res = await fetch('/json/icons.json');
-      const data = await res.json();
+async function fetchIcons() {
+  try {
+    const res = await fetch('/json/icons.json');
+    const data = await res.json();
 
-      allIcons = Object.entries(data)
-        .filter(([_, val]) => val.free && val.free.includes("solid"))
-        .map(([name]) => name);
+    allIcons = Object.entries(data)
+      .filter(([_, val]) => val.free && val.free.includes("solid"))
+      .map(([name]) => name);
 
-      document.getElementById("status").textContent = `共加载 ${allIcons.length} 个图标`;
-      renderIcons(allIcons);
-    } catch (e) {
-      document.getElementById("status").textContent = "❌ 图标加载失败，请检查网络或稍后再试。";
-    }
-  }
+    document.getElementById("status").textContent =
+      `共加载 ${allIcons.length} 个图标`;
 
-  function renderIcons(iconList) {
-    const grid = document.getElementById("iconGrid");
-    grid.innerHTML = "";
-    iconList.forEach(name => {
-      const div = document.createElement("div");
-      div.className = "icon-box";
-      div.innerHTML = `
-        <i class="fas fa-${name}" style="color: ${getRandomColor()}"></i>
-        <div class="icon-name">${name}</div>
-      `;
-      div.onclick = () => {
-        const fullIconName = `fa-${name}`;
-        navigator.clipboard.writeText(fullIconName);
-        
-        const notification = document.getElementById("copyNotification");
-        const copyIcon = document.getElementById("copyIcon");
-        const copyText = document.getElementById("copyText");
-        
-        copyIcon.className = `fas fa-${name}`;
-        copyIcon.style.color = getRandomColor();
-        copyText.textContent = fullIconName;
-        
-        notification.classList.remove("show");
-        
-                requestAnimationFrame(() => {
-          notification.classList.add("show");
-          
-          if (notificationTimer) {
-            clearTimeout(notificationTimer);
-          }
-          
-          notificationTimer = setTimeout(() => {
-            notification.classList.remove("show");
-          }, 5000);
-        });
-      };
-      grid.appendChild(div);
-    });
-  }
-
-  function getRandomColor() {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 50%)`;
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const clearIcon = document.querySelector("#clearBtn i");
-    if (clearIcon) {
-      clearIcon.style.color = getRandomColor();
-    }
-    const yinYangIcon = document.querySelector("#randomColorBtn i");
-    if (yinYangIcon) yinYangIcon.style.color = getRandomColor();
-    
-    document.getElementById("copyCloseBtn").addEventListener("click", () => {
-      document.getElementById("copyNotification").classList.remove("show");
-  if (notificationTimer) {
-        clearTimeout(notificationTimer);
-      }
-    });
-  });
-
-  const searchInput = document.getElementById("iconSearch");
-  const clearBtn = document.getElementById("clearBtn");
-
-  searchInput.addEventListener("input", function() {
-    let keyword = this.value.toLowerCase();
-    
-    // 智能处理fa-前缀
-    if (keyword.startsWith("fa-")) {
-      keyword = keyword.substring(3);
-    }
-    
-    const filtered = allIcons.filter(name => name.includes(keyword));
-    renderIcons(filtered);
-    updateStatus(filtered.length, keyword);
-    
-    clearBtn.style.display = this.value ? "block" : "none";
-  });
-
-  function updateStatus(matchCount, keyword) {
-    const statusEl = document.getElementById("status");
-    if (!searchInput.value) {
-      statusEl.textContent = `共加载 ${allIcons.length} 个图标`;
-    } else {
-      statusEl.textContent = matchCount === 0 
-        ? "没有找到匹配的图标" 
-        : `找到 ${matchCount} 个匹配图标${searchInput.value.startsWith("fa-") ? " (已自动过滤'fa-'前缀)" : ""}`;
-    }
-  }
-
-  clearBtn.addEventListener("click", function(e) {
-    e.stopPropagation();
-    searchInput.value = '';
-    searchInput.focus();
-    clearBtn.style.display = "none";
     renderIcons(allIcons);
-    updateStatus(allIcons.length);
-    
-    const clearIcon = document.querySelector("#clearBtn i");
-    if (clearIcon) clearIcon.style.color = getRandomColor();
-  });
-
-  const topBtn = document.getElementById("topBtn");
-  window.addEventListener("scroll", () => {
-    topBtn.style.display = window.scrollY > 200 ? "block" : "none";
-  });
-  topBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setTopBtnColor();
-  });
-
-  function setTopBtnColor() {
-    const icon = document.querySelector("#topBtn i");
-    if (icon) {
-      icon.style.color = getRandomColor();
-    }
+  } catch (e) {
+    document.getElementById("status").textContent =
+      "图标加载失败";
   }
+}
 
-  document.getElementById("randomColorBtn").addEventListener("click", () => {
-    document.querySelectorAll(".icon-box i").forEach(icon => {
-      icon.style.color = getRandomColor();
-    });
-    setTopBtnColor();
+function renderIcons(list) {
+  const grid = document.getElementById("iconGrid");
+  grid.innerHTML = "";
 
-    const clearIcon = document.querySelector("#clearBtn i");
-    if (clearIcon) clearIcon.style.color = getRandomColor();
+  list.forEach(name => {
+    const div = document.createElement("div");
+    div.className = "icon-box";
 
-    const yinYangIcon = document.querySelector("#randomColorBtn i");
-    if (yinYangIcon) {
-      yinYangIcon.style.color = getRandomColor();
-      yinYangIcon.classList.add("rotate");
-      setTimeout(() => yinYangIcon.classList.remove("rotate"), 600);
-    }
+    div.innerHTML = `
+      <i class="fas fa-${name}"></i>
+      <div class="icon-name">${name}</div>
+    `;
+
+    div.onclick = () => {
+      const full = `fa-${name}`;
+      navigator.clipboard.writeText(full);
+
+      document.getElementById("copyText").textContent = full;
+      const n = document.getElementById("copyNotification");
+      n.classList.add("show");
+
+      setTimeout(() => n.classList.remove("show"), 2000);
+    };
+
+    grid.appendChild(div);
   });
+}
 
-  fetchIcons().then(() => {
-    setTopBtnColor();
+document.getElementById("iconSearch").addEventListener("input", function () {
+  let key = this.value.toLowerCase();
+  if (key.startsWith("fa-")) key = key.slice(3);
+
+  const filtered = allIcons.filter(i => i.includes(key));
+  renderIcons(filtered);
+
+  document.getElementById("clearBtn").style.display =
+    this.value ? "block" : "none";
+});
+
+document.getElementById("clearBtn").onclick = () => {
+  document.getElementById("iconSearch").value = "";
+  renderIcons(allIcons);
+  document.getElementById("clearBtn").style.display = "none";
+};
+
+document.getElementById("topBtn").onclick = () =>
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+document.getElementById("randomColorBtn").onclick = () => {
+  document.querySelectorAll(".icon-box i").forEach(i => {
+    i.style.color = `hsl(${Math.random()*360},70%,50%)`;
   });
+};
+
+window.addEventListener("scroll", () => {
+  document.getElementById("topBtn").style.display =
+    window.scrollY > 200 ? "block" : "none";
+});
+
+fetchIcons();
 </script>
-  <script src="/js/floating-menu.js"></script>
-  <script src="/js/main-header-notice-footer.js"></script>
+
 </body>
 </html>
