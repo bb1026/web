@@ -4,47 +4,115 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>高级颜色选择器</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="/css/floating-menu.css">
+
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
   <link rel="stylesheet" href="/css/colorstyle.css">
+
+  <style>
+
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid #eee;
+      padding:10px 15px;
+    }
+
+    .home-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 14px;
+      border-radius:10px;
+      background:#fff;
+      border:1px solid #ddd;
+      color:#333;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:500;
+      transition:.2s;
+    }
+
+    .home-btn:hover{
+      background:#f5f5f5;
+      transform:translateY(-1px);
+    }
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+      background:#f7f7f7;
+    }
+
+  </style>
+
 </head>
+
 <body>
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
-  
+
+  <!-- 顶部返回 -->
+  <div class="topbar">
+    <a href="/" class="home-btn">
+      ← 返回首页
+    </a>
+  </div>
+
   <div class="container">
+
     <h1><i class="fas fa-palette"></i> 高级颜色选择器</h1>
 
     <div class="color-picker">
+
       <div class="section image-color">
         <h2 class="section-title"><i class="fas fa-image"></i> 传图识色</h2>
+
         <div class="image-upload" id="imageUpload">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>点击或拖拽图片到此处</p>
           <input type="file" id="fileInput" accept="image/*">
         </div>
+
         <div class="image-preview-container" id="imagePreview">
           <img id="previewImage" src="#" alt="预览图片">
-          <button class="close-image" id="closeImage"><i class="fas fa-times"></i></button>
+          <button class="close-image" id="closeImage">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
       </div>
+
       <div class="section">
         <h2 class="section-title"><i class="fas fa-sliders-h"></i> 颜色选择</h2>
+
         <div class="color-controls">
+
           <div class="hue-slider" id="hueSlider">
             <div class="hue-slider-thumb" id="hueThumb"></div>
           </div>
+
           <div class="color-panel" id="colorPanel">
             <div class="color-panel-thumb" id="panelThumb"></div>
           </div>
+
           <div class="selected-color">
             <div class="color-display" id="colorDisplay"></div>
           </div>
+
         </div>
       </div>
+
       <div class="section">
         <h2 class="section-title"><i class="fas fa-code"></i> 颜色格式</h2>
+
         <div class="color-formats">
+
           <div class="format-group">
             <div class="format-title">HEX</div>
             <div class="format-inputs">
@@ -54,6 +122,7 @@
               </div>
             </div>
           </div>
+
           <div class="format-group">
             <div class="format-title">RGB</div>
             <div class="format-inputs">
@@ -62,6 +131,7 @@
               <div class="format-label"><input type="number" class="format-input" id="bInput" min="0" max="255" value="255"><span>B</span></div>
             </div>
           </div>
+
           <div class="format-group">
             <div class="format-title">CMYK</div>
             <div class="format-inputs">
@@ -71,6 +141,7 @@
               <div class="format-label"><input type="number" class="format-input" id="kInput" min="0" max="100" value="0"><span>K</span></div>
             </div>
           </div>
+
           <div class="format-group">
             <div class="format-title">HSV</div>
             <div class="format-inputs">
@@ -79,11 +150,15 @@
               <div class="format-label"><input type="number" class="format-input" id="vInput" min="0" max="100" value="100"><span>V</span></div>
             </div>
           </div>
+
         </div>
       </div>
+
     </div>
   </div>
+
+  <!-- 只保留核心逻辑 -->
   <script src="/js/colorscript.js"></script>
-  <script src="/js/floating-menu.js"></script>
+
 </body>
 </html>
