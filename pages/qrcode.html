@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
+<meta name="google-adsense-account" content="ca-pub-7777281841149510">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7777281841149510"
+     crossorigin="anonymous"></script>
 
 <title>二维码生成器</title>
 
@@ -12,46 +15,121 @@
 <link rel="stylesheet" href="/css/floating-menu.css">
 
 <style>
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 750px;
-  margin: 20px auto;
-  padding: 20px;
-  background: #f9fafc;
-  color: #222;
-}
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 750px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f9fafc;
+    color: #222;
+  }
 
-.file-upload {
-  display: inline-block;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  background-color: #4CAF50;
-  color: white;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 6px;
-}
+  .file-upload {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
 
-.file-upload input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
+  .file-upload:hover {
+    background-color: #45a049;
+  }
 
-.hidden { display:none !important; }
+  .file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+  }
 
-.button {
-  background:#2874f0;
-  color:#fff;
-  border:none;
-  padding:12px 20px;
-  border-radius:6px;
-  cursor:pointer;
-}
+  #logoStatus {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+  }
 
-#qr-section { display:none; text-align:center; margin-top:20px; }
+  h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .home-btn {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 15px auto;
+    padding: 8px 14px;
+    background: #333;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .home-btn:hover {
+    background: #000;
+  }
+
+  fieldset {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.2rem;
+    background: #fff;
+  }
+
+  legend {
+    font-weight: 600;
+    padding: 0 6px;
+  }
+
+  label {
+    margin-right: 15px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="date"], textarea {
+    width: 100%;
+    padding: 7px 10px;
+    margin: 6px 0 12px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    font-size: 14px;
+  }
+
+  textarea { resize: vertical; }
+
+  .button {
+    display: inline-block;
+    background: #2874f0;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 28px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .button:hover { background: #1a52d8; }
+
+  #qr-section {
+    display: none;
+    margin-top: 30px;
+    text-align: center;
+  }
+
+  .hidden { display: none !important; }
 </style>
 </head>
 
@@ -59,144 +137,104 @@ body {
 
 <h2>二维码生成器</h2>
 
-<div id="fm-container"></div>
+<!-- ✅ 首页按钮 -->
+<a class="home-btn" href="/">🏠 首页</a>
 
+<!-- 内容类型 -->
 <fieldset>
-<legend>内容类型</legend>
-<label><input type="radio" name="type" value="text" checked> 文本</label>
-<label><input type="radio" name="type" value="url"> 网址</label>
-<label><input type="radio" name="type" value="tel"> 电话</label>
-<label><input type="radio" name="type" value="wifi"> WiFi</label>
-<label><input type="radio" name="type" value="vcard"> vCard</label>
+  <legend>内容类型</legend>
+  <label><input type="radio" name="type" value="text" checked> 文本</label>
+  <label><input type="radio" name="type" value="url"> 网址</label>
+  <label><input type="radio" name="type" value="tel"> 电话</label>
+  <label><input type="radio" name="type" value="wifi"> WiFi</label>
+  <label><input type="radio" name="type" value="vcard"> vCard</label>
 </fieldset>
 
-<div>
-<input type="text" id="content" placeholder="输入内容" style="width:100%;padding:8px;">
+<!-- 输入区域 -->
+<div id="inputs">
+  <label>输入内容：<input type="text" id="content" placeholder="请输入内容"></label>
 </div>
 
+<!-- WiFi -->
 <div id="wifi-password-wrapper" class="hidden">
-<input type="text" id="wifi-password" placeholder="WiFi密码" style="width:100%;padding:8px;">
+  <label>WiFi 密码：<input type="text" id="wifi-password"></label>
 </div>
 
+<div id="wifi-encryption-wrapper" class="hidden">
+  <fieldset>
+    <legend>加密方式</legend>
+    <label><input type="radio" name="wifi-encryption" value="WPA" checked> WPA/WPA2</label>
+    <label><input type="radio" name="wifi-encryption" value="WEP"> WEP</label>
+    <label><input type="radio" name="wifi-encryption" value="nopass"> 无加密</label>
+  </fieldset>
+</div>
+
+<!-- vCard -->
+<div id="vcard-inputs" class="hidden">
+  <label>姓名: <input type="text" id="vcard-fn"></label>
+</div>
+
+<!-- 颜色 -->
 <fieldset>
-<legend>WiFi加密</legend>
-<label><input type="radio" name="wifi-encryption" value="WPA" checked> WPA</label>
-<label><input type="radio" name="wifi-encryption" value="WEP"> WEP</label>
-<label><input type="radio" name="wifi-encryption" value="nopass"> 无加密</label>
+  <legend>颜色</legend>
+  <label><input type="radio" name="colorMode" value="black" checked> 黑色</label>
+  <label><input type="radio" name="colorMode" value="gradient"> 渐变</label>
 </fieldset>
 
-<div>
-<label class="file-upload">
-选择Logo
-<input type="file" id="logoFile" accept="image/*">
-</label>
+<!-- 尺寸 -->
+<fieldset>
+  <legend>尺寸</legend>
+  <label><input type="radio" name="size" value="256" checked> 256</label>
+  <label><input type="radio" name="size" value="512"> 512</label>
+  <label><input type="radio" name="size" value="768"> 768</label>
+</fieldset>
+
+<!-- 图片格式 -->
+<fieldset>
+  <legend>图片格式</legend>
+  <label><input type="radio" name="format" value="png" checked> PNG</label>
+  <label><input type="radio" name="format" value="jpeg"> JPEG</label>
+  <label><input type="radio" name="format" value="webp"> WEBP</label>
+</fieldset>
+
+<!-- 生成按钮 -->
+<div style="text-align:center;">
+  <button id="generate-btn" class="button">生成二维码</button>
 </div>
 
-<div style="text-align:center;margin-top:10px;">
-<button id="generate-btn" class="button">生成二维码</button>
-</div>
-
+<!-- QR -->
 <div id="qr-section">
-<div id="qr-container"></div>
-<div id="text-output"></div>
-<button id="save-btn" class="button">保存</button>
+  <div id="qr-container"></div>
 </div>
 
 <script>
 (() => {
+  const qrContainer = document.getElementById('qr-container');
+  const generateBtn = document.getElementById('generate-btn');
+  const contentInput = document.getElementById('content');
 
-const qrContainer = document.getElementById("qr-container");
-const textOutput = document.getElementById("text-output");
-const generateBtn = document.getElementById("generate-btn");
-const saveBtn = document.getElementById("save-btn");
-const logoFile = document.getElementById("logoFile");
+  let qrCode = null;
 
-const contentInput = document.getElementById("content");
-const wifiPassword = document.getElementById("wifi-password");
-const wifiWrap = document.getElementById("wifi-password-wrapper");
-
-const wifiRadios = document.getElementsByName("wifi-encryption");
-
-let logoImage = null;
-let qr = null;
-
-function getType(){
-  return document.querySelector('input[name="type"]:checked').value;
-}
-
-function getWifiEnc(){
-  return [...wifiRadios].find(r=>r.checked).value;
-}
-
-function buildText(){
-  const type = getType();
-  const val = contentInput.value;
-
-  if(type==="text") return val;
-
-  if(type==="url") return val.startsWith("http") ? val : "http://"+val;
-
-  if(type==="tel") return "TEL:"+val;
-
-  if(type==="wifi"){
-    const enc = getWifiEnc();
-    if(enc==="nopass") return `WIFI:T:nopass;S:${val};;`;
-    return `WIFI:T:${enc};S:${val};P:${wifiPassword.value};;`;
+  function getText() {
+    return contentInput.value.trim();
   }
 
-  return val;
-}
+  function render() {
+    const text = getText();
+    if(!text) return alert("请输入内容");
 
-function render(){
+    qrContainer.innerHTML = "";
 
-const data = buildText();
-if(!data) return;
+    qrCode = new QRCodeStyling({
+      width: 256,
+      height: 256,
+      data: text
+    });
 
-document.getElementById("qr-section").style.display="block";
-
-qrContainer.innerHTML="";
-
-qr = new QRCodeStyling({
-  width: 300,
-  height: 300,
-  data,
-  image: logoImage,
-  dotsOptions: { color:"#000" },
-  imageOptions: { imageSize:0.2 }
-});
-
-qr.append(qrContainer);
-
-textOutput.textContent = data;
-
-}
-
-generateBtn.onclick = render;
-
-saveBtn.onclick = () => {
-  if(!qr) return;
-  qr.getRawData("png").then(blob=>{
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="qr.png";
-    a.click();
-  });
-};
-
-logoFile.addEventListener("change", e=>{
-  const file=e.target.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>logoImage=e.target.result;
-  reader.readAsDataURL(file);
-});
-
-document.querySelectorAll('input[name="type"]').forEach(r=>{
-  r.onchange=()=>{
-    wifiWrap.classList.toggle("hidden", getType()!=="wifi");
+    qrCode.append(qrContainer);
   }
-});
 
+  generateBtn.addEventListener("click", render);
 })();
 </script>
 
