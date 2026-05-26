@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>图片画廊</title>
+
   <style>
     body {
       margin: 0;
@@ -11,13 +12,35 @@
       padding: 10px;
       background: #f4f4f4;
     }
+
     h1 {
       text-align: center;
     }
+
+    /* ================= 首页按钮 ================= */
+    .home-btn {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      background: #007bff;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      z-index: 9999;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .home-btn:hover {
+      background: #0056b3;
+    }
+
     #gallery {
       display: grid;
       gap: 10px;
     }
+
     .image-item {
       background: #fff;
       border: 1px solid #ccc;
@@ -28,6 +51,7 @@
       align-items: center;
       padding: 6px;
     }
+
     .image-item img {
       width: 100%;
       height: 140px;
@@ -36,6 +60,7 @@
       border-radius: 4px;
       background: #eee;
     }
+
     .download-btn {
       margin-top: 6px;
       padding: 5px 10px;
@@ -45,13 +70,16 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .download-btn:hover {
       background-color: #0056b3;
     }
+
     #pagination {
       text-align: center;
       margin-top: 20px;
     }
+
     .page-btn, .page-num {
       padding: 8px 12px;
       margin: 0 4px;
@@ -61,25 +89,30 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
     .page-btn:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
+
     .page-num.active {
       background-color: #28a745;
     }
+
     @media (max-width: 600px) {
       #gallery {
         grid-template-columns: repeat(2, 1fr);
       }
       .image-item img { height: 140px; }
     }
+
     @media (min-width: 601px) and (max-width: 1024px) {
       #gallery {
         grid-template-columns: repeat(4, 1fr);
       }
       .image-item img { height: 120px; }
     }
+
     @media (min-width: 1025px) {
       #gallery {
         grid-template-columns: repeat(6, 1fr);
@@ -87,16 +120,19 @@
       .image-item img { height: 100px; }
     }
   </style>
-  <link rel="stylesheet" href="/css/floating-menu.css">
+
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
+
+  <!-- ✅ 首页按钮 -->
+  <a class="home-btn" href="/">🏠 首页</a>
+
   <h1>图片画廊</h1>
+
   <div id="gallery"></div>
   <div id="pagination"></div>
-  
-  <!-- 球形菜单挂载点 -->
-  <div id="fm-container"></div>
 
   <script>
     const baseUrl = '/imgs/';
@@ -110,6 +146,7 @@
 
     function tryLoadAllImages(callback) {
       let pending = baseNames.length;
+
       baseNames.forEach(name => {
         tryLoadExtension(name, 0, url => {
           if (url) imageList.push(url);
@@ -121,8 +158,10 @@
 
     function tryLoadExtension(name, index, done) {
       if (index >= extensions.length) return done(null);
+
       const url = baseUrl + name + extensions[index];
       const img = new Image();
+
       img.onload = () => done(url);
       img.onerror = () => tryLoadExtension(name, index + 1, done);
       img.src = url;
@@ -153,10 +192,8 @@
         link.target = '_blank';
 
         const img = document.createElement('img');
-        img.src = url;  // 直接设置src，不使用data-src
-        img.alt = 'image';
-        img.loading = 'lazy'; // 使用原生懒加载
-        img.style.display = 'block'; // 确保图片正确渲染
+        img.src = url;
+        img.loading = 'lazy';
 
         link.appendChild(img);
         item.appendChild(link);
@@ -165,8 +202,8 @@
         btn.className = 'download-btn';
         btn.textContent = '保存';
         btn.onclick = () => downloadImage(url);
-        item.appendChild(btn);
 
+        item.appendChild(btn);
         gallery.appendChild(item);
       });
 
@@ -178,26 +215,25 @@
       const totalPages = Math.ceil(imageList.length / pageSize);
       const pagination = document.getElementById('pagination');
 
-      const maxButtons = 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-      if (endPage - startPage < maxButtons - 1) {
-        startPage = Math.max(1, endPage - maxButtons + 1);
-      }
+      let html =
+        `<button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
 
-      let html = `<button class="page-btn" onclick="changePage(-1)" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
-      for (let i = startPage; i <= endPage; i++) {
+      for (let i = 1; i <= totalPages; i++) {
         html += `<button class="page-num ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
       }
+
       html += `<button class="page-btn" onclick="changePage(1)" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+
       pagination.innerHTML = html;
     }
 
     function changePage(delta) {
       const pageSize = getPageSize();
       const totalPages = Math.ceil(imageList.length / pageSize);
+
       currentPage += delta;
       currentPage = Math.max(1, Math.min(totalPages, currentPage));
+
       renderGallery();
     }
 
@@ -215,22 +251,16 @@
       document.body.removeChild(link);
     }
 
-    // 优化resize处理，避免频繁重绘
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        renderGallery();
-      }, 200);
+      resizeTimer = setTimeout(renderGallery, 200);
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      tryLoadAllImages(() => {
-        renderGallery();
-      });
+      tryLoadAllImages(() => renderGallery());
     });
   </script>
-  <script src="/js/floating-menu.js"></script>
-  <script src="/js/main-header-notice-footer.js"></script>
+
 </body>
 </html>
