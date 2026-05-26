@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>工具搜索 - 在线工具箱</title>
+
   <!-- 样式表 -->
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/floating-menu.css">
+
   <style>
     * {
       box-sizing: border-box;
@@ -14,19 +15,48 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
     }
-    
+
     html, body {
       width: 100%;
       overflow-x: hidden;
       background: #fff;
     }
-    
+
     body {
       display: flex;
       flex-direction: column;
       min-height: 100vh;
       line-height: 1.5;
-      position: relative;
+    }
+
+    /* 顶部栏 */
+    .header {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      height: 40px;
+    }
+
+    .home-btn {
+      padding: 8px 14px;
+      background: #0366d6;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
     }
 
     /* 主内容区 */
@@ -38,23 +68,22 @@
       padding: 20px;
     }
 
-    /* 搜索框区域 */
     .search-header {
       margin: 20px 0 30px;
       text-align: center;
     }
-    
+
     .search-box-container {
       width: 100%;
       padding: 0 20px;
     }
-    
+
     .search-box {
       width: 100%;
       max-width: 800px;
       margin: 0 auto 30px;
     }
-    
+
     #search-input {
       width: 100%;
       padding: 16px 24px;
@@ -62,27 +91,25 @@
       border: 2px solid #ddd;
       border-radius: 10px;
       transition: all 0.2s ease;
-      background: #fff;
     }
-    
+
     #search-input:focus {
       border-color: #0366d6;
       outline: none;
     }
-    
+
     .default-hint {
       text-align: center;
       color: #666;
       margin-top: 15px;
       font-size: 14px;
     }
-    
-    /* 搜索结果 */
+
     .search-results {
       margin: 30px 0 10px;
       width: 100%;
     }
-    
+
     .result-item {
       display: block;
       padding: 16px;
@@ -91,277 +118,162 @@
       border: 1px solid #e1e4e8;
       border-radius: 8px;
       transition: all 0.2s ease;
-      width: 100%;
     }
-    
+
     .result-item:hover {
       border-color: #0366d6;
       transform: translateY(-2px);
     }
-    
+
     .result-title {
       font-size: 17px;
       font-weight: 600;
       color: #24292e;
-      margin-bottom: 5px;
     }
-    
+
     .result-category {
       font-size: 14px;
       color: #586069;
     }
-    
+
     .no-results {
       text-align: center;
       padding: 40px 20px;
       background: #fafbfc;
       border-radius: 8px;
       margin-top: 30px;
-      width: 100%;
       border: 1px solid #e1e4e8;
     }
-    
-    .no-results h3 {
-      color: #24292e;
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
 
-   /* 页脚样式调整 */
-    #footerContainer {
-      width: 100%;
-      /*margin-top: 10px;*/ 
-    }
-    
-    /* 确保菜单球不变形 */
-    #fm-container {
-      transform: none !important;
-    }
-    
-    .fm-button {
-      border-radius: 50% !important;
-      transform: scale(1) !important;
-    }
-
-    .site-footer {
-      background-color: transparent !important;
-      box-shadow: none !important;
-      padding: 10px 0 !important;
-      margin-top: 0 !important;
-    }
-
-    .footer-content {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-    
-    /* 响应式调整 */
     @media (max-width: 768px) {
       .search-page {
         margin: 80px auto 10px;
         padding: 15px;
       }
-      
+
       #search-input {
-        padding: 14px 20px;
         font-size: 16px;
       }
     }
   </style>
 </head>
+
 <body>
-  <!-- 顶部Logo容器 -->
-  <div class="header" style="height: 80px; width: 100%;">
-    <div class="header-main"></div>
+
+  <!-- 顶部栏 + 首页按钮 -->
+  <div class="header">
+    <div class="header-left">
+      <img src="/imgs/logo.png" class="logo" alt="logo">
+      <span>在线工具箱</span>
+    </div>
+
+    <a class="home-btn" href="/">首页</a>
   </div>
 
-  <!-- 球形菜单挂载点 - 确保不变形 -->
-  <div id="fm-container" style="transform: none !important;"></div>
-
-  <!-- 搜索主内容区 -->
-  <main class="search-page" style="width: 100%;">
+  <!-- 主内容 -->
+  <main class="search-page">
     <div class="search-header">
       <h1>搜索工具箱</h1>
     </div>
-    
+
     <div class="search-box-container">
       <div class="search-box">
-        <input 
-          type="text" 
-          id="search-input" 
-          placeholder="输入工具关键词..." 
-          autofocus
-          autocomplete="off"
-          aria-label="搜索工具"
-        >
+        <input type="text" id="search-input" placeholder="输入工具关键词..." autocomplete="off">
       </div>
+
       <div id="default-hint" class="default-hint">
         <p>例如：时间戳、JSON、编码</p>
       </div>
     </div>
-    
+
     <div id="results" class="search-results"></div>
   </main>
 
   <script>
-    // 搜索功能实现
     document.addEventListener('DOMContentLoaded', () => {
-      // 数据加载
+
       const loadToolsData = async () => {
         try {
           const response = await fetch('/json/menu.json', {
-      headers: {
-        'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R' 
-      }
-    });
-          if (!response.ok) throw new Error('网络响应不正常');
+            headers: {
+              'X-Auth-Key': 'tX3$9mGz@7vLq#F!b2R'
+            }
+          });
+
           const data = await response.json();
-          
+
           const normalizedData = {};
           for (const [category, items] of Object.entries(data)) {
-            if (typeof items === 'string') {
-              normalizedData[category] = [[category, items]];
-            } else if (Array.isArray(items)) {
-              normalizedData[category] = items.map(item => 
-                Array.isArray(item) ? item : [item, "#"]
-              );
-            }
+            normalizedData[category] = items.map(item =>
+              Array.isArray(item) ? item : [item, "#"]
+            );
           }
+
           return normalizedData;
-        } catch (error) {
-          console.error('加载工具数据失败:', error);
+        } catch (e) {
           return null;
         }
       };
 
-      // 执行搜索
       const performSearch = (data, query) => {
         if (!data) return [];
-        
-        const results = [];
-        const lowerQuery = query.toLowerCase().trim();
-        const hintElement = document.getElementById('default-hint');
-        
-        if (!lowerQuery) {
-          hintElement.style.display = 'block';
+
+        const q = query.toLowerCase().trim();
+        const hint = document.getElementById('default-hint');
+
+        if (!q) {
+          hint.style.display = 'block';
           return [];
         }
-        
-        hintElement.style.display = 'none';
-        
-        // 需要完全匹配过滤的关键词（不区分大小写）
-        const excludeExactMatches = ['首页', '关于', 'home', 'about'];
-        
-        Object.entries(data).forEach(([category, items]) => {
+
+        hint.style.display = 'none';
+
+        const results = [];
+
+        Object.entries(data).forEach(([cat, items]) => {
           items.forEach(([name, url]) => {
-            const lowerName = name.toLowerCase();
-            if (lowerName.includes(lowerQuery)) {
-              // 检查是否是完全匹配要排除的关键词
-              const shouldExclude = excludeExactMatches.some(keyword => 
-                name.toLowerCase() === keyword.toLowerCase()
-              );
-              
-              if (!shouldExclude) {
-                results.push({
-                  name,
-                  url: url.startsWith('http') ? url : `https://www.0515364.xyz${url}`,
-                  category
-                });
-              }
+            if (name.toLowerCase().includes(q)) {
+              results.push({
+                name,
+                url: url.startsWith('http') ? url : `https://www.0515364.xyz${url}`,
+                category: cat
+              });
             }
           });
         });
-        
-        return results.sort((a, b) => a.name.localeCompare(b.name));
+
+        return results;
       };
 
-      // 渲染结果
       const renderResults = (results) => {
-        const container = document.getElementById('results');
-        
-        if (!results) {
-          container.innerHTML = `
-            <div class="no-results">
-              <h3>数据加载失败</h3>
-              <p>请刷新页面重试</p>
-            </div>
-          `;
+        const box = document.getElementById('results');
+
+        if (!results.length && document.getElementById('search-input').value) {
+          box.innerHTML = `<div class="no-results">没有找到结果</div>`;
           return;
         }
-        
-        if (!results.length && document.getElementById('search-input').value.trim()) {
-          container.innerHTML = `
-            <div class="no-results">
-              <h3>没有找到匹配的工具</h3>
-              <p>建议尝试其他关键词</p>
-            </div>
-          `;
-          return;
-        }
-        
-        container.innerHTML = results.map(item => `
-          <a href="${item.url}" class="result-item">
-            <div class="result-title">${item.name}</div>
-            <div class="result-category">${item.category}</div>
+
+        box.innerHTML = results.map(i => `
+          <a class="result-item" href="${i.url}">
+            <div class="result-title">${i.name}</div>
+            <div class="result-category">${i.category}</div>
           </a>
         `).join('');
       };
 
-      // 初始化搜索
-      const initSearch = async () => {
-        const toolsData = await loadToolsData();
-        const searchInput = document.getElementById('search-input');
-        const urlParams = new URLSearchParams(window.location.search);
-        const initialQuery = urlParams.get('q') || '';
-        
-        if (initialQuery) {
-          searchInput.value = initialQuery;
-          const results = performSearch(toolsData, initialQuery);
-          renderResults(results);
-        }
-        
-        searchInput.addEventListener('input', (e) => {
-          const query = e.target.value;
-          const results = performSearch(toolsData, query);
-          
-          const newUrl = query ? 
-            `/search.html?q=${encodeURIComponent(query)}` : '/search.html';
-          history.pushState(null, '', newUrl);
-          
-          renderResults(results);
+      const init = async () => {
+        const data = await loadToolsData();
+        const input = document.getElementById('search-input');
+
+        input.addEventListener('input', e => {
+          const res = performSearch(data, e.target.value);
+          renderResults(res);
         });
       };
 
-      initSearch();
+      init();
     });
   </script>
 
-  <!-- js加载 -->
-  <script src="/js/floating-menu.js"></script>
-  <script src="/js/main-header-notice-footer.js"></script>
-  
-  <!-- 确保菜单球不变形的额外脚本 -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // 防止浮动菜单变形
-      const observer = new MutationObserver(function() {
-        const fmContainer = document.getElementById('fm-container');
-        if (fmContainer) {
-          fmContainer.style.transform = 'none';
-          const buttons = fmContainer.querySelectorAll('.fm-button');
-          buttons.forEach(btn => {
-            btn.style.transform = 'scale(1)';
-            btn.style.borderRadius = '50%';
-          });
-        }
-      });
-      
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    });
-  </script>
 </body>
 </html>
