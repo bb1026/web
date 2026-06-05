@@ -437,9 +437,13 @@ footer{
     </select>
 
     <input
-      id="search"
-      placeholder="搜索工具（快捷键 / ）"
-    >
+  id="search"
+  placeholder="搜索工具（快捷键 / ）"
+  autocomplete="off"
+  autocapitalize="off"
+  autocorrect="off"
+  spellcheck="false"
+   />
 
     <button id="searchBtn">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -684,23 +688,34 @@ function render(){
 
   for(const k in grouped){
 
-    const items = grouped[k];
-    const expanded = expandedSections[k];
-    const visible = expanded ? items : items.slice(0,6);
+  const items = grouped[k];
+  const expanded = expandedSections[k];
+  const visible = expanded ? items : items.slice(0,6);
 
-    menu.innerHTML += `
-    <div class="section">
+  menu.innerHTML += `
+  <div class="section">
 
-      <div class="section-title">
-        <span><i class="${categoryIcons[k]||"fa-solid fa-folder"}"></i>${k}</span>
-      </div>
+    <div class="section-title">
+      <span>
+        <i class="${categoryIcons[k]||"fa-solid fa-folder"}"></i>
+        ${k}
+      </span>
+    </div>
 
-      <div class="grid">
-        ${visible.map(i=>card([i.name,i.url,i.desc,i.icon],keyword)).join("")}
-      </div>
+    <div class="grid">
+      ${visible.map(i=>card([i.name,i.url,i.desc,i.icon],keyword)).join("")}
+    </div>
 
-    </div>`;
-  }
+    ${items.length > 6 ? `
+      <button class="more-btn"
+        onclick="toggleMore('${safe(k)}')">
+        ${expanded ? '收起' : `查看更多 (${items.length - 6})`}
+      </button>
+    ` : ""}
+
+  </div>
+  `;
+ }
 }
 
 /* =========================
@@ -794,6 +809,8 @@ const savedTheme=localStorage.getItem("theme");
 if(savedTheme){
   document.documentElement.setAttribute("data-theme",savedTheme);
 }
+
+   document.getElementById("search").setAttribute("autocomplete","off");
 
 </script>
    
