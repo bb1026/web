@@ -116,7 +116,6 @@ const lunarDayName=["","初一","初二","初三","初四","初五","初六","�
 "十一","十二","十三","十四","十五","十六","十七","十八","十九","二十",
 "廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
 
-function toFixed(n){return n<10?"0"+n:n;}
 function lYearDays(y){let sum=348;for(let i=0x8000;i>0x8;i>>=1){sum+=(lunarInfo[y-1900]&i)?1:0;}return sum+leapDays(y);}
 
 function leapMonth(y){return lunarInfo[y-1900]&0xf;}
@@ -127,19 +126,20 @@ function monthDays(y,m){return (lunarInfo[y-1900]&(0x10000>>m))?30:29;}
 
 // ---------- 节气 ----------
 function solarTerm(y,n){
-  const baseDate = new Date(Date.UTC(1900,0,6,2,5)); // 基准时间
-  const sTermInfo=[0,21208,42467,63836,85337,107014,128867,150921,173149,195551,
-    218072,240693,263343,285989,308563,331033,353350,375494,397447,419210,
-    440795,462224,483532,504758];
-  const yearMs = 31556925974.7; // 平太阳年毫秒数
-  const ms = yearMs*(y-1900) + sTermInfo[n]*60000;
-  const dateUTC = new Date(baseDate.getTime() + ms);
+  const baseDate = Date.UTC(1900,0,6,2,5); // 基准时间
 
-  // 转换为本地时间
-  const localDate = new Date(dateUTC.getTime() + dateUTC.getTimezoneOffset()*60000);
+  const ms =
+    31556925974.7 * (y - 1900) +
+    sTermInfo[n] * 60000 +
+    baseDate;
 
-  // 修正日期误差，取整到天
-  return new Date(localDate.getFullYear(), localDate.getMonth(), localDate.getDate());
+  const dateUTC = new Date(ms);
+
+  return new Date(
+    dateUTC.getUTCFullYear(),
+    dateUTC.getUTCMonth(),
+    dateUTC.getUTCDate()
+  );
 }
 
 function getWeekday(date){return ["日","一","二","三","四","五","六"][date.getDay()];}
