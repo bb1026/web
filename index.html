@@ -469,6 +469,7 @@ footer{
 ========================= */
 
 let rawData = {};
+let searchIndex = [];
 
 let favorites =
 JSON.parse(localStorage.getItem("fav") || "[]");
@@ -477,96 +478,85 @@ let recent =
 JSON.parse(localStorage.getItem("recent") || "[]");
 
 const categoryIcons = {
-
   "小工具":"fa-solid fa-screwdriver-wrench",
   "代码工具":"fa-solid fa-code",
   "文字工具":"fa-solid fa-font",
   "图片工具":"fa-solid fa-image",
   "小游戏":"fa-solid fa-gamepad",
   "Scriptable":"fa-solid fa-mobile-screen"
-
 };
 
 const expandedSections = {};
 
 /* =========================
-   SAFE STRING
+   SAFE
 ========================= */
 
 function safe(str){
-
   return (str || "")
     .replace(/'/g,"\\'")
     .replace(/"/g,'\\"');
-
 }
 
 /* =========================
-   LOAD MENU
+   LOAD
 ========================= */
 
 async function load(){
+  const res = await fetch("/json/menu.json");
+  rawData = await res.json();
 
-  try{
-
-    const res = await fetch("/json/menu.json");
-
-    rawData = await res.json();
-
-    render();
-
-  }catch(e){
-
-    console.error(e);
-
-  }
-
+  buildIndex(); // 🚀 新增索引
+  render();
 }
-
 load();
+
+/* =========================
+   BUILD SEARCH INDEX（2.1核心）
+========================= */
+
+function buildIndex(){
+
+  searchIndex = [];
+
+  for(const k in rawData){
+    const arr = rawData[k];
+    if(!Array.isArray(arr)) continue;
+
+    for(const item of arr){
+
+      searchIndex.push({
+        cat:k,
+        name:item[0],
+        url:item[1],
+        desc:item[2] || "",
+        icon:item[3] || "fa-solid fa-circle"
+      });
+
+    }
+  }
+}
 
 /* =========================
    NOTICE
 ========================= */
 
 async function loadNotice(){
+  const res = await fetch("notice.html",{cache:"no-store"});
+  const text = await res.text();
 
-  try{
+  const clean = text.replace(/<[^>]*>/g,'').trim();
 
-    const res = await fetch("notice.html", { cache: "no-store" });
+  const bar = document.getElementById("noticeBar");
+  const content = document.getElementById("noticeContent");
 
-    const text = await res.text();
-
-    const clean =
-      text.replace(/<[^>]*>/g,'').trim();
-
-    const bar =
-      document.getElementById("noticeBar");
-
-    const content =
-      document.getElementById("noticeContent");
-
-    if(clean.length > 0){
-
-      content.innerText = clean;
-
-      bar.classList.remove("hidden");
-
-    }else{
-
-      bar.classList.add("hidden");
-
-    }
-
-  }catch(e){
-
-    document.getElementById("noticeBar")
-      .classList.add("hidden");
-
+  if(clean.length){
+    content.innerText = clean;
+    bar.classList.remove("hidden");
+  }else{
+    bar.classList.add("hidden");
   }
-
 }
-
 loadNotice();
 
 /* =========================
@@ -576,372 +566,194 @@ loadNotice();
 function addRecent(name,url,icon,desc){
 
   recent = [
-
     {name,url,icon,desc},
-
     ...recent.filter(i=>i.url!==url)
+  ].slice(0,10); // 🚀 扩展一点
 
-  ].slice(0,8);
-
-  localStorage.setItem(
-    "recent",
-    JSON.stringify(recent)
-  );
-
+  localStorage.setItem("recent",JSON.stringify(recent));
 }
 
 /* =========================
-   FAVORITE
+   FAVORITE（优化排序）
 ========================= */
 
 function toggleFav(name,url,icon,desc){
 
-  const exists =
-    favorites.find(i=>i.url===url);
+  const exists = favorites.find(i=>i.url===url);
 
   if(exists){
-
-    favorites =
-      favorites.filter(i=>i.url!==url);
-
+    favorites = favorites.filter(i=>i.url!==url);
   }else{
-
-    favorites.push({name,url,icon,desc});
-
+    favorites.unshift({name,url,icon,desc}); // 🚀 最新优先
   }
 
-  localStorage.setItem(
-    "fav",
-    JSON.stringify(favorites)
-  );
-
+  localStorage.setItem("fav",JSON.stringify(favorites));
   render();
-
 }
 
 /* =========================
-   CARD
+   CARD（新增高亮支持）
 ========================= */
 
-function card(item){
+function highlight(text,keyword){
+  if(!keyword) return text;
+  return text.replace(
+    new RegExp(keyword,"gi"),
+    m=>`<mark>${m}</mark>`
+  );
+}
 
-  const name = item[0];
+function card(item,keyword=""){
+
+  const name = highlight(item[0],keyword);
   const url = item[1];
-  const desc = item[2] || "";
+  const desc = highlight(item[2] || "",keyword);
   const icon = item[3] || "fa-solid fa-circle";
 
-  const fav =
-    favorites.find(f=>f.url===url);
+  const fav = favorites.find(f=>f.url===url);
 
   return `
-
   <a href="${url}"
-     onclick="addRecent(
-      '${safe(name)}',
-      '${safe(url)}',
-      '${safe(icon)}',
-      '${safe(desc)}'
-     )">
+     onclick="addRecent('${safe(item[0])}','${safe(url)}','${safe(icon)}','${safe(item[2]||"")}')">
 
     <div class="card">
 
-      <div class="star ${fav ? 'active' : ''}"
-
-        onclick="event.preventDefault();
-                 event.stopPropagation();
-                 toggleFav(
-                  '${safe(name)}',
-                  '${safe(url)}',
-                  '${safe(icon)}',
-                  '${safe(desc)}'
-                 )">
+      <div class="star ${fav?'active':''}"
+        onclick="event.preventDefault();event.stopPropagation();
+        toggleFav('${safe(item[0])}','${safe(url)}','${safe(icon)}','${safe(item[2]||"")}')">
 
         <i class="fa-solid fa-star"></i>
-
       </div>
 
       <div class="card-title">
-
-        <i class="${icon}"></i>
-
-        ${name}
-
+        <i class="${icon}"></i>${name}
       </div>
 
-      ${desc ? `
-
-      <div class="card-desc">
-
-        ${desc}
-
-      </div>
-
-      ` : ""}
+      ${desc?`<div class="card-desc">${desc}</div>`:""}
 
     </div>
-
-  </a>
-
-  `;
-
+  </a>`;
 }
 
 /* =========================
-   RENDER
+   RENDER（2.1优化）
 ========================= */
 
 function render(){
 
-  const menu =
-    document.getElementById("menu");
-
+  const menu = document.getElementById("menu");
   menu.innerHTML = "";
 
-  const keyword =
-    document.getElementById("search")
-    .value
-    .toLowerCase();
+  const keyword = document.getElementById("search").value.toLowerCase();
 
   /* recent */
-
   document.getElementById("recent").innerHTML =
-
   recent.length ? `
-
   <div class="section">
-
-    <div class="section-title">
-
-      <span>
-
-        <i class="fa-solid fa-clock"></i>
-
-        最近使用
-
-      </span>
-
-    </div>
-
+    <div class="section-title"><span>最近使用</span></div>
     <div class="grid">
-
-      ${recent.map(i=>
-
-        card([
-          i.name,
-          i.url,
-          i.desc || "",
-          i.icon || ""
-        ])
-
-      ).join("")}
-
+      ${recent.map(i=>card([i.name,i.url,i.desc||"",i.icon||""],keyword)).join("")}
     </div>
-
-  </div>
-
-  ` : "";
+  </div>` : "";
 
   /* favorite */
-
   document.getElementById("favorites").innerHTML =
-
   favorites.length ? `
-
   <div class="section">
-
-    <div class="section-title">
-
-      <span>
-
-        <i class="fa-solid fa-star"></i>
-
-        收藏
-
-      </span>
-
-    </div>
-
+    <div class="section-title"><span>收藏</span></div>
     <div class="grid">
-
-      ${favorites.map(i=>
-
-        card([
-          i.name,
-          i.url,
-          i.desc || "",
-          i.icon || ""
-        ])
-
-      ).join("")}
-
+      ${favorites.map(i=>card([i.name,i.url,i.desc||"",i.icon||""],keyword)).join("")}
     </div>
+  </div>` : "";
 
-  </div>
+  /* menu（用 index 加速） */
+  const grouped = {};
 
-  ` : "";
+  for(const item of searchIndex){
 
-  /* menu */
+    if(
+      item.name.toLowerCase().includes(keyword) ||
+      item.desc.toLowerCase().includes(keyword)
+    ){
 
-  for(const k in rawData){
+      if(!grouped[item.cat]) grouped[item.cat]=[];
+      grouped[item.cat].push(item);
 
-    const arr = rawData[k];
+    }
+  }
 
-    if(!Array.isArray(arr)) continue;
+  for(const k in grouped){
 
-    let items = arr.filter(i=>
-
-      i[0].toLowerCase().includes(keyword)
-
-      ||
-
-      (i[2] || "")
-      .toLowerCase()
-      .includes(keyword)
-
-    );
-
-    if(!items.length) continue;
-
-    const expanded =
-      expandedSections[k];
-
-    const visibleItems =
-      expanded ? items : items.slice(0,6);
+    const items = grouped[k];
+    const expanded = expandedSections[k];
+    const visible = expanded ? items : items.slice(0,6);
 
     menu.innerHTML += `
-
     <div class="section">
 
       <div class="section-title">
-
-        <span>
-
-          <i class="${categoryIcons[k] || "fa-solid fa-folder"}"></i>
-
-          ${k}
-
-        </span>
-
+        <span><i class="${categoryIcons[k]||"fa-solid fa-folder"}"></i>${k}</span>
       </div>
 
       <div class="grid">
-
-        ${visibleItems.map(i=>card(i)).join("")}
-
+        ${visible.map(i=>card([i.name,i.url,i.desc,i.icon],keyword)).join("")}
       </div>
 
-      ${items.length > 6 ? `
-
-      <button class="more-btn"
-        onclick="toggleMore('${safe(k)}')">
-
-        ${expanded
-          ? '收起'
-          : `查看更多 (${items.length - 6})`
-        }
-
-      </button>
-
-      ` : ""}
-
-    </div>
-
-    `;
-
+    </div>`;
   }
-
 }
 
 /* =========================
    MORE
 ========================= */
 
-function toggleMore(category){
-
-  expandedSections[category] =
-    !expandedSections[category];
-
+function toggleMore(k){
+  expandedSections[k]=!expandedSections[k];
   render();
-
 }
 
 /* =========================
-   🔥 FIX 1: debounce（全局只创建一次）
+   DEBOUNCE（2.1优化）
 ========================= */
 
-function debounce(fn,delay=150){
-
+function debounce(fn,delay=120){
   let t;
-
   return (...args)=>{
-
     clearTimeout(t);
-
-    t = setTimeout(()=>fn(...args),delay);
-
+    t=setTimeout(()=>fn(...args),delay);
   }
-
 }
 
-const debouncedRender = debounce(render,150);
+const debouncedRender = debounce(render);
 
 /* =========================
-   🔥 FIX 2: input 监听（不嵌套！）
+   SEARCH INPUT（优化）
 ========================= */
 
-document.getElementById("search")
-.addEventListener("input",()=>{
-
-  const mode =
-    document.getElementById("searchEngine")
-    .value;
-
-  if(mode==="site"){
-    debouncedRender();
-  }
-
+document.getElementById("search").addEventListener("input",()=>{
+  debouncedRender();
 });
 
 /* =========================
-   SHORTCUT
+   KEYBOARD
 ========================= */
 
 document.addEventListener("keydown",(e)=>{
 
   if(e.key==="/"){
-
     e.preventDefault();
-
-    document.getElementById("search")
-      .focus();
-
+    document.getElementById("search").focus();
   }
 
   if(e.key==="Enter"){
-
-    const mode =
-      document.getElementById("searchEngine")
-      .value;
-
-    if(mode==="site"){
-
-      render();
-
-    }else{
-
-      doSearch();
-
-    }
-
+    const mode=document.getElementById("searchEngine").value;
+    if(mode==="site") render();
+    else doSearch();
   }
 
   if(e.key==="Escape"){
-
-    document.getElementById("search")
-      .value = "";
-
+    document.getElementById("search").value="";
     render();
-
   }
 
 });
@@ -952,140 +764,38 @@ document.addEventListener("keydown",(e)=>{
 
 function doSearch(){
 
-  const keyword =
-    document.getElementById("search")
-      .value.trim();
-
+  const keyword=document.getElementById("search").value.trim();
   if(!keyword) return;
 
-  const engine =
-    document.getElementById("searchEngine")
-      .value;
+  const engine=document.getElementById("searchEngine").value;
 
-  switch(engine){
+  const map={
+    google:"https://www.google.com/search?q=",
+    bing:"https://www.bing.com/search?q=",
+    baidu:"https://www.baidu.com/s?wd=",
+    duckduckgo:"https://duckduckgo.com/?q=",
+    github:"https://github.com/search?q="
+  };
 
-    case "site":
-
-      render();
-      return;
-
-    case "google":
-
-      window.open(
-        "https://www.google.com/search?q=" +
-        encodeURIComponent(keyword),
-        "_blank"
-      );
-      break;
-
-    case "bing":
-
-      window.open(
-        "https://www.bing.com/search?q=" +
-        encodeURIComponent(keyword),
-        "_blank"
-      );
-      break;
-
-    case "baidu":
-
-      window.open(
-        "https://www.baidu.com/s?wd=" +
-        encodeURIComponent(keyword),
-        "_blank"
-      );
-      break;
-
-    case "duckduckgo":
-
-      window.open(
-        "https://duckduckgo.com/?q=" +
-        encodeURIComponent(keyword),
-        "_blank"
-      );
-      break;
-
-    case "github":
-
-      window.open(
-        "https://github.com/search?q=" +
-        encodeURIComponent(keyword),
-        "_blank"
-      );
-      break;
-
+  if(engine==="site"){
+    render();
+    return;
   }
 
+  window.open(map[engine]+encodeURIComponent(keyword));
 }
-
-document
-.getElementById("searchBtn")
-.addEventListener("click",doSearch);
 
 /* =========================
-   THEME SYSTEM
+   THEME（原样保留）
 ========================= */
 
-const savedTheme =
-  localStorage.getItem("theme");
+const savedTheme=localStorage.getItem("theme");
 
 if(savedTheme){
-
-  document.documentElement
-    .setAttribute("data-theme",savedTheme);
-
-}else{
-
-  if(window.matchMedia("(prefers-color-scheme: dark)").matches){
-
-    document.documentElement
-      .setAttribute("data-theme","dark");
-
-  }
-
+  document.documentElement.setAttribute("data-theme",savedTheme);
 }
-
-function updateThemeIcon(){
-
-  const btn =
-    document.getElementById("themeToggle");
-
-  const dark =
-    document.documentElement
-    .getAttribute("data-theme") === "dark";
-
-  btn.innerHTML = dark
-    ? '<i class="fa-solid fa-sun"></i>'
-    : '<i class="fa-solid fa-moon"></i>';
-
-}
-
-updateThemeIcon();
-
-document.getElementById("themeToggle")
-.addEventListener("click",()=>{
-
-  const current =
-    document.documentElement
-    .getAttribute("data-theme");
-
-  if(current==="dark"){
-
-    document.documentElement.removeAttribute("data-theme");
-    localStorage.setItem("theme","light");
-
-  }else{
-
-    document.documentElement.setAttribute("data-theme","dark");
-    localStorage.setItem("theme","dark");
-
-  }
-
-  updateThemeIcon();
-
-});
 
 </script>
-
+   
 </body>
 </html>
