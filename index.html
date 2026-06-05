@@ -189,6 +189,35 @@ body{
   font-size:14px;
 }
 
+.search-wrapper{
+  display:flex;
+  gap:10px;
+}
+
+.search-wrapper select{
+  width:150px;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--input);
+  color:var(--text);
+  outline:none;
+}
+
+.search-wrapper button{
+  width:52px;
+  border:none;
+  border-radius:12px;
+  background:#3b82f6;
+  color:white;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.search-wrapper button:hover{
+  opacity:.9;
+}
+
 /* =========================
    SECTION
 ========================= */
@@ -321,6 +350,15 @@ footer{
 
 @media(max-width:768px){
 
+   .search-wrapper{
+    flex-direction:column;
+  }
+
+  .search-wrapper select,
+  .search-wrapper button{
+    width:100%;
+  }
+
   .grid{
     grid-template-columns:1fr;
   }
@@ -384,7 +422,31 @@ footer{
 
 <!-- SEARCH -->
 <div class="search-box">
-  <input id="search" placeholder="搜索工具（快捷键 / ）">
+
+  <div class="search-wrapper">
+
+    <select id="searchEngine">
+
+      <option value="site">🔍 站内搜索</option>
+      <option value="google">🌎 Google</option>
+      <option value="bing">🟦 Bing</option>
+      <option value="baidu">🔴 百度</option>
+      <option value="duckduckgo">🦆 DuckDuckGo</option>
+      <option value="github">🐙 GitHub</option>
+
+    </select>
+
+    <input
+      id="search"
+      placeholder="搜索工具（快捷键 / ）"
+    >
+
+    <button id="searchBtn">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+  </div>
+
 </div>
 
 <div id="recent"></div>
@@ -471,7 +533,7 @@ async function loadNotice(){
 
   try{
 
-    const res = await fetch("notice.html");
+    const res = await fetch("notice.html", { cache: "no-store" });
 
     const text = await res.text();
 
@@ -804,7 +866,7 @@ function toggleMore(category){
 }
 
 /* =========================
-   SEARCH
+   🔥 FIX 1: debounce（全局只创建一次）
 ========================= */
 
 function debounce(fn,delay=150){
@@ -815,20 +877,30 @@ function debounce(fn,delay=150){
 
     clearTimeout(t);
 
-    t = setTimeout(
-      ()=>fn(...args),
-      delay
-    );
+    t = setTimeout(()=>fn(...args),delay);
 
   }
 
 }
 
+const debouncedRender = debounce(render,150);
+
+/* =========================
+   🔥 FIX 2: input 监听（不嵌套！）
+========================= */
+
 document.getElementById("search")
-.addEventListener(
-  "input",
-  debounce(render,150)
-);
+.addEventListener("input",()=>{
+
+  const mode =
+    document.getElementById("searchEngine")
+    .value;
+
+  if(mode==="site"){
+    debouncedRender();
+  }
+
+});
 
 /* =========================
    SHORTCUT
@@ -845,6 +917,24 @@ document.addEventListener("keydown",(e)=>{
 
   }
 
+  if(e.key==="Enter"){
+
+    const mode =
+      document.getElementById("searchEngine")
+      .value;
+
+    if(mode==="site"){
+
+      render();
+
+    }else{
+
+      doSearch();
+
+    }
+
+  }
+
   if(e.key==="Escape"){
 
     document.getElementById("search")
@@ -857,6 +947,82 @@ document.addEventListener("keydown",(e)=>{
 });
 
 /* =========================
+   SEARCH ENGINE
+========================= */
+
+function doSearch(){
+
+  const keyword =
+    document.getElementById("search")
+      .value.trim();
+
+  if(!keyword) return;
+
+  const engine =
+    document.getElementById("searchEngine")
+      .value;
+
+  switch(engine){
+
+    case "site":
+
+      render();
+      return;
+
+    case "google":
+
+      window.open(
+        "https://www.google.com/search?q=" +
+        encodeURIComponent(keyword),
+        "_blank"
+      );
+      break;
+
+    case "bing":
+
+      window.open(
+        "https://www.bing.com/search?q=" +
+        encodeURIComponent(keyword),
+        "_blank"
+      );
+      break;
+
+    case "baidu":
+
+      window.open(
+        "https://www.baidu.com/s?wd=" +
+        encodeURIComponent(keyword),
+        "_blank"
+      );
+      break;
+
+    case "duckduckgo":
+
+      window.open(
+        "https://duckduckgo.com/?q=" +
+        encodeURIComponent(keyword),
+        "_blank"
+      );
+      break;
+
+    case "github":
+
+      window.open(
+        "https://github.com/search?q=" +
+        encodeURIComponent(keyword),
+        "_blank"
+      );
+      break;
+
+  }
+
+}
+
+document
+.getElementById("searchBtn")
+.addEventListener("click",doSearch);
+
+/* =========================
    THEME SYSTEM
 ========================= */
 
@@ -866,22 +1032,14 @@ const savedTheme =
 if(savedTheme){
 
   document.documentElement
-    .setAttribute(
-      "data-theme",
-      savedTheme
-    );
+    .setAttribute("data-theme",savedTheme);
 
 }else{
 
-  if(window.matchMedia(
-    "(prefers-color-scheme: dark)"
-  ).matches){
+  if(window.matchMedia("(prefers-color-scheme: dark)").matches){
 
     document.documentElement
-      .setAttribute(
-        "data-theme",
-        "dark"
-      );
+      .setAttribute("data-theme","dark");
 
   }
 
@@ -893,16 +1051,11 @@ function updateThemeIcon(){
     document.getElementById("themeToggle");
 
   const dark =
-
     document.documentElement
-    .getAttribute("data-theme")
-
-    === "dark";
+    .getAttribute("data-theme") === "dark";
 
   btn.innerHTML = dark
-
     ? '<i class="fa-solid fa-sun"></i>'
-
     : '<i class="fa-solid fa-moon"></i>';
 
 }
@@ -913,32 +1066,18 @@ document.getElementById("themeToggle")
 .addEventListener("click",()=>{
 
   const current =
-
     document.documentElement
     .getAttribute("data-theme");
 
-  if(current === "dark"){
+  if(current==="dark"){
 
-    document.documentElement
-      .removeAttribute("data-theme");
-
-    localStorage.setItem(
-      "theme",
-      "light"
-    );
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.setItem("theme","light");
 
   }else{
 
-    document.documentElement
-      .setAttribute(
-        "data-theme",
-        "dark"
-      );
-
-    localStorage.setItem(
-      "theme",
-      "dark"
-    );
+    document.documentElement.setAttribute("data-theme","dark");
+    localStorage.setItem("theme","dark");
 
   }
 
