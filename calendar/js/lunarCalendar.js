@@ -126,20 +126,15 @@ function monthDays(y,m){return (lunarInfo[y-1900]&(0x10000>>m))?30:29;}
 
 // ---------- 节气 ----------
 function solarTerm(y,n){
-  const baseDate = Date.UTC(1900,0,6,2,5); // 基准时间
-
-  const ms =
-    31556925974.7 * (y - 1900) +
-    sTermInfo[n] * 60000 +
-    baseDate;
-
-  const dateUTC = new Date(ms);
-
-  return new Date(
-    dateUTC.getUTCFullYear(),
-    dateUTC.getUTCMonth(),
-    dateUTC.getUTCDate()
-  );
+    // 原始天文基准：1900-01-06 02:05 UTC，换算北京时间+8h
+    const baseUTC = Date.UTC(1900,0,6,2,5);
+    // 回归年毫秒 + 节气分钟*60000毫秒
+    let ms = 31556925974.7 * (y - 1900) + sTermInfo[n] * 60000 + baseUTC;
+    // 关键：节气是北京时间，+8*3600*1000毫秒 = 时区补偿，解决延后1天
+    ms += 8 * 3600 * 1000;
+    const dt = new Date(ms);
+    // 直接取本地日期
+    return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
 }
 
 function getWeekday(date){return ["日","一","二","三","四","五","六"][date.getDay()];}
