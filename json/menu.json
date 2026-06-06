@@ -9,7 +9,8 @@
     ["日历订阅", "/calendar/", "订阅日历服务", "fa-solid fa-calendar"],
     ["自制日历", "/calendar/calendaredit.html", "自定义日历生成", "fa-solid fa-calendar-days"],
     ["定位", "/pages/geoloction.html", "获取当前位置", "fa-solid fa-location-dot"],
-    ["倒计时", "/pages/countdown.html", "倒计时工具", "fa-solid fa-hourglass-half"]
+    ["倒计时", "/pages/countdown.html", "倒计时工具", "fa-solid fa-hourglass-half"],
+    ["熊猫汇率", "https://bing.0515364.xyz/panda.html", "汇率查询", "fa-solid fa-yen-sign"]
   ],
 
   "代码工具": [
