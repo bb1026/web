@@ -58,7 +58,7 @@
     }
     .icon-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      grid-template-columns: repeat(12, 1fr);
       gap: 12px;
     }
     .icon-box {
@@ -387,7 +387,33 @@
 
   fetchIcons().then(() => {
     setTopBtnColor();
+    updateGridColumns();
   });
+
+  // ====== 动态列数控制（仅影响布局）======
+function updateGridColumns() {
+  const grid = document.getElementById("iconGrid");
+  const w = window.innerWidth;
+
+  let cols = 12;
+
+  if (w < 480) cols = 3;
+  else if (w < 768) cols = 4;
+  else if (w < 992) cols = 6;
+  else if (w < 1200) cols = 8;
+  else if (w < 1400) cols = 10;
+  else cols = 12;
+
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+}
+
+// 防抖（避免resize卡顿）
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(updateGridColumns, 100);
+});
+  
 </script>
 
 </body>
