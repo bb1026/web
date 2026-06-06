@@ -493,7 +493,8 @@ let favorites =
 JSON.parse(localStorage.getItem("fav") || "[]");
 
 let recent =
-JSON.parse(localStorage.getItem("recent") || "[]");
+JSON.parse(localStorage.getItem("recent") || "[]")
+  .slice(0, 3);
 
 const categoryIcons = {
   "小工具":"fa-solid fa-screwdriver-wrench",
@@ -583,12 +584,14 @@ loadNotice();
 
 function addRecent(name,url,icon,desc){
 
+  const RECENT_LIMIT = 3;
+
   recent = [
     {name,url,icon,desc},
-    ...recent.filter(i=>i.url!==url)
-  ].slice(0,3); // 🚀 扩展一点
+    ...recent.filter(i => i.url !== url)
+  ].slice(0, RECENT_LIMIT);
 
-  localStorage.setItem("recent",JSON.stringify(recent));
+  localStorage.setItem("recent", JSON.stringify(recent));
 }
 
 /* =========================
