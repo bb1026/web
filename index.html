@@ -206,12 +206,26 @@ body{
 
 .search-wrapper button{
   width:52px;
+  min-height:44px; /* 👈 iOS 推荐点击高度 */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
   border:none;
   border-radius:12px;
   background:#3b82f6;
   color:white;
   cursor:pointer;
   transition:.2s;
+  font-size:16px;
+}
+
+.search-wrapper button i{
+  font-size:18px;
+}
+
+.search-wrapper button:active{
+  transform:scale(0.96);
 }
 
 .search-wrapper button:hover{
@@ -572,7 +586,7 @@ function addRecent(name,url,icon,desc){
   recent = [
     {name,url,icon,desc},
     ...recent.filter(i=>i.url!==url)
-  ].slice(0,10); // 🚀 扩展一点
+  ].slice(0,3); // 🚀 扩展一点
 
   localStorage.setItem("recent",JSON.stringify(recent));
 }
