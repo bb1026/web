@@ -186,7 +186,7 @@ body{
   color:var(--text);
   outline:none;
   box-sizing:border-box;
-  font-size:14px;
+  font-size:16px;
 }
 
 .search-wrapper{
@@ -828,6 +828,8 @@ if(savedTheme){
 }
 
    document.getElementById("search").setAttribute("autocomplete","off");
+  
+document.getElementById("searchBtn").addEventListener("click", doSearch);
 
 </script>
    
