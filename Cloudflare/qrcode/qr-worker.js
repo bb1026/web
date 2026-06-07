@@ -1,89 +1,102 @@
 import QRCode from "qrcode";
 
+function renderDocPage() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QR API</title>
+<style>
+body { font-family: Arial; background:#0f0f0f; color:#fff; padding:40px; }
+.container { max-width:800px; margin:auto; }
+input, button {
+  padding:10px;
+  width:100%;
+  margin-top:10px;
+  border-radius:6px;
+  border:none;
+}
+button { background:#4f7cff; color:white; cursor:pointer; }
+pre { background:#1a1a1a; padding:15px; border-radius:8px; overflow:auto; }
+img { margin-top:20px; max-width:100%; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>QR Code API</h1>
+
+<h3>Endpoint</h3>
+<pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
+
+<h3>Parameters</h3>
+<pre>
+data   (required必须)
+size   (optional可选, default 300x300)
+margin (optional可选, default 1)
+ecc    (optional可选 L/M/Q/H)
+format (svg only recommended默认)
+</pre>
+
+<h3>Try it</h3>
+<input id="text" placeholder="Enter text..." />
+<button onclick="gen()">Generate QR</button>
+
+<div id="out"></div>
+
+<script>
+function gen() {
+  const val = document.getElementById('text').value;
+  if (!val) return;
+
+  const url = '/?data=' + encodeURIComponent(val);
+
+  document.getElementById('out').innerHTML =
+    '<h3>Preview:</h3><img src="' + url + '" />';
+}
+</script>
+
+</div>
+</body>
+</html>
+`;
+}
+
 export default {
   async fetch(request) {
-    try {
-      const url = new URL(request.url);
+    const url = new URL(request.url);
+    const data = url.searchParams.get("data");
 
-      const data = url.searchParams.get("data");
-      if (!data) {
-        return new Response("Missing parameter: data", {
-          status: 400,
-          headers: {
-            "Content-Type": "text/plain; charset=utf-8"
-          }
-        });
-      }
-
-      const sizeParam = url.searchParams.get("size") || "300x300";
-      const margin = parseInt(url.searchParams.get("margin") || "1", 10);
-      const format = (url.searchParams.get("format") || "png").toLowerCase();
-      const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
-
-      const color = "#" + (url.searchParams.get("color") || "000000").replace("#", "");
-      const bgcolor = "#" + (url.searchParams.get("bgcolor") || "ffffff").replace("#", "");
-
-      const width = parseInt(sizeParam.split("x")[0], 10) || 300;
-
-      const options = {
-        width,
-        margin,
-        errorCorrectionLevel: ["L", "M", "Q", "H"].includes(ecc) ? ecc : "M",
-        color: {
-          dark: color,
-          light: bgcolor
-        }
-      };
-
-      // =========================
-      // SVG（最稳定推荐）
-      // =========================
-      if (format === "svg") {
-        const svg = await QRCode.toString(data, {
-          ...options,
-          type: "svg"
-        });
-
-        return new Response(svg, {
-          headers: {
-            "Content-Type": "image/svg+xml; charset=utf-8",
-            "Cache-Control": "public,max-age=86400"
-          }
-        });
-      }
-
-      // =========================
-      // PNG（Worker 兼容写法）
-      // =========================
-      const dataUrl = await QRCode.toDataURL(data, options);
-
-      // base64 -> binary
-      const base64 = dataUrl.split(",")[1];
-
-      const binary = Uint8Array.from(atob(base64), (c) =>
-        c.charCodeAt(0)
-      );
-
-      return new Response(binary, {
+    // =========================
+    // 没参数 → 返回文档页
+    // =========================
+    if (!data) {
+      return new Response(renderDocPage(), {
         headers: {
-          "Content-Type": "image/png",
-          "Cache-Control": "public,max-age=86400"
+          "Content-Type": "text/html; charset=utf-8"
         }
       });
-
-    } catch (err) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: err.message
-        }),
-        {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
     }
+
+    // =========================
+    // QR 生成
+    // =========================
+    const size = parseInt((url.searchParams.get("size") || "300x300").split("x")[0], 10);
+    const margin = parseInt(url.searchParams.get("margin") || "1");
+    const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
+
+    const svg = await QRCode.toString(data, {
+      type: "svg",
+      width: size,
+      margin,
+      errorCorrectionLevel: ["L","M","Q","H"].includes(ecc) ? ecc : "M"
+    });
+
+    return new Response(svg, {
+      headers: {
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Cache-Control": "public,max-age=86400"
+      }
+    });
   }
 };
