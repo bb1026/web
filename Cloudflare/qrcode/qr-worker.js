@@ -35,7 +35,9 @@ export default {
         }
       };
 
-      // SVG输出
+      // =========================
+      // SVG（最稳定推荐）
+      // =========================
       if (format === "svg") {
         const svg = await QRCode.toString(data, {
           ...options,
@@ -44,21 +46,31 @@ export default {
 
         return new Response(svg, {
           headers: {
-            "Content-Type": "image/svg+xml",
+            "Content-Type": "image/svg+xml; charset=utf-8",
             "Cache-Control": "public,max-age=86400"
           }
         });
       }
 
-      // PNG输出
-      const png = await QRCode.toBuffer(data, options);
+      // =========================
+      // PNG（Worker 兼容写法）
+      // =========================
+      const dataUrl = await QRCode.toDataURL(data, options);
 
-      return new Response(png, {
+      // base64 -> binary
+      const base64 = dataUrl.split(",")[1];
+
+      const binary = Uint8Array.from(atob(base64), (c) =>
+        c.charCodeAt(0)
+      );
+
+      return new Response(binary, {
         headers: {
           "Content-Type": "image/png",
           "Cache-Control": "public,max-age=86400"
         }
       });
+
     } catch (err) {
       return new Response(
         JSON.stringify({
