@@ -8,41 +8,104 @@ function renderDocPage() {
 <meta charset="UTF-8">
 <title>QR API</title>
 <style>
-body { font-family: Arial; background:#0f0f0f; color:#fff; padding:40px; }
-.container { max-width:800px; margin:auto; }
-input, button {
-  padding:10px;
-  width:100%;
-  margin-top:10px;
-  border-radius:6px;
-  border:none;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+  background: #f6f7fb;
+  margin: 0;
+  padding: 40px;
+  color: #111;
 }
-button { background:#4f7cff; color:white; cursor:pointer; }
-pre { background:#1a1a1a; padding:15px; border-radius:8px; overflow:auto; }
-img { margin-top:20px; max-width:100%; }
+
+.container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+h1 {
+  margin-top: 0;
+}
+
+pre {
+  background: #f1f3f5;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+img {
+  margin-top: 15px;
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
 </style>
 </head>
+
 <body>
 <div class="container">
-<h1>QR Code API</h1>
 
+<div class="card">
+<h1>QR Code API</h1>
+<p>Simple QR Code generator API built on Cloudflare Workers</p>
+</div>
+
+<div class="card">
 <h3>Endpoint</h3>
 <pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
+</div>
 
+<div class="card">
 <h3>Parameters</h3>
+
 <pre>
 data   (required必须)
 size   (optional可选, default 300x300)
 margin (optional可选, default 1)
 ecc    (optional可选 L/M/Q/H)
-format (svg only recommended默认)
+format (svg only recommended默认唯一可不填)
 </pre>
 
+</div>
+
+<div class="card">
 <h3>Try it</h3>
 <input id="text" placeholder="Enter text..." />
 <button onclick="gen()">Generate QR</button>
 
 <div id="out"></div>
+</div>
+
+</div>
 
 <script>
 function gen() {
@@ -52,11 +115,10 @@ function gen() {
   const url = '/?data=' + encodeURIComponent(val);
 
   document.getElementById('out').innerHTML =
-    '<h3>Preview:</h3><img src="' + url + '" />';
+    '<img src="' + url + '" />';
 }
 </script>
 
-</div>
 </body>
 </html>
 `;
