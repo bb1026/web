@@ -1,4 +1,4 @@
-import QRCode from "https://esm.sh/qrcode@1.5.4";
+import QRCode from "https://esm.sh/qrcode@1.5.4?bundle";
 
 export default {
   async fetch(request) {
