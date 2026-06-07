@@ -1,0 +1,12 @@
+name = "qr-server-clone-v2"
+
+main = "qr-worker.js"
+
+compatibility_date = "2026-06-07"
+
+account_id = "4796a78c1804791b739f97bb336bab79"
+
+workers_dev = true
+
+[observability.logs]
+enabled = true
