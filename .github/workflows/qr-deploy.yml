@@ -1,4 +1,4 @@
-name: Deploy QR Server Clone
+name: Deploy qr-worker (二维码)
 
 on:
   push:
@@ -16,11 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Wrangler v2
-        run: npm install -g wrangler@2
+      - name: Install Wrangler v3
+        run: npm install -g wrangler@3
 
-      - name: Publish Worker
-        working-directory: Cloudflare
-        run: wrangler publish --config qr-wrangler.toml
+      - name: Publish qr-worker to Cloudflare
+        working-directory: Cloudflare/qr/
+        run: |
+          wrangler publish --config wrangler-qr.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
