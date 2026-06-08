@@ -35,6 +35,25 @@ export default {
       });
     }
 
+    // ====== 🔐 新增：权限读取（Cloudflare Secret）======
+    let accessMap = {};
+
+    try {
+      if (env.ACCESS_JSON) {
+        const config = JSON.parse(env.ACCESS_JSON);
+        accessMap = config.accessKeys || {};
+      }
+    } catch (err) {
+      console.error('权限配置错误:', err);
+    }
+
+    // ====== 🔐 key → role ======
+    const key = (() => {
+      return '';
+    })();
+
+    // （保持原逻辑：share/create 里再用 key，这里不动结构）
+
     // ✅ 创建分享
     if (path === 'share/create' && method === 'POST') {
       try {
@@ -43,6 +62,13 @@ export default {
 
         if (!file) return jsonResponse({ error: '缺少文件参数' }, 400);
         if (!key || typeof key !== 'string') return jsonResponse({ error: '未登录或 key 缺失' }, 401);
+
+        // ====== 🔐 新增：权限验证 ======
+        const role = accessMap[key];
+
+        if (!role) {
+          return jsonResponse({ error: '未授权用户' }, 401);
+        }
 
         const id = genId();
         let password = '';
