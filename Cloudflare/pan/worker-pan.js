@@ -21,12 +21,12 @@ export default {
         return shareHandler.fetch(request, env);
       }
 
-      // === 权限配置 ===
+      // === 权限配置（已改：Cloudflare Secret）===
       let accessMap = {};
+
       try {
-        const configObj = await env.BUCKET.get('__config__/access.json');
-        if (configObj) {
-          const config = JSON.parse(await configObj.text());
+        if (env.ACCESS_JSON) {
+          const config = JSON.parse(env.ACCESS_JSON);
           accessMap = config.accessKeys || {};
         }
       } catch (err) {
@@ -64,67 +64,62 @@ export default {
       }
 
       // === 下载文件 ===
-if (path === 'download') {
-  const fileName = url.searchParams.get('file');
-  if (!fileName) return new Response('缺少文件名', { status: 400 });
+      if (path === 'download') {
+        const fileName = url.searchParams.get('file');
+        if (!fileName) return new Response('缺少文件名', { status: 400 });
 
-  // 获取文件（包括元数据）
-  const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
-  if (!file) return new Response('文件不存在', { status: 404 });
+        const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
+        if (!file) return new Response('文件不存在', { status: 404 });
 
-  // 判断是否有权限
-  let hasAccess = false;
+        let hasAccess = false;
 
-  // ✅ 情况 1：已登录用户（带 key）
-  if (role) {
-    hasAccess = true;
-  } else {
-    // ✅ 情况 2：该文件是“公开分享”文件（无密码 & 未过期）
-    const shareList = await env.BUCKET.list({ prefix: '__share__/' });
-    for (const obj of shareList.objects) {
-      const recordObj = await env.BUCKET.get(obj.key);
-      if (!recordObj) continue;
-
-      try {
-        const record = JSON.parse(await recordObj.text());
-        const isPublic = !record.password;
-        const isValid = Date.now() < record.expiresAt;
-        if (record.file === fileName && isPublic && isValid) {
+        if (role) {
           hasAccess = true;
-          break;
+        } else {
+          const shareList = await env.BUCKET.list({ prefix: '__share__/' });
+          for (const obj of shareList.objects) {
+            const recordObj = await env.BUCKET.get(obj.key);
+            if (!recordObj) continue;
+
+            try {
+              const record = JSON.parse(await recordObj.text());
+              const isPublic = !record.password;
+              const isValid = Date.now() < record.expiresAt;
+              if (record.file === fileName && isPublic && isValid) {
+                hasAccess = true;
+                break;
+              }
+            } catch (err) {}
+          }
         }
-      } catch (err) {
-        // 跳过解析失败项
+
+        if (!hasAccess) {
+          return new Response('❌ 未授权下载', {
+            status: 403,
+            headers: { 'Access-Control-Allow-Origin': '*' }
+          });
+        }
+
+        return new Response(file.body, {
+          headers: {
+            'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
+            'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName.split('/').pop())}"`,
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
       }
-    }
-  }
-
-  if (!hasAccess) {
-    return new Response('❌ 未授权下载', {
-      status: 403,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  // ✅ 允许下载
-  return new Response(file.body, {
-    headers: {
-      'Content-Type': file.httpMetadata?.contentType || 'application/octet-stream',
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName.split('/').pop())}"`,
-      'Access-Control-Allow-Origin': '*'
-    }
-  });
-}
 
       // === 上传文件 ===
       if (path === 'upload' && (role === 'upload' || role === 'admin')) {
         const form = await request.formData();
         const file = form.get('file');
         if (!file) return new Response('未找到文件', { status: 400 });
+
         await env.BUCKET.put(file.name, file.stream(), {
           httpMetadata: { contentType: file.type },
           customMetadata: { uploader: key, visible: 'true' }
         });
+
         return new Response('✅ 上传成功', {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
@@ -135,14 +130,18 @@ if (path === 'download') {
         const fileName = url.searchParams.get('file');
         const file = await env.BUCKET.get(fileName, { include: ['customMetadata'] });
         if (!file) return new Response('文件不存在', { status: 404 });
+
         if (role === 'upload' && file.customMetadata?.uploader !== key) {
           return new Response('❌ 无权删除', { status: 403 });
         }
+
         const ts = Date.now();
         await env.BUCKET.put(`__trash__/${fileName}__${ts}`, file.body, {
           customMetadata: { ...file.customMetadata, deletedAt: ts.toString() }
         });
+
         await env.BUCKET.delete(fileName);
+
         return new Response('✅ 已移入回收站', {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
@@ -162,11 +161,15 @@ if (path === 'download') {
         const name = url.searchParams.get('file');
         const file = await env.BUCKET.get(`__trash__/${name}`);
         if (!file) return new Response('文件不存在', { status: 404 });
+
         const originalName = name.split('__')[0];
+
         await env.BUCKET.put(originalName, file.body, {
           customMetadata: { ...file.customMetadata, visible: 'true' }
         });
+
         await env.BUCKET.delete(`__trash__/${name}`);
+
         return new Response('✅ 已还原', {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
@@ -176,6 +179,7 @@ if (path === 'download') {
       if (path === 'trash/delete' && role === 'admin') {
         const name = url.searchParams.get('file');
         await env.BUCKET.delete(`__trash__/${name}`);
+
         return new Response('✅ 彻底删除成功', {
           headers: { 'Access-Control-Allow-Origin': '*' }
         });
@@ -187,7 +191,9 @@ if (path === 'download') {
         const trash = await env.BUCKET.list({ prefix: '__trash__/' });
         for (const o of trash.objects) {
           const t = parseInt(o.customMetadata?.deletedAt || '0');
-          if (now - t > 7 * 24 * 3600 * 1000) await env.BUCKET.delete(o.key);
+          if (now - t > 7 * 24 * 3600 * 1000) {
+            await env.BUCKET.delete(o.key);
+          }
         }
       }
 
@@ -195,6 +201,7 @@ if (path === 'download') {
         status: 404,
         headers: { 'Access-Control-Allow-Origin': '*' }
       });
+
     } catch (err) {
       console.error('错误:', err);
       return new Response(`服务器错误: ${err.message}`, {
