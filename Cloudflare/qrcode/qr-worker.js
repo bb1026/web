@@ -132,23 +132,11 @@ function gen() {
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    const data = url.searchParams.get("data");
 
     const path = url.pathname.toLowerCase();
-    const format = (url.searchParams.get("format") || "").toLowerCase();
+    const data = url.searchParams.get("data");
 
-    const isPNG = path.startsWith("/png") || format === "png";
-
-    // =========================
-    // HTML 页面（不动）
-    // =========================
-    if (!data) {
-      return new Response(renderDocPage(), {
-        headers: {
-          "Content-Type": "text/html; charset=utf-8"
-        }
-      });
-    }
+    const isPNG = path.startsWith("/png");
 
     const size = parseInt(url.searchParams.get("size") || "300", 10);
     const margin = parseInt(url.searchParams.get("margin") || "1", 10);
@@ -160,48 +148,50 @@ export default {
     };
 
     // =========================
-    // ❗ PNG（修复核心：不用 toBuffer）
+    // 🚨 关键修复：PNG 必须优先
     // =========================
     if (isPNG) {
-      try {
-        const svg = await QRCode.toString(data, {
-          ...options,
-          type: "svg"
-        });
-
-        // Edge-safe PNG fallback（关键修复）
-        const blob = new Blob([svg], { type: "image/svg+xml" });
-        const bitmap = await createImageBitmap(blob);
-
-        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-        const ctx = canvas.getContext("2d");
-
-        ctx.drawImage(bitmap, 0, 0);
-
-        const pngBlob = await canvas.convertToBlob({ type: "image/png" });
-
-        return new Response(pngBlob, {
-          headers: {
-            "Content-Type": "image/png",
-            "Cache-Control": "public,max-age=86400",
-            "Access-Control-Allow-Origin": "*",
-            "X-Content-Type-Options": "nosniff"
-          }
-        });
-
-      } catch (err) {
-        return new Response("PNG generation error: " + err.message, {
-          status: 500,
-          headers: {
-            "Content-Type": "text/plain"
-          }
+      if (!data) {
+        return new Response("Missing data", {
+          status: 400,
+          headers: { "Content-Type": "text/plain" }
         });
       }
+
+      const svg = await QRCode.toString(data, {
+        ...options,
+        type: "svg"
+      });
+
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const bitmap = await createImageBitmap(blob);
+
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(bitmap, 0, 0);
+
+      const png = await canvas.convertToBlob({ type: "image/png" });
+
+      return new Response(png, {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public,max-age=86400",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
     }
 
     // =========================
-    // SVG（默认不动）
+    // HTML fallback（最后才执行）
     // =========================
+    if (!data) {
+      return new Response(renderDocPage(), {
+        headers: {
+          "Content-Type": "text/html; charset=utf-8"
+        }
+      });
+    }
+
     const svg = await QRCode.toString(data, {
       ...options,
       type: "svg"
@@ -211,8 +201,7 @@ export default {
       headers: {
         "Content-Type": "image/svg+xml",
         "Cache-Control": "public,max-age=86400",
-        "Access-Control-Allow-Origin": "*",
-        "X-Content-Type-Options": "nosniff"
+        "Access-Control-Allow-Origin": "*"
       }
     });
   }
