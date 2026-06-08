@@ -81,7 +81,7 @@ img {
 
 <div class="card">
 <h3>Endpoint</h3>
-<pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H&format=png</pre>
+<pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
 </div>
 
 <div class="card">
@@ -124,63 +124,61 @@ function gen() {
 `;
 }
 
+import QRCode from "qrcode";
+
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const data = url.searchParams.get("data");
 
-    // =========================
-    // 没 data → API 文档页
-    // =========================
+    // ❌ 防止 Excel 误触
     if (!data) {
-      return new Response(renderDocPage(), {
+      return new Response("Missing data", {
+        status: 400,
         headers: {
-          "Content-Type": "text/html; charset=utf-8"
+          "Content-Type": "text/plain",
+          "Access-Control-Allow-Origin": "*"
         }
       });
     }
 
-    // =========================
-    // 参数
-    // =========================
-    const format = (url.searchParams.get("format") || "svg").toLowerCase();
-    const size = parseInt((url.searchParams.get("size") || "300"), 10);
-    const margin = parseInt(url.searchParams.get("margin") || "1", 10);
-    const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
+    const size = parseInt(url.searchParams.get("size") || "300", 10);
 
     const options = {
       width: size,
-      margin,
-      errorCorrectionLevel: ["L","M","Q","H"].includes(ecc) ? ecc : "M"
+      margin: 1,
+      errorCorrectionLevel: "M"
     };
 
-    // =========================
-    // SVG（默认，Excel最稳）
-    // =========================
-    if (format !== "png") {
-      const svg = await QRCode.toString(data, {
-        ...options,
-        type: "svg"
-      });
+    const path = url.pathname.toLowerCase();
 
-      return new Response(svg, {
+    // =========================
+    // ✔ Excel 专用 PNG
+    // =========================
+    if (path.includes("/png")) {
+      const buffer = await QRCode.toBuffer(data, options);
+
+      return new Response(buffer, {
         headers: {
-          "Content-Type": "image/svg+xml; charset=utf-8",
-          "Cache-Control": "public, max-age=86400",
+          "Content-Type": "image/png",
+          "Cache-Control": "public,max-age=86400",
           "Access-Control-Allow-Origin": "*"
         }
       });
     }
 
     // =========================
-    // PNG（Excel IMAGE 也支持）
+    // ✔ SVG 默认
     // =========================
-    const buffer = await QRCode.toBuffer(data, options);
+    const svg = await QRCode.toString(data, {
+      ...options,
+      type: "svg"
+    });
 
-    return new Response(buffer, {
+    return new Response(svg, {
       headers: {
-        "Content-Type": "image/png",
-        "Cache-Control": "public, max-age=86400",
+        "Content-Type": "image/svg+xml",
+        "Cache-Control": "public,max-age=86400",
         "Access-Control-Allow-Origin": "*"
       }
     });
