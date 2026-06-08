@@ -80,6 +80,11 @@ img {
 </div>
 
 <div class="card">
+<h3>Excel</h3>
+<pre><code>https://qr.0515364.xyz/png?data=hello</code></pre>
+</div>
+
+<div class="card">
 <h3>Endpoint</h3>
 <pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
 </div>
@@ -129,44 +134,56 @@ export default {
     const url = new URL(request.url);
     const data = url.searchParams.get("data");
 
-    // ❌ 防止 Excel 误触
+    const path = url.pathname.toLowerCase();
+    const format = (url.searchParams.get("format") || "").toLowerCase();
+
+    const isPNG = path.startsWith("/png") || format === "png";
+
+    // =========================
+    // ❌ 必须禁止 HTML fallback（Excel关键）
+    // =========================
     if (!data) {
-      return new Response("Missing data", {
-        status: 400,
+      return new Response(htmlDoc(), {
         headers: {
-          "Content-Type": "text/plain",
-          "Access-Control-Allow-Origin": "*"
+          "Content-Type": "text/html; charset=utf-8"
         }
       });
     }
 
     const size = parseInt(url.searchParams.get("size") || "300", 10);
+    const margin = parseInt(url.searchParams.get("margin") || "1", 10);
 
     const options = {
       width: size,
-      margin: 1,
+      margin,
       errorCorrectionLevel: "M"
     };
 
-    const path = url.pathname.toLowerCase();
-
     // =========================
-    // ✔ Excel 专用 PNG
+    // ✔ PNG（Excel 专用）
     // =========================
-    if (path.includes("/png")) {
-      const buffer = await QRCode.toBuffer(data, options);
+    if (isPNG) {
+      try {
+        const buffer = await QRCode.toBuffer(data, options);
 
-      return new Response(buffer, {
-        headers: {
-          "Content-Type": "image/png",
-          "Cache-Control": "public,max-age=86400",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+        return new Response(buffer, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public,max-age=86400",
+            "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff"
+          }
+        });
+      } catch (err) {
+        return new Response("PNG generation error", {
+          status: 500,
+          headers: { "Content-Type": "text/plain" }
+        });
+      }
     }
 
     // =========================
-    // ✔ SVG 默认
+    // ✔ SVG（默认）
     // =========================
     const svg = await QRCode.toString(data, {
       ...options,
@@ -177,7 +194,8 @@ export default {
       headers: {
         "Content-Type": "image/svg+xml",
         "Cache-Control": "public,max-age=86400",
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "*",
+        "X-Content-Type-Options": "nosniff"
       }
     });
   }
