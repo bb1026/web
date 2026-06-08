@@ -140,10 +140,10 @@ export default {
     const isPNG = path.startsWith("/png") || format === "png";
 
     // =========================
-    // ❌ 必须禁止 HTML fallback（Excel关键）
+    // HTML 页面（不动）
     // =========================
     if (!data) {
-      return new Response(htmlDoc(), {
+      return new Response(renderDocPage(), {
         headers: {
           "Content-Type": "text/html; charset=utf-8"
         }
@@ -160,13 +160,27 @@ export default {
     };
 
     // =========================
-    // ✔ PNG（Excel 专用）
+    // ❗ PNG（修复核心：不用 toBuffer）
     // =========================
     if (isPNG) {
       try {
-        const buffer = await QRCode.toBuffer(data, options);
+        const svg = await QRCode.toString(data, {
+          ...options,
+          type: "svg"
+        });
 
-        return new Response(buffer, {
+        // Edge-safe PNG fallback（关键修复）
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const bitmap = await createImageBitmap(blob);
+
+        const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(bitmap, 0, 0);
+
+        const pngBlob = await canvas.convertToBlob({ type: "image/png" });
+
+        return new Response(pngBlob, {
           headers: {
             "Content-Type": "image/png",
             "Cache-Control": "public,max-age=86400",
@@ -174,16 +188,19 @@ export default {
             "X-Content-Type-Options": "nosniff"
           }
         });
+
       } catch (err) {
-        return new Response("PNG generation error", {
+        return new Response("PNG generation error: " + err.message, {
           status: 500,
-          headers: { "Content-Type": "text/plain" }
+          headers: {
+            "Content-Type": "text/plain"
+          }
         });
       }
     }
 
     // =========================
-    // ✔ SVG（默认）
+    // SVG（默认不动）
     // =========================
     const svg = await QRCode.toString(data, {
       ...options,
