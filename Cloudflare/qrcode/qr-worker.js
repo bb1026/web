@@ -129,9 +129,7 @@ export default {
     const url = new URL(request.url);
     const data = url.searchParams.get("data");
 
-    // =========================
-    // 没参数 → 返回文档页
-    // =========================
+    // 无参数返回原文档页面（HTML 完全未改动）
     if (!data) {
       return new Response(renderDocPage(), {
         headers: {
@@ -140,25 +138,39 @@ export default {
       });
     }
 
-    // =========================
-    // QR 生成
-    // =========================
+    // 解析原有参数
     const size = parseInt((url.searchParams.get("size") || "300x300").split("x")[0], 10);
     const margin = parseInt(url.searchParams.get("margin") || "1");
     const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
+    const level = ["L","M","Q","H"].includes(ecc) ? ecc : "M";
+    // 新增 format 参数：png 输出位图(适配Excel)，svg 保留原有矢量图
+    const format = (url.searchParams.get("format") || "svg").toLowerCase();
 
-    const svg = await QRCode.toString(data, {
-      type: "svg",
-      width: size,
-      margin,
-      errorCorrectionLevel: ["L","M","Q","H"].includes(ecc) ? ecc : "M"
-    });
-
-    return new Response(svg, {
-      headers: {
-        "Content-Type": "image/svg+xml; charset=utf-8",
-        "Cache-Control": "public,max-age=86400"
-      }
-    });
+    // 分支逻辑
+    if (format === "png") {
+      // 代理公共接口输出 PNG，Excel 专用
+      const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}&margin=${margin}&ecc=${level}&data=${encodeURIComponent(data)}`;
+      const imgRes = await fetch(apiUrl);
+      return new Response(imgRes.body, {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public,max-age=86400"
+        }
+      });
+    } else {
+      // 默认 SVG，保留原有逻辑，网页端正常使用
+      const svg = await QRCode.toString(data, {
+        type: "svg",
+        width: size,
+        margin,
+        errorCorrectionLevel: level
+      });
+      return new Response(svg, {
+        headers: {
+          "Content-Type": "image/svg+xml; charset=utf-8",
+          "Cache-Control": "public,max-age=86400"
+        }
+      });
+    }
   }
 };
