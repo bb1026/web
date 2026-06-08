@@ -1,6 +1,9 @@
 import QRCode from "qrcode";
 
-function renderDocPage() {
+/* =========================
+   文档页（你可以后面再美化）
+========================= */
+function doc() {
   return `
 <!DOCTYPE html>
 <html>
@@ -8,156 +11,127 @@ function renderDocPage() {
 <meta charset="UTF-8">
 <title>QR API</title>
 <style>
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
-  background: #f6f7fb;
-  margin: 0;
-  padding: 40px;
-  color: #111;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-}
-
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-}
-
-h1 {
-  margin-top: 0;
-}
-
-pre {
-  background: #f1f3f5;
-  padding: 12px;
-  border-radius: 8px;
-  overflow-x: auto;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 14px;
-  border: none;
-  background: #3b82f6;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #2563eb;
-}
-
-img {
-  margin-top: 15px;
-  max-width: 100%;
-  border-radius: 8px;
-  border: 1px solid #eee;
-}
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;background:#f6f7fb;margin:0;padding:40px}
+.container{max-width:900px;margin:auto}
+.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+pre{background:#f1f3f5;padding:12px;border-radius:8px;overflow:auto}
 </style>
 </head>
-
 <body>
 <div class="container">
 
 <div class="card">
-<h1>QR Code API</h1>
-<p>Simple QR Code generator API built on Cloudflare Workers</p>
+<h1>QR API (Production)</h1>
+<p>Excel / Shortcuts / Browser 100% compatible</p>
 </div>
 
 <div class="card">
-<h3>Endpoint</h3>
-<pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
+<h3>Excel</h3>
+<pre>=IMAGE("https://qr.0515364.xyz/png?data=hello")</pre>
 </div>
 
 <div class="card">
-<h3>Parameters</h3>
-
+<h3>API</h3>
 <pre>
-data   (required必须)
-size   (optional可选, default 300x300)
-margin (optional可选, default 1)
-ecc    (optional可选 L/M/Q/H)
-format (svg only recommended默认唯一可不填)
+/png?data=hello   (Excel / Shortcuts)
+/svg?data=hello   (browser)
+/?data=hello      (svg default)
 </pre>
-
-</div>
-
-<div class="card">
-<h3>Try it</h3>
-<input id="text" placeholder="Enter text..." />
-<button onclick="gen()">Generate QR</button>
-
-<div id="out"></div>
 </div>
 
 </div>
-
-<script>
-function gen() {
-  const val = document.getElementById('text').value;
-  if (!val) return;
-
-  const url = '/?data=' + encodeURIComponent(val);
-
-  document.getElementById('out').innerHTML =
-    '<img src="' + url + '" />';
-}
-</script>
-
 </body>
-</html>
-`;
+</html>`;
 }
 
+/* =========================
+   SVG → PNG（稳定核心）
+========================= */
+async function svgToPng(svg, size = 300) {
+  const blob = new Blob([svg], { type: "image/svg+xml" });
+  const img = await createImageBitmap(blob);
+
+  const canvas = new OffscreenCanvas(size, size);
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(img, 0, 0, size, size);
+
+  return await canvas.convertToBlob({ type: "image/png" });
+}
+
+/* =========================
+   Worker
+========================= */
 export default {
-  async fetch(request) {
-    const url = new URL(request.url);
+  async fetch(req) {
+    const url = new URL(req.url);
+    const path = url.pathname;
     const data = url.searchParams.get("data");
 
-    // =========================
-    // 没参数 → 返回文档页
-    // =========================
-    if (!data) {
-      return new Response(renderDocPage(), {
+    const size = parseInt(url.searchParams.get("size") || "300", 10);
+
+    /* =====================
+       1. PNG（Excel专用）
+    ====================== */
+    if (path === "/png") {
+      if (!data) {
+        return new Response(
+          `Usage: /png?data=hello`,
+          { status: 400, headers: { "Content-Type": "text/plain" } }
+        );
+      }
+
+      try {
+        const svg = await QRCode.toString(data, {
+          type: "svg",
+          width: size,
+          margin: 1,
+          errorCorrectionLevel: "M"
+        });
+
+        const pngBlob = await svgToPng(svg, size);
+
+        return new Response(pngBlob, {
+          headers: {
+            "Content-Type": "image/png",
+            "Cache-Control": "public,max-age=86400",
+            "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff"
+          }
+        });
+      } catch (e) {
+        return new Response("PNG generation failed: " + e.message, {
+          status: 500,
+          headers: { "Content-Type": "text/plain" }
+        });
+      }
+    }
+
+    /* =====================
+       2. SVG API
+    ====================== */
+    if (data) {
+      const svg = await QRCode.toString(data, {
+        type: "svg",
+        width: size,
+        margin: 1
+      });
+
+      return new Response(svg, {
         headers: {
-          "Content-Type": "text/html; charset=utf-8"
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public,max-age=86400",
+          "Access-Control-Allow-Origin": "*"
         }
       });
     }
 
-    // =========================
-    // QR 生成
-    // =========================
-    const size = parseInt((url.searchParams.get("size") || "300x300").split("x")[0], 10);
-    const margin = parseInt(url.searchParams.get("margin") || "1");
-    const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
-
-    const svg = await QRCode.toString(data, {
-      type: "svg",
-      width: size,
-      margin,
-      errorCorrectionLevel: ["L","M","Q","H"].includes(ecc) ? ecc : "M"
-    });
-
-    return new Response(svg, {
+    /* =====================
+       3. 文档页
+    ====================== */
+    return new Response(doc(), {
       headers: {
-        "Content-Type": "image/svg+xml; charset=utf-8",
-        "Cache-Control": "public,max-age=86400"
+        "Content-Type": "text/html; charset=utf-8"
       }
     });
   }
