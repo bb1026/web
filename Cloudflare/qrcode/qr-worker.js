@@ -7,7 +7,7 @@ function renderDocPage() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QR API</title>
+<title>二维码生成</title>
 <style>
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -29,7 +29,7 @@ body {
   border-radius: 16px;
   margin-bottom: 20px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
-  position: relative; /* 为复制按钮定位做准备 */
+  position: relative; 
 }
 
 h1 {
@@ -52,17 +52,15 @@ p {
   font-size: 14px;
 }
 
-/* 代码块外层包裹，用于定位复制按钮 */
 .code-wrapper {
   position: relative;
 }
 
-/* 深色现代代码块风格：开启自动换行，禁止左右滑动 */
 pre {
   background: #1e293b;
   color: #f8fafc;
   padding: 14px;
-  padding-right: 70px; /* 留出右侧复制按钮的空间 */
+  padding-right: 70px;
   border-radius: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
@@ -75,7 +73,6 @@ pre {
   overflow-x: hidden;          
 }
 
-/* 一键复制按钮样式 */
 .copy-btn {
   position: absolute;
   top: 8px;
@@ -98,7 +95,6 @@ pre {
   color: white;
 }
 
-/* 输入框尺寸与样式重构 */
 input {
   width: 100%;
   box-sizing: border-box; 
@@ -117,7 +113,6 @@ input:focus {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
-/* 主提交按钮 */
 .gen-btn {
   width: 100%; 
   margin-top: 12px;
@@ -140,7 +135,6 @@ input:focus {
   transform: scale(0.98); 
 }
 
-/* 二维码输出区域优化 */
 #out {
   display: flex;
   justify-content: center;
@@ -165,27 +159,45 @@ img {
 
 <div class="card">
 <h1>QR Code API</h1>
-<p>Simple QR Code generator API</p>
+<p>Simple QR Code generator API（二维码生成接口示例）</p>
 </div>
 
 <div class="card">
-<h3>Endpoint (Custom Size & ECC)</h3>
+<h3>Endpoint (Custom Size & ECC 自定义尺寸与容错等级)</h3>
+<h4>接口功能：生成可自定义尺寸与纠错等级的二维码</h4>
+
+<p>用于生成可自定义尺寸与纠错等级的二维码：</p>
+
 <div class="code-wrapper">
 <pre id="ep1">/?size=500x500&ecc=H&data=hello</pre>
 <button class="copy-btn" onclick="copyText('ep1', this)">Copy</button>
 </div>
+
+<p style="font-size:13px;color:#666;margin-top:8px;">
+参数说明：size=尺寸（如 500x500），ecc=容错等级（L/M/Q/H），data=二维码内容
+</p>
 </div>
 
 <div class="card">
-<h3>Endpoint (PNG Format)</h3>
+<h3>Endpoint (PNG Format PNG 图片输出接口)</h3>
+<h4>接口功能：输出 PNG 图片</h4>
+
+<p>用于导出 PNG 图片格式</p>
+
 <div class="code-wrapper">
 <pre id="ep2">/?format=png&data=hello</pre>
 <button class="copy-btn" onclick="copyText('ep2', this)">Copy</button>
 </div>
+
+<p style="font-size:13px;color:#666;margin-top:8px;">
+说明：format=png 用于强制输出图片格式
+</p>
 </div>
 
 <div class="card">
 <h3>Parameters</h3>
+<h4>参数说明</h4>
+
 <div class="code-wrapper">
 <pre id="params">
 data   (required必须)
@@ -199,9 +211,9 @@ format (png for Image, svg for default)
 </div>
 
 <div class="card">
-<h3>Try it</h3>
+<h3>Generate QR生成二维码</h3>
 <input id="text" placeholder="Enter text or URL..." />
-<button class="gen-btn" onclick="gen()">Generate QR</button>
+<button class="gen-btn" onclick="gen()">Generate QR生成</button>
 
 <div id="out"></div>
 </div>
@@ -223,12 +235,10 @@ function gen() {
 function copyText(elementId, btn) {
   const text = document.getElementById(elementId).innerText.trim();
   
-  // 使用现代 Clipboard API 复制文本
   navigator.clipboard.writeText(text).then(() => {
     btn.innerText = 'Copied!';
     btn.classList.add('copied');
     
-    // 1.5秒后恢复原状
     setTimeout(() => {
       btn.innerText = 'Copy';
       btn.classList.remove('copied');
@@ -249,7 +259,6 @@ export default {
     const url = new URL(request.url);
     const data = url.searchParams.get("data");
 
-    // 无参数返回原文档页面（HTML 完全未改动）
     if (!data) {
       return new Response(renderDocPage(), {
         headers: {
@@ -258,17 +267,13 @@ export default {
       });
     }
 
-    // 解析原有参数
     const size = parseInt((url.searchParams.get("size") || "300x300").split("x")[0], 10);
     const margin = parseInt(url.searchParams.get("margin") || "1");
     const ecc = (url.searchParams.get("ecc") || "M").toUpperCase();
     const level = ["L","M","Q","H"].includes(ecc) ? ecc : "M";
-    // 新增 format 参数：png 输出位图(适配Excel)，svg 保留原有矢量图
     const format = (url.searchParams.get("format") || "svg").toLowerCase();
 
-    // 分支逻辑
     if (format === "png") {
-      // 代理公共接口输出 PNG，Excel 专用
       const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}&margin=${margin}&ecc=${level}&data=${encodeURIComponent(data)}`;
       const imgRes = await fetch(apiUrl);
       return new Response(imgRes.body, {
@@ -278,7 +283,6 @@ export default {
         }
       });
     } else {
-      // 默认 SVG，保留原有逻辑，网页端正常使用
       const svg = await QRCode.toString(data, {
         type: "svg",
         width: size,
