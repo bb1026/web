@@ -3,239 +3,275 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
-<meta name="google-adsense-account" content="ca-pub-7777281841149510">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7777281841149510"
-     crossorigin="anonymous"></script>
 
 <title>二维码生成器</title>
 
-<script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-
-<link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/floating-menu.css">
-
 <style>
-  body {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 750px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #f9fafc;
-    color: #222;
-  }
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:#f5f7fb;
+  margin:0;
+  padding:16px;
+  max-width:760px;
+  margin:auto;
+}
 
-  .file-upload {
-    display: inline-block;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 6px;
-    transition: background-color 0.3s;
-  }
+h2{
+  text-align:center;
+  margin:10px 0 18px;
+  font-size:20px;
+}
 
-  .file-upload:hover {
-    background-color: #45a049;
-  }
+/* 卡片 */
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+}
 
-  .file-upload input[type="file"] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
-    height: 100%;
-    width: 100%;
-  }
+/* 类型选择 */
+.row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
 
-  #logoStatus {
-    font-size: 13px;
-    color: #666;
-    margin-top: 4px;
-  }
+.option{
+  background:#f1f3f5;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  font-size:14px;
+  cursor:pointer;
+  user-select:none;
+}
 
-  h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
+.option.active{
+  background:#2563eb;
+  color:#fff;
+}
 
-  .home-btn {
-    display: block;
-    width: fit-content;
-    margin: 0 auto 15px auto;
-    padding: 8px 14px;
-    background: #333;
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-  }
+/* 输入 */
+input,textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  margin-top:8px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:14px;
+  outline:none;
+}
 
-  .home-btn:hover {
-    background: #000;
-  }
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  font-size:15px;
+}
 
-  fieldset {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 1.2rem;
-    background: #fff;
-  }
+/* QR */
+#qr{
+  text-align:center;
+  margin-top:16px;
+}
 
-  legend {
-    font-weight: 600;
-    padding: 0 6px;
-  }
+img{
+  max-width:100%;
+  border-radius:12px;
+  box-shadow:0 6px 16px rgba(0,0,0,.1);
+}
 
-  label {
-    margin-right: 15px;
-    cursor: pointer;
-    user-select: none;
-  }
+/* WiFi segmented */
+.enc-box{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+  background:#f1f3f5;
+  padding:6px;
+  border-radius:10px;
+}
 
-  input[type="text"], input[type="email"], input[type="tel"], input[type="url"], input[type="date"], textarea {
-    width: 100%;
-    padding: 7px 10px;
-    margin: 6px 0 12px;
-    box-sizing: border-box;
-    border-radius: 6px;
-    border: 1px solid #bbb;
-    font-size: 14px;
-  }
+.enc-option{
+  flex:1;
+  text-align:center;
+  padding:8px;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
+  user-select:none;
+}
 
-  textarea { resize: vertical; }
+.enc-option input{ display:none; }
 
-  .button {
-    display: inline-block;
-    background: #2874f0;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 28px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-
-  .button:hover { background: #1a52d8; }
-
-  #qr-section {
-    display: none;
-    margin-top: 30px;
-    text-align: center;
-  }
-
-  .hidden { display: none !important; }
+.enc-option.active{
+  background:#2563eb;
+  color:#fff;
+}
 </style>
 </head>
 
 <body>
 
-<h2>二维码生成器</h2>
+<h2>二维码生成器 Pro</h2>
 
-<!-- ✅ 首页按钮 -->
-<a class="home-btn" href="/">🏠 首页</a>
-
-<!-- 内容类型 -->
-<fieldset>
-  <legend>内容类型</legend>
-  <label><input type="radio" name="type" value="text" checked> 文本</label>
-  <label><input type="radio" name="type" value="url"> 网址</label>
-  <label><input type="radio" name="type" value="tel"> 电话</label>
-  <label><input type="radio" name="type" value="wifi"> WiFi</label>
-  <label><input type="radio" name="type" value="vcard"> vCard</label>
-</fieldset>
-
-<!-- 输入区域 -->
-<div id="inputs">
-  <label>输入内容：<input type="text" id="content" placeholder="请输入内容"></label>
+<div class="card">
+  <div class="row" id="typeBox">
+    <div class="option active" data-type="text">文本</div>
+    <div class="option" data-type="url">网址</div>
+    <div class="option" data-type="tel">电话</div>
+    <div class="option" data-type="sms">短信</div>
+    <div class="option" data-type="email">邮件</div>
+    <div class="option" data-type="wifi">WiFi</div>
+    <div class="option" data-type="vcard">联系人</div>
+    <div class="option" data-type="whatsapp">WhatsApp</div>
+    <div class="option" data-type="geo">地图</div>
+  </div>
 </div>
 
-<!-- WiFi -->
-<div id="wifi-password-wrapper" class="hidden">
-  <label>WiFi 密码：<input type="text" id="wifi-password"></label>
+<div class="card" id="inputs"></div>
+
+<div class="card">
+  <button onclick="gen()">生成二维码</button>
 </div>
 
-<div id="wifi-encryption-wrapper" class="hidden">
-  <fieldset>
-    <legend>加密方式</legend>
-    <label><input type="radio" name="wifi-encryption" value="WPA" checked> WPA/WPA2</label>
-    <label><input type="radio" name="wifi-encryption" value="WEP"> WEP</label>
-    <label><input type="radio" name="wifi-encryption" value="nopass"> 无加密</label>
-  </fieldset>
-</div>
-
-<!-- vCard -->
-<div id="vcard-inputs" class="hidden">
-  <label>姓名: <input type="text" id="vcard-fn"></label>
-</div>
-
-<!-- 颜色 -->
-<fieldset>
-  <legend>颜色</legend>
-  <label><input type="radio" name="colorMode" value="black" checked> 黑色</label>
-  <label><input type="radio" name="colorMode" value="gradient"> 渐变</label>
-</fieldset>
-
-<!-- 尺寸 -->
-<fieldset>
-  <legend>尺寸</legend>
-  <label><input type="radio" name="size" value="256" checked> 256</label>
-  <label><input type="radio" name="size" value="512"> 512</label>
-  <label><input type="radio" name="size" value="768"> 768</label>
-</fieldset>
-
-<!-- 图片格式 -->
-<fieldset>
-  <legend>图片格式</legend>
-  <label><input type="radio" name="format" value="png" checked> PNG</label>
-  <label><input type="radio" name="format" value="jpeg"> JPEG</label>
-  <label><input type="radio" name="format" value="webp"> WEBP</label>
-</fieldset>
-
-<!-- 生成按钮 -->
-<div style="text-align:center;">
-  <button id="generate-btn" class="button">生成二维码</button>
-</div>
-
-<!-- QR -->
-<div id="qr-section">
-  <div id="qr-container"></div>
-</div>
+<div id="qr"></div>
 
 <script>
-(() => {
-  const qrContainer = document.getElementById('qr-container');
-  const generateBtn = document.getElementById('generate-btn');
-  const contentInput = document.getElementById('content');
+let type="text";
 
-  let qrCode = null;
+const inputs=document.getElementById("inputs");
+const typeBox=document.getElementById("typeBox");
 
-  function getText() {
-    return contentInput.value.trim();
-  }
+function render(){
+let html="";
 
-  function render() {
-    const text = getText();
-    if(!text) return alert("请输入内容");
+if(type==="text") html=`<input id="text" placeholder="输入文本">`;
+if(type==="url") html=`<input id="url" placeholder="https://example.com">`;
+if(type==="tel") html=`<input id="tel" placeholder="电话号码">`;
 
-    qrContainer.innerHTML = "";
+if(type==="sms"){
+html=`
+<input id="sms_tel" placeholder="手机号">
+<input id="sms_text" placeholder="短信内容">
+`;
+}
 
-    qrCode = new QRCodeStyling({
-      width: 256,
-      height: 256,
-      data: text
-    });
+if(type==="email"){
+html=`
+<input id="email" placeholder="邮箱">
+<input id="subject" placeholder="主题">
+<input id="body" placeholder="内容">
+`;
+}
 
-    qrCode.append(qrContainer);
-  }
+if(type==="wifi"){
+html=`
+<input id="ssid" placeholder="WiFi名称">
+<input id="password" placeholder="密码">
 
-  generateBtn.addEventListener("click", render);
-})();
+<div class="enc-box">
+<div class="enc-option active"><input type="radio" name="enc" value="WPA" checked>WPA</div>
+<div class="enc-option"><input type="radio" name="enc" value="WEP">WEP</div>
+<div class="enc-option"><input type="radio" name="enc" value="nopass">无密码</div>
+</div>
+`;
+}
+
+if(type==="vcard"){
+html=`
+<input id="name" placeholder="姓名">
+<input id="phone" placeholder="电话">
+<input id="email" placeholder="邮箱">
+`;
+}
+
+if(type==="whatsapp"){
+html=`
+<input id="wa" placeholder="手机号">
+<input id="wa_text" placeholder="消息">
+`;
+}
+
+if(type==="geo"){
+html=`
+<input id="lat" placeholder="纬度">
+<input id="lng" placeholder="经度">
+`;
+}
+
+inputs.innerHTML=html;
+}
+
+typeBox.addEventListener("click",e=>{
+const el=e.target.closest(".option");
+if(!el) return;
+
+document.querySelectorAll(".option").forEach(o=>o.classList.remove("active"));
+el.classList.add("active");
+type=el.dataset.type;
+render();
+});
+
+render();
+
+document.addEventListener("click",e=>{
+if(e.target.closest(".enc-option")){
+document.querySelectorAll(".enc-option").forEach(o=>o.classList.remove("active"));
+const el=e.target.closest(".enc-option");
+el.classList.add("active");
+el.querySelector("input").checked=true;
+}
+});
+
+function gen(){
+let data="";
+
+if(type==="text") data=document.getElementById("text").value;
+if(type==="url") data=document.getElementById("url").value;
+if(type==="tel") data="tel:"+document.getElementById("tel").value;
+
+if(type==="sms"){
+data=`SMSTO:${sms_tel.value}:${sms_text.value}`;
+}
+
+if(type==="email"){
+data=`mailto:${email.value}?subject=${encodeURIComponent(subject.value)}&body=${encodeURIComponent(body.value)}`;
+}
+
+if(type==="wifi"){
+const enc=document.querySelector('input[name="enc"]:checked').value;
+data=`WIFI:T:${enc};S:${ssid.value};P:${password.value};;`;
+}
+
+if(type==="vcard"){
+data=`BEGIN:VCARD
+VERSION:3.0
+FN:${name.value}
+TEL:${phone.value}
+EMAIL:${email.value}
+END:VCARD`;
+}
+
+if(type==="whatsapp"){
+data=`https://wa.me/${wa.value}?text=${encodeURIComponent(wa_text.value)}`;
+}
+
+if(type==="geo"){
+data=`geo:${lat.value},${lng.value}`;
+}
+
+if(!data) return alert("请输入内容");
+
+document.getElementById("qr").innerHTML=
+`<img src="https://qr.0515364.xyz/?data=${encodeURIComponent(data)}" width="260">`;
+}
 </script>
 
 </body>
