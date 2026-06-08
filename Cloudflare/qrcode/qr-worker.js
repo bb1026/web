@@ -76,12 +76,15 @@ img {
 
 <div class="card">
 <h1>QR Code API</h1>
-<p>Simple QR Code generator API built on Cloudflare Workers</p>
+<p>Simple QR Code generator API</p>
 </div>
 
 <div class="card">
 <h3>Endpoint</h3>
-<pre>https://qr.0515364.xyz/?data=hello&size=500x500&ecc=H</pre>
+<pre>
+https://qr.0515364.xyz/?size=500x500&ecc=H&data=hello
+https://qr.0515364.xyz/?format=png&data=hello
+</pre>
 </div>
 
 <div class="card">
@@ -91,8 +94,8 @@ img {
 data   (required必须)
 size   (optional可选, default 300x300)
 margin (optional可选, default 1)
-ecc    (optional可选 L/M/Q/H)
-format (svg only recommended默认唯一可不填)
+ecc    (optional可选, L/M/Q/H)
+format (png for Image, svg for default)
 </pre>
 
 </div>
