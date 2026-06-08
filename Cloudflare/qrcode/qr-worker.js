@@ -171,7 +171,7 @@ img {
 <div class="card">
 <h3>Endpoint (Custom Size & ECC)</h3>
 <div class="code-wrapper">
-<pre id="ep1">https://qr.0515364.xyz/?size=500x500&ecc=H&data=hello</pre>
+<pre id="ep1">/?size=500x500&ecc=H&data=hello</pre>
 <button class="copy-btn" onclick="copyText('ep1', this)">Copy</button>
 </div>
 </div>
@@ -179,7 +179,7 @@ img {
 <div class="card">
 <h3>Endpoint (PNG Format)</h3>
 <div class="code-wrapper">
-<pre id="ep2">https://qr.0515364.xyz/?format=png&data=hello</pre>
+<pre id="ep2">/?format=png&data=hello</pre>
 <button class="copy-btn" onclick="copyText('ep2', this)">Copy</button>
 </div>
 </div>
