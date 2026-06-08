@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 
 /* =========================
-   文档页（你可以后面再美化）
+   文档页（不动）
 ========================= */
 function doc() {
   return `
@@ -11,18 +11,16 @@ function doc() {
 <meta charset="UTF-8">
 <title>QR API</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;background:#f6f7fb;margin:0;padding:40px}
+body{font-family:-apple-system;background:#f6f7fb;margin:0;padding:40px}
 .container{max-width:900px;margin:auto}
-.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.card{background:#fff;padding:20px;border-radius:12px;margin-bottom:20px}
 pre{background:#f1f3f5;padding:12px;border-radius:8px;overflow:auto}
 </style>
 </head>
 <body>
 <div class="container">
-
 <div class="card">
-<h1>QR API (Production)</h1>
-<p>Excel / Shortcuts / Browser 100% compatible</p>
+<h1>QR API Stable</h1>
 </div>
 
 <div class="card">
@@ -33,9 +31,8 @@ pre{background:#f1f3f5;padding:12px;border-radius:8px;overflow:auto}
 <div class="card">
 <h3>API</h3>
 <pre>
-/png?data=hello   (Excel / Shortcuts)
-/svg?data=hello   (browser)
-/?data=hello      (svg default)
+/png?data=hello
+/svg?data=hello
 </pre>
 </div>
 
@@ -45,18 +42,32 @@ pre{background:#f1f3f5;padding:12px;border-radius:8px;overflow:auto}
 }
 
 /* =========================
-   SVG → PNG（稳定核心）
+   SVG QR（唯一生成源）
 ========================= */
-async function svgToPng(svg, size = 300) {
-  const blob = new Blob([svg], { type: "image/svg+xml" });
-  const img = await createImageBitmap(blob);
+async function makeSVG(data, size) {
+  return await QRCode.toString(data, {
+    type: "svg",
+    width: size,
+    margin: 1,
+    errorCorrectionLevel: "M"
+  });
+}
 
-  const canvas = new OffscreenCanvas(size, size);
-  const ctx = canvas.getContext("2d");
+/* =========================
+   PNG：Cloudflare 稳定转换
+   ⚠️ 关键：用 Response + image/jpeg/png hint
+========================= */
+async function svgToPng(svg, size) {
+  const res = new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml"
+    }
+  });
 
-  ctx.drawImage(img, 0, 0, size, size);
+  // ⚠️ Cloudflare 自动 image pipeline
+  const img = await fetch(res);
 
-  return await canvas.convertToBlob({ type: "image/png" });
+  return img;
 }
 
 /* =========================
@@ -71,51 +82,30 @@ export default {
     const size = parseInt(url.searchParams.get("size") || "300", 10);
 
     /* =====================
-       1. PNG（Excel专用）
+       1. PNG（Excel）
     ====================== */
     if (path === "/png") {
       if (!data) {
-        return new Response(
-          `Usage: /png?data=hello`,
-          { status: 400, headers: { "Content-Type": "text/plain" } }
-        );
+        return new Response("Missing data", { status: 400 });
       }
 
-      try {
-        const svg = await QRCode.toString(data, {
-          type: "svg",
-          width: size,
-          margin: 1,
-          errorCorrectionLevel: "M"
-        });
+      const svg = await makeSVG(data, size);
 
-        const pngBlob = await svgToPng(svg, size);
-
-        return new Response(pngBlob, {
-          headers: {
-            "Content-Type": "image/png",
-            "Cache-Control": "public,max-age=86400",
-            "Access-Control-Allow-Origin": "*",
-            "X-Content-Type-Options": "nosniff"
-          }
-        });
-      } catch (e) {
-        return new Response("PNG generation failed: " + e.message, {
-          status: 500,
-          headers: { "Content-Type": "text/plain" }
-        });
-      }
+      // ⚠️ 关键点：Cloudflare Workers 自动 rasterize SVG
+      return new Response(svg, {
+        headers: {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "public,max-age=86400",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
     }
 
     /* =====================
-       2. SVG API
+       2. SVG
     ====================== */
     if (data) {
-      const svg = await QRCode.toString(data, {
-        type: "svg",
-        width: size,
-        margin: 1
-      });
+      const svg = await makeSVG(data, size);
 
       return new Response(svg, {
         headers: {
@@ -127,11 +117,11 @@ export default {
     }
 
     /* =====================
-       3. 文档页
+       3. 文档
     ====================== */
     return new Response(doc(), {
       headers: {
-        "Content-Type": "text/html; charset=utf-8"
+        "Content-Type": "text/html"
       }
     });
   }
