@@ -13,10 +13,6 @@
 
 <style>
 
-/* =========================
-   THEME
-========================= */
-
 :root{
 
   --bg:#f5f5f5;
@@ -28,6 +24,9 @@
   --nav:#4b5563;
   --notice:#92400e;
 
+  --logo-light-1: #3b82f6;
+  --logo-light-2: #10b981;
+  --logo-light-3: #ec4899;
 }
 
 [data-theme="dark"]{
@@ -41,6 +40,9 @@
   --nav:#9ca3af;
   --notice:#facc15;
 
+  --logo-light-1: #60a5fa;
+  --logo-light-2: #34d399;
+  --logo-light-3: #f472b6;
 }
 
 body{
@@ -50,10 +52,30 @@ body{
   color:var(--text);
   transition:.25s;
 }
+.logo-text {
+  background: linear-gradient(
+    90deg,
+    var(--logo-light-1),
+    var(--logo-light-2),
+    var(--logo-light-3),
+    var(--logo-light-1)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: flowLight 10s linear infinite;
+  font-weight: 700;
+}
 
-/* =========================
-   NOTICE
-========================= */
+@keyframes flowLight {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 300% 0%;
+  }
+}
 
 .notice-bar{
   background:var(--card);
@@ -102,19 +124,11 @@ body{
   display:none;
 }
 
-/* =========================
-   CONTAINER
-========================= */
-
 .container{
   max-width:1100px;
   margin:auto;
   padding:24px;
 }
-
-/* =========================
-   NAV
-========================= */
 
 .nav{
   display:flex;
@@ -154,10 +168,6 @@ body{
   color:var(--text);
 }
 
-/* =========================
-   THEME BUTTON
-========================= */
-
 .theme-btn{
   margin-left:14px;
   background:none;
@@ -172,10 +182,6 @@ body{
 .theme-btn:hover{
   transform:translateY(-1px);
 }
-
-/* =========================
-   SEARCH
-========================= */
 
 .search-box input{
   width:100%;
@@ -206,7 +212,7 @@ body{
 
 .search-wrapper button{
   width:52px;
-  min-height:44px; /* 👈 iOS 推荐点击高度 */
+  min-height:44px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -232,10 +238,6 @@ body{
   opacity:.9;
 }
 
-/* =========================
-   SECTION
-========================= */
-
 .section{
   margin-top:28px;
 }
@@ -250,19 +252,11 @@ body{
   color:var(--text);
 }
 
-/* =========================
-   GRID
-========================= */
-
 .grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
-
-/* =========================
-   CARD
-========================= */
 
 .card{
   padding:14px;
@@ -299,18 +293,10 @@ body{
   color:#60a5fa;
 }
 
-/* =========================
-   LINK
-========================= */
-
 a{
   text-decoration:none;
   color:inherit;
 }
-
-/* =========================
-   STAR
-========================= */
 
 .star{
   position:absolute;
@@ -323,10 +309,6 @@ a{
 .star.active{
   color:#facc15;
 }
-
-/* =========================
-   MORE BUTTON
-========================= */
 
 .more-btn{
   margin-top:12px;
@@ -344,10 +326,6 @@ a{
   border-color:#3b82f6;
 }
 
-/* =========================
-   FOOTER
-========================= */
-
 footer{
   margin-top:40px;
   padding:20px 0;
@@ -357,10 +335,6 @@ footer{
   text-align:center;
   line-height:1.8;
 }
-
-/* =========================
-   MOBILE
-========================= */
 
 @media(max-width:768px){
 
@@ -407,7 +381,8 @@ footer{
 
   <div class="logo">
     <img src="/imgs/logo.png" alt="logo">
-    0515364.xyz
+    <!-- 这里加上 class="logo-text" 实现流光 -->
+    <span class="logo-text">0515364.xyz</span>
   </div>
 
   <div class="nav-right">
@@ -482,10 +457,6 @@ footer{
 
 <script>
 
-/* =========================
-   DATA
-========================= */
-
 let rawData = {};
 let searchIndex = [];
 
@@ -507,32 +478,20 @@ const categoryIcons = {
 
 const expandedSections = {};
 
-/* =========================
-   SAFE
-========================= */
-
 function safe(str){
   return (str || "")
     .replace(/'/g,"\\'")
     .replace(/"/g,'\\"');
 }
 
-/* =========================
-   LOAD
-========================= */
-
 async function load(){
   const res = await fetch("/json/menu.json");
   rawData = await res.json();
 
-  buildIndex(); // 🚀 新增索引
+  buildIndex();
   render();
 }
 load();
-
-/* =========================
-   BUILD SEARCH INDEX（2.1核心）
-========================= */
 
 function buildIndex(){
 
@@ -556,10 +515,6 @@ function buildIndex(){
   }
 }
 
-/* =========================
-   NOTICE
-========================= */
-
 async function loadNotice(){
   const res = await fetch("notice.html",{cache:"no-store"});
   const text = await res.text();
@@ -578,10 +533,6 @@ async function loadNotice(){
 }
 loadNotice();
 
-/* =========================
-   RECENT
-========================= */
-
 function addRecent(name,url,icon,desc){
 
   const RECENT_LIMIT = 3;
@@ -594,10 +545,6 @@ function addRecent(name,url,icon,desc){
   localStorage.setItem("recent", JSON.stringify(recent));
 }
 
-/* =========================
-   FAVORITE（优化排序）
-========================= */
-
 function toggleFav(name,url,icon,desc){
 
   const exists = favorites.find(i=>i.url===url);
@@ -605,16 +552,12 @@ function toggleFav(name,url,icon,desc){
   if(exists){
     favorites = favorites.filter(i=>i.url!==url);
   }else{
-    favorites.unshift({name,url,icon,desc}); // 🚀 最新优先
+    favorites.unshift({name,url,icon,desc});
   }
 
   localStorage.setItem("fav",JSON.stringify(favorites));
   render();
 }
-
-/* =========================
-   CARD（新增高亮支持）
-========================= */
 
 function highlight(text,keyword){
   if(!keyword) return text;
@@ -656,10 +599,6 @@ function card(item,keyword=""){
   </a>`;
 }
 
-/* =========================
-   RENDER（2.1优化）
-========================= */
-
 function render(){
 
   const menu = document.getElementById("menu");
@@ -667,7 +606,6 @@ function render(){
 
   const keyword = document.getElementById("search").value.toLowerCase();
 
-  /* recent */
   document.getElementById("recent").innerHTML =
   recent.length ? `
   <div class="section">
@@ -677,7 +615,6 @@ function render(){
     </div>
   </div>` : "";
 
-  /* favorite */
   document.getElementById("favorites").innerHTML =
   favorites.length ? `
   <div class="section">
@@ -687,7 +624,6 @@ function render(){
     </div>
   </div>` : "";
 
-  /* menu（用 index 加速） */
   const grouped = {};
 
   for(const item of searchIndex){
@@ -735,18 +671,10 @@ function render(){
  }
 }
 
-/* =========================
-   MORE
-========================= */
-
 function toggleMore(k){
   expandedSections[k]=!expandedSections[k];
   render();
 }
-
-/* =========================
-   DEBOUNCE（2.1优化）
-========================= */
 
 function debounce(fn,delay=120){
   let t;
@@ -758,17 +686,9 @@ function debounce(fn,delay=120){
 
 const debouncedRender = debounce(render);
 
-/* =========================
-   SEARCH INPUT（优化）
-========================= */
-
 document.getElementById("search").addEventListener("input",()=>{
   debouncedRender();
 });
-
-/* =========================
-   KEYBOARD
-========================= */
 
 document.addEventListener("keydown",(e)=>{
 
@@ -789,10 +709,6 @@ document.addEventListener("keydown",(e)=>{
   }
 
 });
-
-/* =========================
-   SEARCH ENGINE
-========================= */
 
 function doSearch(){
 
@@ -816,10 +732,6 @@ function doSearch(){
 
   window.open(map[engine]+encodeURIComponent(keyword));
 }
-
-/* =========================
-   THEME（原样保留）
-========================= */
 
 const savedTheme=localStorage.getItem("theme");
 
