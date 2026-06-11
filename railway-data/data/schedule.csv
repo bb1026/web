@@ -1,4 +1,0 @@
-train_no,station_code,arrive,depart,stop_order
-G1,BJP,,09:00,1
-G1,JNK,10:22,10:24,2
-G1,SHH,13:28,,3
