@@ -22,8 +22,8 @@ function randomCode(len = 5) {
 
 export default {
   async fetch(req, env) {
-    const url = new URL(req.url);
-    const path = url.pathname;
+    const urlObj = new URL(req.url);
+    const path = urlObj.pathname;
 
     // ======================
     // 短链接跳转 /s/xxx
@@ -39,7 +39,7 @@ export default {
 
       if (!link) return new Response("Not Found", { status: 404 });
 
-      if (link.enabled !== 1) {
+      if (Number(link.enabled) !== 1) {
         return new Response("Disabled", { status: 403 });
       }
 
@@ -56,16 +56,16 @@ export default {
     if (path === "/api/create" && req.method === "POST") {
       const { url: longUrl, code } = await req.json();
 
-      let shortCode = code || randomCode();
+      const shortCode = code || randomCode();
 
       await env.DB.prepare(
-        "INSERT INTO links (code, url) VALUES (?, ?)"
+        "INSERT OR IGNORE INTO links (code, url) VALUES (?, ?)"
       ).bind(shortCode, longUrl).run();
 
       return json({
         ok: true,
         code: shortCode,
-        shortUrl: `${url.origin}/s/${shortCode}`
+        shortUrl: `${urlObj.origin}/s/${shortCode}`
       });
     }
 
@@ -74,7 +74,7 @@ export default {
     // ======================
     if (path === "/api/list") {
       const { results } = await env.DB.prepare(
-        "SELECT * FROM links ORDER BY id DESC"
+        "SELECT * FROM links ORDER BY id DESC LIMIT 100"
       ).all();
 
       return json(results);
@@ -142,11 +142,11 @@ async function load(){
   let data = await res.json();
 
   document.getElementById('list').innerHTML =
-    data.map(i=>`
+    data.map(i => `
       <div class="card">
         <b>${i.code}</b><br>
         ${i.url}<br>
-        点击:${i.clicks} | ${i.enabled ? '启用':'禁用'}<br><br>
+        点击:${i.clicks} | ${i.enabled}<br><br>
         <button onclick="toggle('${i.code}')">启用/禁用</button>
         <button onclick="del('${i.code}')">删除</button>
       </div>
