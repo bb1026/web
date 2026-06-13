@@ -27,6 +27,20 @@ export default {
   async fetch(req, env) {
     const urlObj = new URL(req.url);
     const path = urlObj.pathname;
+    const method = req.method;
+
+    // 处理OPTIONS预检请求，彻底解决fetch卡住加载中
+    if (method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": urlObj.origin,
+          "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Credentials": "true",
+          "Access-Control-Max-Age": "86400"
+        }
+      });
+    }
 
     function getCookie(name) {
       const cookieStr = req.headers.get("Cookie") || "";
@@ -42,7 +56,7 @@ export default {
       return getCookie(ADMIN_COOKIE_KEY) === ADMIN_COOKIE_VAL;
     }
 
-    // 短链跳转
+    // 短链跳转 /s/xxx
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
       const { results } = await env.DB.prepare(
@@ -53,7 +67,7 @@ export default {
       return Response.redirect(results[0].url, 302);
     }
 
-    // 生成页面
+    // 短链接生成页面 /shortlink
     if (path === "/shortlink") {
       const createPage = `
 <!DOCTYPE html>
@@ -123,6 +137,7 @@ async function genLink(){
   try {
     const resp = await fetch('/api/create', {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -170,7 +185,7 @@ function openLink(){
     }
 
     // 创建短链接口
-    if (path === "/api/create" && req.method === "POST") {
+    if (path === "/api/create" && method === "POST") {
       try {
         const body = await req.json();
         const longUrl = body.url;
@@ -188,19 +203,19 @@ function openLink(){
       }
     }
 
-    // 登录接口 移除固定Domain，Path=/自动适配所有域名
-    if (path === "/api/admin/login" && req.method === "POST") {
+    // 管理员登录接口
+    if (path === "/api/admin/login" && method === "POST") {
       const { pwd } = await req.json();
       if (pwd === env.ADMIN_PASSWORD) {
         const resp = json({ ok: true });
-        resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; HttpOnly; SameSite=Lax`);
+        resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; HttpOnly; SameSite=Lax; Secure`);
         return resp;
       } else {
         return json({ ok: false, msg: "密码错误" }, 401);
       }
     }
 
-    // 后台主页
+    // 管理后台主页
     if (path === "/admin") {
       if (isLogin()) {
         const adminPage = `
@@ -220,13 +235,12 @@ button{padding:8px 10px;margin:4px;cursor:pointer;}
 <h2>短链接后台管理</h2>
 <button id="logoutBtn">退出登录</button>
 <h3>全部链接列表</h3>
-<div id="list">加载中...</div>
+<div id="list">正在加载数据...</div>
 
 <script>
-// fetch强制携带凭证Cookie，修复异步请求不带Cookie鉴权失败
 async function loadData(){
   try {
-    const res = await fetch('/api/list', { credentials: 'same-origin' });
+    const res = await fetch('/api/list', { credentials: 'include' });
     if (!res.ok) throw new Error('未登录或权限不足');
     const data = await res.json();
     let htmlStr = '';
@@ -239,26 +253,32 @@ async function loadData(){
     document.getElementById('list').innerHTML = htmlStr;
   } catch(err) {
     document.getElementById('list').innerHTML = '加载失败：' + err.message;
+    console.error(err);
   }
 }
 
 async function del(code){
   if(!confirm('确定删除该短链接？')) return;
-  await fetch('/api/delete/'+code, { credentials: 'same-origin' });
+  await fetch('/api/delete/'+code, { credentials: 'include' });
   loadData();
 }
 
 async function toggle(code){
-  await fetch('/api/toggle/'+code, { credentials: 'same-origin' });
+  await fetch('/api/toggle/'+code, { credentials: 'include' });
   loadData();
 }
 
-// 退出按钮绑定完整刷新逻辑
+// 退出登录完整修复，强制跳转
 document.getElementById('logoutBtn').addEventListener('click', async ()=>{
-  await fetch('/api/admin/logout', { credentials: 'same-origin' });
-  location.href = "/admin";
+  try{
+    await fetch('/api/admin/logout', { credentials: 'include' });
+    location.replace("/admin");
+  }catch(e){
+    location.replace("/admin");
+  }
 });
 
+// 页面载入立刻执行
 loadData();
 </script>
 </body>
@@ -300,7 +320,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
   if(!pwd) return;
   const res = await fetch('/api/admin/login',{
     method:'POST',
-    credentials: 'same-origin',
+    credentials: 'include',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({pwd})
   });
@@ -320,7 +340,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
     // 退出登录接口
     if (path === "/api/admin/logout") {
       const resp = json({ ok: true });
-      resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; HttpOnly; Max-Age=0`);
+      resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; HttpOnly; Max-Age=0; Secure`);
       return resp;
     }
 
