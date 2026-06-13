@@ -47,7 +47,7 @@ export default {
       const cookieParts = {};
       cookieStr.split("; ").forEach(item => {
         const [k, v] = item.split("=");
-        cookieParts[k] = v;
+        if (k) cookieParts[k.trim()] = v ? v.trim() : "";
       });
       return cookieParts[name] || "";
     }
@@ -202,7 +202,7 @@ function openLink(){
       return resp;
     }
 
-    // 管理后台页面（修复退出：不再等待fetch回调，强制location直接跳转）
+    // 管理后台页面
     if (path === "/admin") {
       if (!isLogin()) {
         // 登录页
@@ -255,7 +255,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
         return html(loginHtml);
       }
 
-      // 已登录后台主页：退出按钮直接location跳转，不再异步等待接口
+      // 已登录后台主页
       const adminHtml = `
 <!DOCTYPE html>
 <html>
@@ -286,23 +286,43 @@ h2{color:#111;}
 <div id="list" class="load-tip">正在加载数据...</div>
 
 <script>
-// 修复退出：先跳转，后端Cookie同步失效，不再依赖fetch回调
-document.getElementById('logoutBtn').onclick = function(){
-  fetch('/api/admin/logout', {credentials:'include'});
+// 修复：使用 async/await 确保退出请求处理完毕后再跳转
+document.getElementById('logoutBtn').onclick = async function(){
+  try {
+    await fetch('/api/admin/logout', {credentials:'include'});
+  } catch(e) {}
   location.href = "/admin";
 };
+
+// 安全过滤HTML，防止XSS
+function escapeHtml(str) {
+  if(!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 async function loadList(){
   try {
     const res = await fetch('/api/list', {credentials:'include'});
+    if (!res.ok) {
+      if(res.status === 401) {
+        location.href = "/admin";
+        return;
+      }
+      throw new Error('服务器响应错误: ' + res.status);
+    }
     const data = await res.json();
     let htmlStr = '';
-    data.forEach(item=>{
-      htmlStr += '<div class="card"><b>' + item.code + '</b><br>原链接：' + item.url + '<br>点击量：' + item.clicks + ' | 状态：' + (item.enabled?'启用':'禁用') + '<br><button class="btn-toggle" onclick="toggle(\'' + item.code + '\')">启用/禁用</button><button class="btn-del" onclick="del(\'' + item.code + '\')">删除</button></div>';
-    });
-    document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无数据</div>';
+    
+    if (Array.isArray(data)) {
+      data.forEach(item=>{
+        htmlStr += '<div class="card"><b>' + escapeHtml(item.code) + '</b><br>原链接：' + escapeHtml(item.url) + '<br>点击量：' + (item.clicks || 0) + ' | 状态：' + (item.enabled ? '启用':'禁用') + '<br><button class="btn-toggle" onclick="toggle(\'' + escapeHtml(item.code) + '\')">启用/禁用</button><button class="btn-del" onclick="del(\'' + escapeHtml(item.code) + '\')">删除</button></div>';
+      });
+      document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无数据</div>';
+    } else {
+      document.getElementById('list').innerHTML = '数据格式错误';
+    }
   } catch(err){
-    document.getElementById('list').innerHTML = '加载失败：' + err.message;
+    document.getElementById('list').innerHTML = '加载失败：' + err.message + ' (请检查 D1 数据库 links 表结构及数据是否正常)';
   }
 }
 
@@ -323,11 +343,12 @@ loadList();
       return html(adminHtml);
     }
 
-    // 极简列表接口：无分页、无搜索，先保证能返回数据
+    // 极简列表接口
     if (path === "/api/list") {
       if (!isLogin()) return json({ok:false},401);
       try {
-        const resDB = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
+        // 💡 提示：如果报错提示这里有问题，请确认 D1 数据库包含自增主键（如 id ）或将其改为按 code 排序。
+        const resDB = await env.DB.prepare("SELECT * FROM links ORDER BY code DESC").all();
         return json(resDB.results);
       } catch (e) {
         return json({ok:false,msg:e.message},500);
