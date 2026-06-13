@@ -1,0 +1,9 @@
+name = "short-link"
+main = "worker.js"
+compatibility_date = "2026-06-13"
+
+# ===== D1 数据库绑定 =====
+[[d1_databases]]
+binding = "DB"
+database_name = "shortlinks"
+database_id = "503224f6-c4ee-4159-9813-1e01d258030f"
