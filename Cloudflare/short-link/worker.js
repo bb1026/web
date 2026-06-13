@@ -142,15 +142,17 @@ async function load(){
   let data = await res.json();
 
   document.getElementById('list').innerHTML =
-    data.map(i => `
-      <div class="card">
-        <b>${i.code}</b><br>
-        ${i.url}<br>
-        点击:${i.clicks} | ${i.enabled}<br><br>
-        <button onclick="toggle('${i.code}')">启用/禁用</button>
-        <button onclick="del('${i.code}')">删除</button>
-      </div>
-    `).join('');
+    data.map(function(i) {
+  return `
+    <div class="card">
+      <b>${i.code}</b><br>
+      ${i.url}<br>
+      点击:${i.clicks} | ${i.enabled}<br><br>
+      <button onclick="toggle('${i.code}')">启用/禁用</button>
+      <button onclick="del('${i.code}')">删除</button>
+    </div>
+  `;
+}).join('');
 }
 
 async function create(){
