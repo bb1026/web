@@ -193,16 +193,16 @@ function openLink(){
 
     // 管理员登录接口（后端设置Cookie，不再依赖localStorage）
     if (path === "/api/admin/login" && req.method === "POST") {
-      const { pwd } = await req.json();
-      if (pwd === env.ADMIN_PASSWORD) {
-        // 下发登录Cookie，浏览器自动持久化
-        const resp = json({ ok: true });
-        resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; HttpOnly; SameSite=Lax`);
-        return resp;
-      } else {
-        return json({ ok: false, msg: "密码错误" }, 401);
-      }
-    }
+  const { pwd } = await req.json();
+  if (pwd === env.ADMIN_PASSWORD) {
+    const resp = json({ ok: true });
+    // 新增Domain=自有域名
+    resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Domain=0515364.xyz; HttpOnly; SameSite=Lax`);
+    return resp;
+  } else {
+    return json({ ok: false, msg: "密码错误" }, 401);
+  }
+}
 
     // 管理后台入口
     if (path === "/admin") {
@@ -318,10 +318,10 @@ document.getElementById('loginBtn').onclick = async ()=>{
 
     // 退出登录接口，清空Cookie
     if (path === "/api/admin/logout") {
-      const resp = json({ ok: true });
-      resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; HttpOnly; Max-Age=0`);
-      return resp;
-    }
+  const resp = json({ ok: true });
+  resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; Domain=0515364.xyz; HttpOnly; Max-Age=0`);
+  return resp;
+}
 
     // 后台列表接口（自动携带Cookie，无需手动加header）
     if (path === "/api/list") {
