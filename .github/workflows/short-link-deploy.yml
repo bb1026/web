@@ -1,4 +1,4 @@
-name: Deploy short-link(短链接)
+name: Deploy Cloudflare Worker
 
 on:
   push:
@@ -24,11 +24,11 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler@4
 
-      - name: Show files (debug)
-        run: ls -R
+      - name: Check files
+        run: ls -R Cloudflare/short-link
 
       - name: Deploy Worker
-        run: npx wrangler deploy Cloudflare/short-link/wrangler.toml
+        run: npx wrangler deploy --config Cloudflare/short-link/wrangler.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
