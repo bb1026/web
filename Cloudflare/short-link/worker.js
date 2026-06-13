@@ -29,7 +29,7 @@ export default {
     const path = urlObj.pathname;
     const method = req.method;
 
-    // 处理OPTIONS预检请求，彻底解决fetch卡住加载中
+    // 处理OPTIONS预检
     if (method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -67,7 +67,7 @@ export default {
       return Response.redirect(results[0].url, 302);
     }
 
-    // 短链接生成页面 /shortlink
+    // 短链接生成页 /shortlink
     if (path === "/shortlink") {
       const createPage = `
 <!DOCTYPE html>
@@ -203,7 +203,7 @@ function openLink(){
       }
     }
 
-    // 管理员登录接口
+    // 登录接口
     if (path === "/api/admin/login" && method === "POST") {
       const { pwd } = await req.json();
       if (pwd === env.ADMIN_PASSWORD) {
@@ -215,7 +215,7 @@ function openLink(){
       }
     }
 
-    // 管理后台主页
+    // 管理后台（全新白底美化+搜索+分页）
     if (path === "/admin") {
       if (isLogin()) {
         const adminPage = `
@@ -226,59 +226,130 @@ function openLink(){
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>短链接管理后台</title>
 <style>
-body{font-family:Arial;background:#111;color:#fff;padding:16px;}
-button{padding:8px 10px;margin:4px;cursor:pointer;}
-.card{background:#1e1e1e;padding:12px;margin:10px 0;border-radius:6px;word-break:break-all;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;}
+body{background:#ffffff;color:#222;padding:20px;line-height:1.6;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+h2{color:#111;}
+#logoutBtn{padding:10px 22px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px #00000018;}
+#logoutBtn:hover{background:#bb2d3b;}
+.search-bar{margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+#keyword{padding:9px 12px;border:1px solid #ddd;border-radius:6px;flex:1;min-width:220px;font-size:15px;}
+#searchBtn{padding:9px 16px;background:#0d6efd;color:#fff;border:none;border-radius:6px;cursor:pointer;}
+.page-size-wrap{margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+#pageSize{padding:8px;border:1px solid #ddd;border-radius:6px;}
+.card{background:#f8f9fa;border:1px solid #e9ecef;padding:14px;border-radius:8px;margin-bottom:12px;}
+.card b{color:#0d6efd;font-size:16px;}
+.card button{margin:4px 6px 0 0;padding:7px 12px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
+.btn-toggle{background:#198754;color:#fff;}
+.btn-del{background:#fd7e14;color:#fff;}
+.pagination{margin-top:20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.pagination button{padding:8px 14px;border:1px solid #dee2e6;background:#fff;border-radius:6px;cursor:pointer;}
+.pagination button:disabled{opacity:0.5;cursor:not-allowed;}
+.load-tip{color:#666;padding:12px;}
 </style>
 </head>
 <body>
-<h2>短链接后台管理</h2>
-<button id="logoutBtn">退出登录</button>
-<h3>全部链接列表</h3>
-<div id="list">正在加载数据...</div>
+<div class="top-bar">
+  <h2>短链接管理后台</h2>
+  <button id="logoutBtn">🚪 退出登录</button>
+</div>
+
+<div class="search-bar">
+  <input id="keyword" placeholder="输入短码 / 长链接关键词搜索">
+  <button id="searchBtn">搜索</button>
+</div>
+
+<div class="page-size-wrap">
+  <span>每页显示：</span>
+  <select id="pageSize">
+    <option value="10">10条</option>
+    <option value="20">20条</option>
+    <option value="50">50条</option>
+  </select>
+</div>
+
+<div id="list" class="load-tip">正在加载数据...</div>
+<div class="pagination" id="pageBox"></div>
 
 <script>
+let currentPage = 1;
+let keyword = "";
+
+// 退出登录 彻底修复
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  try{
+    await fetch('/api/admin/logout', { credentials: 'include' });
+  }catch(e){}
+  location.href = "/admin";
+});
+
+// 加载列表数据
 async function loadData(){
+  const ps = document.getElementById('pageSize').value;
+  const url = \`/api/list?page=\${currentPage}&size=\${ps}&kw=\${encodeURIComponent(keyword)}\`;
   try {
-    const res = await fetch('/api/list', { credentials: 'include' });
-    if (!res.ok) throw new Error('未登录或权限不足');
-    const data = await res.json();
+    const res = await fetch(url, { credentials: 'include' });
+    const jsonData = await res.json();
+    if(!res.ok){
+      document.getElementById('list').innerHTML = '加载失败：权限异常';
+      return;
+    }
+    const { data, total, totalPage } = jsonData;
     let htmlStr = '';
     data.forEach(item=>{
-      htmlStr += '<div class="card"><b>'+item.code+'</b><br>'
-        + item.url + '<br>点击量：'+item.clicks+' | 状态：'+(item.enabled?'启用':'禁用')
-        + '<br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button>'
-        + '<button onclick="del(\''+item.code+'\')">删除</button></div>';
+      htmlStr += \`<div class="card">
+        <b>\${item.code}</b><br>
+        原链接：\${item.url}<br>
+        点击量：\${item.clicks} | 状态：\${item.enabled?'启用':'禁用'}
+        <br>
+        <button class="btn-toggle" onclick="toggle('\${item.code}')">启用/禁用</button>
+        <button class="btn-del" onclick="del('\${item.code}')">删除</button>
+      </div>\`;
     });
-    document.getElementById('list').innerHTML = htmlStr;
+    document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无匹配数据</div>';
+
+    // 生成分页按钮
+    let pageHtml = '';
+    pageHtml += \`<button \${currentPage<=1?'disabled':''} onclick="goPage(\${currentPage-1})">上一页</button>\`;
+    pageHtml += \`<span>第 \${currentPage}/\${totalPage} 页（共\${total}条）</span>\`;
+    pageHtml += \`<button \${currentPage>=totalPage?'disabled':''} onclick="goPage(\${currentPage+1})">下一页</button>\`;
+    document.getElementById('pageBox').innerHTML = pageHtml;
   } catch(err) {
     document.getElementById('list').innerHTML = '加载失败：' + err.message;
     console.error(err);
   }
 }
 
-async function del(code){
-  if(!confirm('确定删除该短链接？')) return;
-  await fetch('/api/delete/'+code, { credentials: 'include' });
+// 分页跳转
+function goPage(p){
+  currentPage = p;
   loadData();
 }
 
-async function toggle(code){
-  await fetch('/api/toggle/'+code, { credentials: 'include' });
+// 搜索按钮
+document.getElementById('searchBtn').addEventListener('click',()=>{
+  keyword = document.getElementById('keyword').value.trim();
+  currentPage = 1;
   loadData();
-}
-
-// 退出登录完整修复，强制跳转
-document.getElementById('logoutBtn').addEventListener('click', async ()=>{
-  try{
-    await fetch('/api/admin/logout', { credentials: 'include' });
-    location.replace("/admin");
-  }catch(e){
-    location.replace("/admin");
-  }
+});
+// 切换每页条数自动刷新
+document.getElementById('pageSize').addEventListener('change',()=>{
+  currentPage = 1;
+  loadData();
 });
 
-// 页面载入立刻执行
+// 删除
+async function del(code){
+  if(!confirm('确定删除该短链接？')) return;
+  await fetch(\`/api/delete/\${code}\`, { credentials: 'include' });
+  loadData();
+}
+// 启用禁用
+async function toggle(code){
+  await fetch(\`/api/toggle/\${code}\`, { credentials: 'include' });
+  loadData();
+}
+
 loadData();
 </script>
 </body>
@@ -337,22 +408,43 @@ document.getElementById('loginBtn').onclick = async ()=>{
       return html(loginHtml);
     }
 
-    // 退出登录接口
+    // 退出接口
     if (path === "/api/admin/logout") {
       const resp = json({ ok: true });
       resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; HttpOnly; Max-Age=0; Secure`);
       return resp;
     }
 
-    // 列表接口
+    // 分页列表接口 + 搜索
     if (path === "/api/list") {
       if (!isLogin()) return json({ ok: false }, 401);
-      try {
-        const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
-        return json(results);
-      } catch (e) {
-        return json({ error: e.message }, 500);
+      const params = new URLSearchParams(urlObj.search);
+      const page = parseInt(params.get('page')) || 1;
+      let size = parseInt(params.get('size')) || 10;
+      const kw = decodeURIComponent(params.get('kw') || '');
+      // 限制最大50条
+      size = Math.min(size, 50);
+      const offset = (page - 1) * size;
+
+      let sqlWhere = "";
+      const bindArr = [];
+      if (kw) {
+        sqlWhere = "WHERE code LIKE ? OR url LIKE ?";
+        bindArr.push(`%${kw}%`, `%${kw}%`);
       }
+
+      // 总条数
+      let totalSql = `SELECT COUNT(*) AS cnt FROM links ${sqlWhere}`;
+      const totalRes = await env.DB.prepare(totalSql).bind(...bindArr).one();
+      const total = totalRes.cnt;
+      const totalPage = Math.ceil(total / size);
+
+      // 当前页数据
+      let dataSql = `SELECT * FROM links ${sqlWhere} ORDER BY id DESC LIMIT ? OFFSET ?`;
+      bindArr.push(size, offset);
+      const { results: data } = await env.DB.prepare(dataSql).bind(...bindArr).all();
+
+      return json({ data, total, totalPage });
     }
 
     // 删除接口
