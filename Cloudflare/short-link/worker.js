@@ -215,7 +215,7 @@ function openLink(){
       }
     }
 
-    // 管理后台（全新白底美化+搜索+分页）
+    // 管理后台（白底美化+搜索+分页）
     if (path === "/admin") {
       if (isLogin()) {
         const adminPage = `
@@ -275,7 +275,7 @@ h2{color:#111;}
 let currentPage = 1;
 let keyword = "";
 
-// 退出登录 彻底修复
+// 退出登录
 document.getElementById('logoutBtn').addEventListener('click', async ()=>{
   try{
     await fetch('/api/admin/logout', { credentials: 'include' });
@@ -286,7 +286,10 @@ document.getElementById('logoutBtn').addEventListener('click', async ()=>{
 // 加载列表数据
 async function loadData(){
   const ps = document.getElementById('pageSize').value;
-  const url = \`/api/list?page=\${currentPage}&size=\${ps}&kw=\${encodeURIComponent(keyword)}\`;
+  let url = \`/api/list?page=\${currentPage}&size=\${ps}\`;
+  if(keyword.trim() !== ''){
+    url += \`&kw=\${encodeURIComponent(keyword)}\`;
+  }
   try {
     const res = await fetch(url, { credentials: 'include' });
     const jsonData = await res.json();
@@ -415,35 +418,39 @@ document.getElementById('loginBtn').onclick = async ()=>{
       return resp;
     }
 
-    // 分页列表接口 + 搜索
+    // 分页列表接口 + 搜索（修复参数绑定错位）
     if (path === "/api/list") {
       if (!isLogin()) return json({ ok: false }, 401);
       const params = new URLSearchParams(urlObj.search);
       const page = parseInt(params.get('page')) || 1;
       let size = parseInt(params.get('size')) || 10;
-      const kw = decodeURIComponent(params.get('kw') || '');
-      // 限制最大50条
+      const kw = params.get('kw') || '';
       size = Math.min(size, 50);
       const offset = (page - 1) * size;
 
-      let sqlWhere = "";
-      const bindArr = [];
-      if (kw) {
-        sqlWhere = "WHERE code LIKE ? OR url LIKE ?";
-        bindArr.push(`%${kw}%`, `%${kw}%`);
+      let totalSql, dataSql;
+      let bindTotal = [], bindData = [];
+
+      if (kw && kw.trim() !== '') {
+        const likeVal = `%${kw}%`;
+        totalSql = "SELECT COUNT(*) AS cnt FROM links WHERE code LIKE ? OR url LIKE ?";
+        bindTotal = [likeVal, likeVal];
+
+        dataSql = "SELECT * FROM links WHERE code LIKE ? OR url LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?";
+        bindData = [likeVal, likeVal, size, offset];
+      } else {
+        totalSql = "SELECT COUNT(*) AS cnt FROM links";
+        bindTotal = [];
+
+        dataSql = "SELECT * FROM links ORDER BY id DESC LIMIT ? OFFSET ?";
+        bindData = [size, offset];
       }
 
-      // 总条数
-      let totalSql = `SELECT COUNT(*) AS cnt FROM links ${sqlWhere}`;
-      const totalRes = await env.DB.prepare(totalSql).bind(...bindArr).one();
+      const totalRes = await env.DB.prepare(totalSql).bind(...bindTotal).one();
       const total = totalRes.cnt;
       const totalPage = Math.ceil(total / size);
 
-      // 当前页数据
-      let dataSql = `SELECT * FROM links ${sqlWhere} ORDER BY id DESC LIMIT ? OFFSET ?`;
-      bindArr.push(size, offset);
-      const { results: data } = await env.DB.prepare(dataSql).bind(...bindArr).all();
-
+      const { results: data } = await env.DB.prepare(dataSql).bind(...bindData).all();
       return json({ data, total, totalPage });
     }
 
