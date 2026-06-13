@@ -20,7 +20,6 @@ function randomCode(len = 5) {
   return res;
 }
 
-// 固定登录Cookie密钥，无需改动
 const ADMIN_COOKIE_KEY = "admin_auth";
 const ADMIN_COOKIE_VAL = "valid_admin_2026";
 
@@ -29,7 +28,6 @@ export default {
     const urlObj = new URL(req.url);
     const path = urlObj.pathname;
 
-    // 读取Cookie工具函数
     function getCookie(name) {
       const cookieStr = req.headers.get("Cookie") || "";
       const pairs = cookieStr.split("; ").reduce((acc, curr) => {
@@ -40,12 +38,11 @@ export default {
       return pairs[name] || "";
     }
 
-    // 校验是否已登录
     function isLogin() {
       return getCookie(ADMIN_COOKIE_KEY) === ADMIN_COOKIE_VAL;
     }
 
-    // 短链跳转 /s/xxx
+    // 短链跳转
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
       const { results } = await env.DB.prepare(
@@ -56,7 +53,7 @@ export default {
       return Response.redirect(results[0].url, 302);
     }
 
-    // 短链接生成页面 /shortlink（复制+打开按钮完整保留）
+    // 生成页面
     if (path === "/shortlink") {
       const createPage = `
 <!DOCTYPE html>
@@ -191,22 +188,20 @@ function openLink(){
       }
     }
 
-    // 管理员登录接口（后端设置Cookie，不再依赖localStorage）
+    // 登录接口 移除固定Domain，Path=/自动适配所有域名
     if (path === "/api/admin/login" && req.method === "POST") {
-  const { pwd } = await req.json();
-  if (pwd === env.ADMIN_PASSWORD) {
-    const resp = json({ ok: true });
-    // 新增Domain=自有域名
-    resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Domain=0515364.xyz; HttpOnly; SameSite=Lax`);
-    return resp;
-  } else {
-    return json({ ok: false, msg: "密码错误" }, 401);
-  }
-}
+      const { pwd } = await req.json();
+      if (pwd === env.ADMIN_PASSWORD) {
+        const resp = json({ ok: true });
+        resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; HttpOnly; SameSite=Lax`);
+        return resp;
+      } else {
+        return json({ ok: false, msg: "密码错误" }, 401);
+      }
+    }
 
-    // 管理后台入口
+    // 后台主页
     if (path === "/admin") {
-      // 已登录，直接渲染后台页面
       if (isLogin()) {
         const adminPage = `
 <!DOCTYPE html>
@@ -223,40 +218,46 @@ button{padding:8px 10px;margin:4px;cursor:pointer;}
 </head>
 <body>
 <h2>短链接后台管理</h2>
-<button onclick="logout()">退出登录</button>
+<button id="logoutBtn">退出登录</button>
 <h3>全部链接列表</h3>
-<div id="list"></div>
+<div id="list">加载中...</div>
 
 <script>
+// fetch强制携带凭证Cookie，修复异步请求不带Cookie鉴权失败
 async function loadData(){
-  const res = await fetch('/api/list');
-  const data = await res.json();
-  let htmlStr = '';
-  data.forEach(item=>{
-    htmlStr += '<div class="card"><b>'+item.code+'</b><br>'
-      + item.url + '<br>点击量：'+item.clicks+' | 状态：'+(item.enabled?'启用':'禁用')
-      + '<br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button>'
-      + '<button onclick="del(\''+item.code+'\')">删除</button></div>';
-  });
-  document.getElementById('list').innerHTML = htmlStr;
+  try {
+    const res = await fetch('/api/list', { credentials: 'same-origin' });
+    if (!res.ok) throw new Error('未登录或权限不足');
+    const data = await res.json();
+    let htmlStr = '';
+    data.forEach(item=>{
+      htmlStr += '<div class="card"><b>'+item.code+'</b><br>'
+        + item.url + '<br>点击量：'+item.clicks+' | 状态：'+(item.enabled?'启用':'禁用')
+        + '<br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button>'
+        + '<button onclick="del(\''+item.code+'\')">删除</button></div>';
+    });
+    document.getElementById('list').innerHTML = htmlStr;
+  } catch(err) {
+    document.getElementById('list').innerHTML = '加载失败：' + err.message;
+  }
 }
 
 async function del(code){
   if(!confirm('确定删除该短链接？')) return;
-  await fetch('/api/delete/'+code);
+  await fetch('/api/delete/'+code, { credentials: 'same-origin' });
   loadData();
 }
 
 async function toggle(code){
-  await fetch('/api/toggle/'+code);
+  await fetch('/api/toggle/'+code, { credentials: 'same-origin' });
   loadData();
 }
 
-// 退出清除Cookie
-async function logout(){
-  await fetch('/api/admin/logout');
-  location.reload();
-}
+// 退出按钮绑定完整刷新逻辑
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  await fetch('/api/admin/logout', { credentials: 'same-origin' });
+  location.href = "/admin";
+});
 
 loadData();
 </script>
@@ -265,7 +266,7 @@ loadData();
         return html(adminPage);
       }
 
-      // 未登录，渲染登录页
+      // 登录页
       const loginHtml = `
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -299,12 +300,12 @@ document.getElementById('loginBtn').onclick = async ()=>{
   if(!pwd) return;
   const res = await fetch('/api/admin/login',{
     method:'POST',
+    credentials: 'same-origin',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({pwd})
   });
   const data = await res.json();
   if(data.ok){
-    // 登录成功直接刷新页面，浏览器自动携带Cookie
     location.reload();
   }else{
     errTip.style.display='block';
@@ -316,21 +317,25 @@ document.getElementById('loginBtn').onclick = async ()=>{
       return html(loginHtml);
     }
 
-    // 退出登录接口，清空Cookie
+    // 退出登录接口
     if (path === "/api/admin/logout") {
-  const resp = json({ ok: true });
-  resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; Domain=0515364.xyz; HttpOnly; Max-Age=0`);
-  return resp;
-}
-
-    // 后台列表接口（自动携带Cookie，无需手动加header）
-    if (path === "/api/list") {
-      if (!isLogin()) return json({ ok: false }, 401);
-      const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
-      return json(results);
+      const resp = json({ ok: true });
+      resp.headers.append("Set-Cookie", `${ADMIN_COOKIE_KEY}=; Path=/; HttpOnly; Max-Age=0`);
+      return resp;
     }
 
-    // 删除短链接口
+    // 列表接口
+    if (path === "/api/list") {
+      if (!isLogin()) return json({ ok: false }, 401);
+      try {
+        const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
+        return json(results);
+      } catch (e) {
+        return json({ error: e.message }, 500);
+      }
+    }
+
+    // 删除接口
     if (path.startsWith("/api/delete/")) {
       if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/delete/")[1];
@@ -338,13 +343,11 @@ document.getElementById('loginBtn').onclick = async ()=>{
       return json({ ok: true });
     }
 
-    // 启用/禁用接口
+    // 启用禁用接口
     if (path.startsWith("/api/toggle/")) {
       if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/toggle/")[1];
-      await env.DB.prepare(
-        "UPDATE links SET enabled = NOT enabled WHERE code = ?"
-      ).bind(code).run();
+      await env.DB.prepare("UPDATE links SET enabled = NOT enabled WHERE code = ?").bind(code).run();
       return json({ ok: true });
     }
 
