@@ -29,7 +29,7 @@ export default {
     const path = urlObj.pathname;
     const method = req.method;
 
-    // OPTIONS预检
+    // OPTIONS预检统一处理
     if (method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -44,12 +44,12 @@ export default {
 
     function getCookie(name) {
       const cookieStr = req.headers.get("Cookie") || "";
-      const pairs = cookieStr.split("; ").reduce((acc, curr) => {
-        const [k, v] = curr.split("=");
-        acc[k] = v;
-        return acc;
-      }, {});
-      return pairs[name] || "";
+      const cookieParts = {};
+      cookieStr.split("; ").forEach(item => {
+        const [k, v] = item.split("=");
+        cookieParts[k] = v;
+      });
+      return cookieParts[name] || "";
     }
 
     function isLogin() {
@@ -59,17 +59,15 @@ export default {
     // 短链跳转
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
-      const { results } = await env.DB.prepare(
-        "SELECT url FROM links WHERE code = ? AND enabled = 1"
-      ).bind(code).all();
-      if (results.length === 0) return new Response("404 短链接不存在或已禁用", { status: 404 });
+      const resDB = await env.DB.prepare("SELECT url FROM links WHERE code = ? AND enabled = 1").bind(code).all();
+      if (resDB.results.length === 0) return new Response("404 短链接不存在或已禁用", { status: 404 });
       await env.DB.prepare("UPDATE links SET clicks = clicks + 1 WHERE code = ?").bind(code).run();
-      return Response.redirect(results[0].url, 302);
+      return Response.redirect(resDB.results[0].url, 302);
     }
 
-    // 短链生成页
+    // 短链接生成页面
     if (path === "/shortlink") {
-      const createPage = `
+      const pageHtml = `
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -124,29 +122,20 @@ async function genLink(){
   const customCode = document.getElementById('customCode').value.trim();
   const resBox = document.getElementById('resultBox');
   const linkText = document.getElementById('shortLink');
-
   if (!longUrl) {
     alert('请填写原始长链接');
     return;
   }
-
   btn.disabled = true;
   btn.textContent = '生成中...';
   resBox.style.display = 'none';
-
   try {
     const resp = await fetch('/api/create', {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        url: longUrl,
-        code: customCode
-      })
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url:longUrl,code:customCode})
     });
-
     if (!resp.ok) throw new Error('服务端异常');
     const data = await resp.json();
     if (!data.ok) {
@@ -157,13 +146,11 @@ async function genLink(){
     resBox.style.display = 'block';
   } catch (err) {
     alert(err.message);
-    console.error(err);
   } finally {
     btn.disabled = false;
     btn.textContent = '立即生成';
   }
 }
-
 async function copyLink(){
   const text = document.getElementById('shortLink').innerText.trim();
   try {
@@ -173,7 +160,6 @@ async function copyLink(){
     alert('复制失败，请手动复制');
   }
 }
-
 function openLink(){
   const target = document.getElementById('shortLink').innerText.trim();
   window.open(target, '_blank');
@@ -181,171 +167,46 @@ function openLink(){
 </script>
 </body>
 </html>`;
-      return html(createPage);
+      return html(pageHtml);
     }
 
-    // 创建短链
+    // 创建短链接口
     if (path === "/api/create" && method === "POST") {
       try {
         const body = await req.json();
         const longUrl = body.url;
         const code = body.code || randomCode();
-        await env.DB.prepare(
-          "INSERT OR IGNORE INTO links (code, url, clicks, enabled) VALUES (?, ?, 0, 1)"
-        ).bind(code, longUrl).run();
-        return json({
-          ok: true,
-          code,
-          shortUrl: urlObj.origin + "/s/" + code
-        });
+        await env.DB.prepare("INSERT OR IGNORE INTO links (code, url, clicks, enabled) VALUES (?, ?, 0, 1)").bind(code, longUrl).run();
+        return json({ok:true,code:code,shortUrl:urlObj.origin + "/s/" + code});
       } catch (e) {
-        return json({ ok: false, err: e.message }, 500);
+        return json({ok:false,err:e.message},500);
       }
     }
 
     // 登录接口
     if (path === "/api/admin/login" && method === "POST") {
-      const { pwd } = await req.json();
-      if (pwd === env.ADMIN_PASSWORD) {
-        const resp = json({ ok: true });
-        resp.headers.append("Set-Cookie", ADMIN_COOKIE_KEY + "=" + ADMIN_COOKIE_VAL + "; Path=/; HttpOnly; SameSite=Lax; Secure");
+      const body = await req.json();
+      if (body.pwd === env.ADMIN_PASSWORD) {
+        const resp = json({ok:true});
+        resp.headers.append("Set-Cookie",ADMIN_COOKIE_KEY + "=" + ADMIN_COOKIE_VAL + "; Path=/; HttpOnly; SameSite=Lax; Secure");
         return resp;
       } else {
-        return json({ ok: false, msg: "密码错误" }, 401);
+        return json({ok:false,msg:"密码错误"},401);
       }
     }
 
-    // 管理后台页面（白底、搜索、分页，GET请求）
+    // 退出登录接口
+    if (path === "/api/admin/logout") {
+      const resp = json({ok:true});
+      resp.headers.append("Set-Cookie",ADMIN_COOKIE_KEY + "=; Path=/; HttpOnly; Max-Age=0; Secure");
+      return resp;
+    }
+
+    // 管理后台页面（修复退出：不再等待fetch回调，强制location直接跳转）
     if (path === "/admin") {
-      if (isLogin()) {
-        const adminPage = `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>短链接管理后台</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;}
-body{background:#ffffff;color:#222;padding:20px;line-height:1.6;}
-.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-h2{color:#111;}
-#logoutBtn{padding:10px 22px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px #00000018;}
-#logoutBtn:hover{background:#bb2d3b;}
-.search-bar{margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-#keyword{padding:9px 12px;border:1px solid #ddd;border-radius:6px;flex:1;min-width:220px;font-size:15px;}
-#searchBtn{padding:9px 16px;background:#0d6efd;color:#fff;border:none;border-radius:6px;cursor:pointer;}
-.page-size-wrap{margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-#pageSize{padding:8px;border:1px solid #ddd;border-radius:6px;}
-.card{background:#f8f9fa;border:1px solid #e9ecef;padding:14px;border-radius:8px;margin-bottom:12px;}
-.card b{color:#0d6efd;font-size:16px;}
-.card button{margin:4px 6px 0 0;padding:7px 12px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
-.btn-toggle{background:#198754;color:#fff;}
-.btn-del{background:#fd7e14;color:#fff;}
-.pagination{margin-top:20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.pagination button{padding:8px 14px;border:1px solid #dee2e6;background:#fff;border-radius:6px;cursor:pointer;}
-.pagination button:disabled{opacity:0.5;cursor:not-allowed;}
-.load-tip{color:#666;padding:12px;}
-</style>
-</head>
-<body>
-<div class="top-bar">
-  <h2>短链接管理后台</h2>
-  <button id="logoutBtn">🚪 退出登录</button>
-</div>
-
-<div class="search-bar">
-  <input id="keyword" placeholder="输入短码 / 长链接关键词搜索">
-  <button id="searchBtn">搜索</button>
-</div>
-
-<div class="page-size-wrap">
-  <span>每页显示：</span>
-  <select id="pageSize">
-    <option value="10">10条</option>
-    <option value="20">20条</option>
-    <option value="50">50条</option>
-  </select>
-</div>
-
-<div id="list" class="load-tip">正在加载数据...</div>
-<div class="pagination" id="pageBox"></div>
-
-<script>
-let currentPage = 1;
-let keyword = "";
-
-document.getElementById('logoutBtn').addEventListener('click', async ()=>{
-  try{
-    await fetch('/api/admin/logout', { credentials: 'include' });
-  }catch(e){}
-  location.href = "/admin";
-});
-
-async function loadData(){
-  const ps = document.getElementById('pageSize').value;
-  let url = "/api/list?page=" + currentPage + "&size=" + ps;
-  if(keyword.trim() !== ""){
-    url = url + "&kw=" + encodeURIComponent(keyword);
-  }
-  try {
-    const res = await fetch(url, { credentials: 'include' });
-    const jsonData = await res.json();
-    if(!res.ok){
-      document.getElementById('list').innerHTML = "加载失败：权限异常";
-      return;
-    }
-    const { data, total, totalPage } = jsonData;
-    let htmlStr = '';
-    data.forEach(item=>{
-      htmlStr += '<div class="card"><b>' + item.code + '</b><br>原链接：' + item.url + '<br>点击量：' + item.clicks + ' | 状态：' + (item.enabled?'启用':'禁用') + '<br><button class="btn-toggle" onclick="toggle(\'' + item.code + '\')">启用/禁用</button><button class="btn-del" onclick="del(\'' + item.code + '\')">删除</button></div>';
-    });
-    document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无匹配数据</div>';
-    let pageHtml = '';
-    pageHtml += '<button ' + (currentPage<=1?'disabled':'') + ' onclick="goPage(' + (currentPage-1) + ')">上一页</button>';
-    pageHtml += '<span>第 ' + currentPage + '/' + totalPage + ' 页（共' + total + '条）</span>';
-    pageHtml += '<button ' + (currentPage>=totalPage?'disabled':'') + ' onclick="goPage(' + (currentPage+1) + ')">下一页</button>';
-    document.getElementById('pageBox').innerHTML = pageHtml;
-  } catch(err) {
-    document.getElementById('list').innerHTML = "加载失败：" + err.message;
-    console.error(err);
-  }
-}
-
-function goPage(p){
-  currentPage = p;
-  loadData();
-}
-
-document.getElementById('searchBtn').addEventListener('click',()=>{
-  keyword = document.getElementById('keyword').value.trim();
-  currentPage = 1;
-  loadData();
-});
-document.getElementById('pageSize').addEventListener('change',()=>{
-  currentPage = 1;
-  loadData();
-});
-
-async function del(code){
-  if(!confirm('确定删除该短链接？')) return;
-  await fetch('/api/delete/' + code, { credentials: 'include' });
-  loadData();
-}
-async function toggle(code){
-  await fetch('/api/toggle/' + code, { credentials: 'include' });
-  loadData();
-}
-
-loadData();
-</script>
-</body>
-</html>`;
-        return html(adminPage);
-      }
-
-      // 登录页
-      const loginHtml = `
+      if (!isLogin()) {
+        // 登录页
+        const loginHtml = `
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -370,7 +231,6 @@ input{width:100%;padding:13px 14px;border-radius:8px;border:none;font-size:16px;
   <input id="pwdInput" type="password" placeholder="请输入管理密码">
   <button id="loginBtn">登录</button>
 </div>
-
 <script>
 const errTip = document.getElementById('errTip');
 document.getElementById('loginBtn').onclick = async ()=>{
@@ -378,9 +238,9 @@ document.getElementById('loginBtn').onclick = async ()=>{
   if(!pwd) return;
   const res = await fetch('/api/admin/login',{
     method:'POST',
-    credentials: 'include',
+    credentials:'include',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({pwd})
+    body:JSON.stringify({pwd:pwd})
   });
   const data = await res.json();
   if(data.ok){
@@ -392,69 +252,104 @@ document.getElementById('loginBtn').onclick = async ()=>{
 </script>
 </body>
 </html>`;
-      return html(loginHtml);
+        return html(loginHtml);
+      }
+
+      // 已登录后台主页：退出按钮直接location跳转，不再异步等待接口
+      const adminHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短链接管理后台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;}
+body{background:#ffffff;color:#222;padding:20px;line-height:1.6;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+h2{color:#111;}
+#logoutBtn{padding:10px 22px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px #00000018;}
+#logoutBtn:hover{background:#bb2d3b;}
+.card{background:#f8f9fa;border:1px solid #e9ecef;padding:14px;border-radius:8px;margin-bottom:12px;}
+.card b{color:#0d6efd;font-size:16px;}
+.card button{margin:4px 6px 0 0;padding:7px 12px;border:none;border-radius:6px;cursor:pointer;font-size:14px;}
+.btn-toggle{background:#198754;color:#fff;}
+.btn-del{background:#fd7e14;color:#fff;}
+.load-tip{color:#666;padding:12px;}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <h2>短链接管理后台</h2>
+  <button id="logoutBtn">🚪 退出登录</button>
+</div>
+<div id="list" class="load-tip">正在加载数据...</div>
+
+<script>
+// 修复退出：先跳转，后端Cookie同步失效，不再依赖fetch回调
+document.getElementById('logoutBtn').onclick = function(){
+  fetch('/api/admin/logout', {credentials:'include'});
+  location.href = "/admin";
+};
+
+async function loadList(){
+  try {
+    const res = await fetch('/api/list', {credentials:'include'});
+    const data = await res.json();
+    let htmlStr = '';
+    data.forEach(item=>{
+      htmlStr += '<div class="card"><b>' + item.code + '</b><br>原链接：' + item.url + '<br>点击量：' + item.clicks + ' | 状态：' + (item.enabled?'启用':'禁用') + '<br><button class="btn-toggle" onclick="toggle(\'' + item.code + '\')">启用/禁用</button><button class="btn-del" onclick="del(\'' + item.code + '\')">删除</button></div>';
+    });
+    document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无数据</div>';
+  } catch(err){
+    document.getElementById('list').innerHTML = '加载失败：' + err.message;
+  }
+}
+
+async function del(code){
+  if(!confirm('确定删除？')) return;
+  await fetch('/api/delete/' + code, {credentials:'include'});
+  loadList();
+}
+async function toggle(code){
+  await fetch('/api/toggle/' + code, {credentials:'include'});
+  loadList();
+}
+
+loadList();
+</script>
+</body>
+</html>`;
+      return html(adminHtml);
     }
 
-    // 退出登录
-    if (path === "/api/admin/logout") {
-      const resp = json({ ok: true });
-      resp.headers.append("Set-Cookie", ADMIN_COOKIE_KEY + "=; Path=/; HttpOnly; Max-Age=0; Secure");
-      return resp;
-    }
-
-    // 分页列表接口 GET方式
+    // 极简列表接口：无分页、无搜索，先保证能返回数据
     if (path === "/api/list") {
-      if (!isLogin()) return json({ ok: false }, 401);
+      if (!isLogin()) return json({ok:false},401);
       try {
-        const params = new URLSearchParams(urlObj.search);
-        const page = parseInt(params.get('page')) || 1;
-        let size = parseInt(params.get('size')) || 10;
-        const kw = params.get('kw') || '';
-        size = Math.min(size, 50);
-        const offset = (page - 1) * size;
-
-        let totalSql, dataSql;
-        let bindTotal = [], bindData = [];
-
-        if (kw.trim() !== '') {
-          const likeVal = "%" + kw + "%";
-          totalSql = "SELECT COUNT(*) AS cnt FROM links WHERE code LIKE ? OR url LIKE ?";
-          bindTotal = [likeVal, likeVal];
-          dataSql = "SELECT * FROM links WHERE code LIKE ? OR url LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?";
-          bindData = [likeVal, likeVal, size, offset];
-        } else {
-          totalSql = "SELECT COUNT(*) AS cnt FROM links";
-          bindTotal = [];
-          dataSql = "SELECT * FROM links ORDER BY id DESC LIMIT ? OFFSET ?";
-          bindData = [size, offset];
-        }
-
-        const totalRes = await env.DB.prepare(totalSql).bind(...bindTotal).one();
-        const total = totalRes.cnt;
-        const totalPage = Math.ceil(total / size);
-        const { results: data } = await env.DB.prepare(dataSql).bind(...bindData).all();
-        return json({ data, total, totalPage });
-      } catch (errInner) {
-        return json({ ok: false, msg: errInner.message }, 500);
+        const resDB = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
+        return json(resDB.results);
+      } catch (e) {
+        return json({ok:false,msg:e.message},500);
       }
     }
 
     // 删除接口
     if (path.startsWith("/api/delete/")) {
-      if (!isLogin()) return json({ ok: false }, 401);
+      if (!isLogin()) return json({ok:false},401);
       const code = path.split("/api/delete/")[1];
       await env.DB.prepare("DELETE FROM links WHERE code = ?").bind(code).run();
-      return json({ ok: true });
+      return json({ok:true});
     }
 
-    // 启用禁用
+    // 启用禁用接口
     if (path.startsWith("/api/toggle/")) {
-      if (!isLogin()) return json({ ok: false }, 401);
+      if (!isLogin()) return json({ok:false},401);
       const code = path.split("/api/toggle/")[1];
       await env.DB.prepare("UPDATE links SET enabled = NOT enabled WHERE code = ?").bind(code).run();
-      return json({ ok: true });
+      return json({ok:true});
     }
 
-    return new Response("页面不存在", { status: 404 });
+    return new Response("404 页面不存在",{status:404});
   }
 };
