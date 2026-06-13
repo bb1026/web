@@ -1,28 +1,32 @@
-name: Deploy Cloudflare Worker
+name: Deploy Short Link Worker
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'Cloudflare/short-link/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
       - name: Install Wrangler
-        run: npm install -g wrangler
+        run: npm install -g wrangler@4
 
       - name: Deploy Worker
-        working-directory: web/Cloudflare/short-link
+        working-directory: Cloudflare/short-link
         run: wrangler deploy
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
