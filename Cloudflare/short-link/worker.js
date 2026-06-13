@@ -25,53 +25,92 @@ export default {
     const urlObj = new URL(req.url);
     const path = urlObj.pathname;
 
-    // ======================
-    // 短链接跳转 /s/xxx
-    // ======================
+    // 短链跳转
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
-
-      const { results } = await env.DB.prepare(
-        "SELECT * FROM links WHERE code = ?"
-      ).bind(code).all();
-
+      const { results } = await env.DB.prepare("SELECT * FROM links WHERE code = ?").bind(code).all();
       const link = results[0];
-
       if (!link) return new Response("Not Found", { status: 404 });
-
-      if (Number(link.enabled) !== 1) {
-        return new Response("Disabled", { status: 403 });
-      }
-
-      await env.DB.prepare(
-        "UPDATE links SET clicks = clicks + 1 WHERE code = ?"
-      ).bind(code).run();
-
+      if (Number(link.enabled) !== 1) return new Response("Disabled", { status: 403 });
+      await env.DB.prepare("UPDATE links SET clicks = clicks + 1 WHERE code = ?").bind(code).run();
       return Response.redirect(link.url, 302);
     }
 
-    // ======================
-    // API：创建短链
-    // ======================
+    // 创建短链API
     if (path === "/api/create" && req.method === "POST") {
       const { url: longUrl, code } = await req.json();
-
       const shortCode = code || randomCode();
-
-      await env.DB.prepare(
-        "INSERT OR IGNORE INTO links (code, url) VALUES (?, ?)"
-      ).bind(shortCode, longUrl).run();
-
-      return json({
-        ok: true,
-        code: shortCode,
-        shortUrl: `${urlObj.origin}/s/${shortCode}`
-      });
+      await env.DB.prepare("INSERT OR IGNORE INTO links (code, url) VALUES (?, ?)").bind(shortCode, longUrl).run();
+      return json({ ok: true, code: shortCode, shortUrl: `${urlObj.origin}/s/${shortCode}` });
     }
 
-    // ======================
-    // API：列表
-    // ======================
+    // 列表API
     if (path === "/api/list") {
-      const { results } = await env.DB.prepare(
-        "SELECT * FROM links ORDER BY i...
+      const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC LIMIT 100").all();
+      return json(results);
+    }
+
+    // 删除API
+    if (path.startsWith("/api/delete/")) {
+      const code = path.split("/api/delete/")[1];
+      await env.DB.prepare("DELETE FROM links WHERE code = ?").bind(code).run();
+      return json({ ok: true });
+    }
+
+    // 启停API
+    if (path.startsWith("/api/toggle/")) {
+      const code = path.split("/api/toggle/")[1];
+      await env.DB.prepare("UPDATE links SET enabled = CASE WHEN enabled=1 THEN 0 ELSE 1 END WHERE code=?").bind(code).run();
+      return json({ ok: true });
+    }
+
+    // 管理后台
+    if (path === "/admin") {
+      const adminPage = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Short Link Admin</title>
+<style>
+body{font-family:Arial;background:#111;color:#fff;padding:20px}
+input,button{padding:10px;margin:5px}
+.card{background:#1e1e1e;padding:10px;margin:10px 0;border-radius:6px}
+button{cursor:pointer}
+</style>
+</head>
+<body>
+<h2>短链接后台</h2>
+<div>
+<input id="url" placeholder="长网址" style="width:300px">
+<input id="code" placeholder="自定义短码(可选)">
+<button onclick="create()">生成</button>
+</div>
+<h3>列表</h3>
+<div id="list"></div>
+<script>
+async function load(){
+  const res = await fetch('/api/list');
+  const data = await res.json();
+  let htmlStr = '';
+  data.forEach(item=>{
+    htmlStr += '<div class="card"><b>'+item.code+'</b><br>'+item.url+'<br>点击:'+item.clicks+' | '+item.enabled+'<br><br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button><button onclick="del(\''+item.code+'\')">删除</button></div>';
+  });
+  document.getElementById('list').innerHTML = htmlStr;
+}
+async function create(){
+  const url = document.getElementById('url').value;
+  const code = document.getElementById('code').value;
+  await fetch('/api/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,code})});
+  load();
+}
+async function del(c){await fetch('/api/delete/'+c);load();}
+async function toggle(c){await fetch('/api/toggle/'+c);load();}
+load();
+</script>
+</body></html>`;
+      return html(adminPage);
+    }
+
+    return new Response("OK");
+  }
+};
