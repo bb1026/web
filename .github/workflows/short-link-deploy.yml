@@ -1,4 +1,4 @@
-name: Deploy Cloudflare Worker
+name: Deploy short-link(短链接)
 
 on:
   push:
