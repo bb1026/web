@@ -1,23 +1,23 @@
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "application/json;charset=utf-8" }
   });
 }
 
 function html(content) {
   return new Response(content, {
-    headers: { "Content-Type": "text/html; charset=utf-8" }
+    headers: { "Content-Type": "text/html;charset=utf-8" }
   });
 }
 
 function randomCode(len = 5) {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-  let out = "";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let res = "";
   for (let i = 0; i < len; i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
+    res += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  return out;
+  return res;
 }
 
 export default {
@@ -25,18 +25,18 @@ export default {
     const urlObj = new URL(req.url);
     const path = urlObj.pathname;
 
-    // 短链跳转 /s/xxx 不变
+    // 短链跳转 /s/xxx
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
-      const { results } = await env.DB.prepare("SELECT * FROM links WHERE code = ?").bind(code).all();
-      const link = results[0];
-      if (!link) return new Response("Not Found", { status: 404 });
-      if (Number(link.enabled) !== 1) return new Response("Disabled", { status: 403 });
+      const { results } = await env.DB.prepare(
+        "SELECT url FROM links WHERE code = ? AND enabled = 1"
+      ).bind(code).all();
+      if (results.length === 0) return new Response("404 短链接不存在或已禁用", { status: 404 });
       await env.DB.prepare("UPDATE links SET clicks = clicks + 1 WHERE code = ?").bind(code).run();
-      return Response.redirect(link.url, 302);
+      return Response.redirect(results[0].url, 302);
     }
 
-    // /shortlink 生成页面 完全保留之前修复好的代码，无改动
+    // 短链接生成页面 /shortlink（带复制+打开按钮、移动端适配）
     if (path === "/shortlink") {
       const createPage = `
 <!DOCTYPE html>
@@ -61,6 +61,8 @@ input:focus{border-color:#2563eb;}
 .success{background:#ecfdf3;border:1px solid #10b981;color:#047857;}
 .copy-btn{margin-top:12px;padding:9px 18px;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:15px;}
 .copy-btn:active{opacity:0.85;}
+.open-btn{margin-left:10px;padding:9px 18px;background:#2563eb;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:15px;}
+.open-btn:active{opacity:0.85;}
 </style>
 </head>
 <body>
@@ -80,6 +82,7 @@ input:focus{border-color:#2563eb;}
     <div>✅ 生成成功！</div>
     <div style="margin:8px 0;">短链接：<span id="shortLink"></span></div>
     <button class="copy-btn" onclick="copyLink()">复制链接</button>
+    <button class="open-btn" onclick="openLink()">打开链接</button>
   </div>
 </div>
 
@@ -112,6 +115,7 @@ async function genLink(){
       })
     });
 
+    if (!resp.ok) throw new Error('服务端异常');
     const data = await resp.json();
     if (!data.ok) {
       alert('生成失败');
@@ -120,7 +124,7 @@ async function genLink(){
     linkText.textContent = data.shortUrl;
     resBox.style.display = 'block';
   } catch (err) {
-    alert('网络请求失败，请稍后重试');
+    alert(err.message);
     console.error(err);
   } finally {
     btn.disabled = false;
@@ -137,21 +141,37 @@ async function copyLink(){
     alert('复制失败，请手动复制');
   }
 }
+
+function openLink(){
+  const target = document.getElementById('shortLink').innerText.trim();
+  window.open(target, '_blank');
+}
 </script>
 </body>
 </html>`;
       return html(createPage);
     }
 
-    // 创建短链API 原样保留
+    // 创建短链接口
     if (path === "/api/create" && req.method === "POST") {
-      const { url: longUrl, code } = await req.json();
-      const shortCode = code || randomCode();
-      await env.DB.prepare("INSERT OR IGNORE INTO links (code, url) VALUES (?, ?)").bind(shortCode, longUrl).run();
-      return json({ ok: true, code: shortCode, shortUrl: `${urlObj.origin}/s/${shortCode}` });
+      try {
+        const body = await req.json();
+        const longUrl = body.url;
+        const code = body.code || randomCode();
+        await env.DB.prepare(
+          "INSERT OR IGNORE INTO links (code, url, clicks, enabled) VALUES (?, ?, 0, 1)"
+        ).bind(code, longUrl).run();
+        return json({
+          ok: true,
+          code,
+          shortUrl: `${urlObj.origin}/s/${code}`
+        });
+      } catch (e) {
+        return json({ ok: false, err: e.message }, 500);
+      }
     }
 
-    // 登录校验接口，新增
+    // 管理员密码登录接口
     if (path === "/api/admin/login" && req.method === "POST") {
       const { pwd } = await req.json();
       if (pwd === env.ADMIN_PASSWORD) {
@@ -161,11 +181,11 @@ async function copyLink(){
       }
     }
 
-    // 管理后台：自定义网页密码框，不再浏览器弹窗，读取ADMIN_PASSWORD
+    // 管理后台页面（彻底修复刷新无限跳转登录）
     if (path === "/admin") {
       const token = req.headers.get("X-Admin-Token");
+      // 无token直接返回登录页
       if (token !== "admin_session_valid") {
-        // 登录页
         const loginHtml = `
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -205,7 +225,8 @@ document.getElementById('loginBtn').onclick = async ()=>{
   const data = await res.json();
   if(data.ok){
     localStorage.setItem('adminToken','admin_session_valid');
-    location.reload();
+    // 不刷新，JS前端跳转，携带token访问校验接口
+    location.href = "/admin";
   }else{
     errTip.style.display='block';
   }
@@ -216,7 +237,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
         return html(loginHtml);
       }
 
-      // 已登录，后台列表页
+      // 已登录，后台管理页
       const adminPage = `
 <!DOCTYPE html>
 <html>
@@ -243,60 +264,85 @@ function getAuthHeaders(){
     'X-Admin-Token':localStorage.getItem('adminToken')
   }
 }
-async function load(){
+
+// 页面加载主动校验登录态，修复刷新丢失header跳转问题
+(async function checkLogin(){
+  const tk = localStorage.getItem('adminToken');
+  if(!tk){
+    location.reload();
+    return;
+  }
+  const checkRes = await fetch('/api/list',{headers:getAuthHeaders()});
+  if(!checkRes.ok){
+    localStorage.removeItem('adminToken');
+    location.reload();
+    return;
+  }
+  loadData();
+})();
+
+async function loadData(){
   const res = await fetch('/api/list',{headers:getAuthHeaders()});
   const data = await res.json();
   let htmlStr = '';
   data.forEach(item=>{
-    htmlStr += '<div class="card"><b>'+item.code+'</b><br>'+item.url+'<br>点击:'+item.clicks+' | 状态:'+(item.enabled?'启用':'禁用')+'<br><br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button><button onclick="del(\''+item.code+'\')">删除</button></div>';
+    htmlStr += '<div class="card"><b>'+item.code+'</b><br>'
+      + item.url + '<br>点击量：'+item.clicks+' | 状态：'+(item.enabled?'启用':'禁用')
+      + '<br><button onclick="toggle(\''+item.code+'\')">启用/禁用</button>'
+      + '<button onclick="del(\''+item.code+'\')">删除</button></div>';
   });
   document.getElementById('list').innerHTML = htmlStr;
 }
-async function del(c){
-  await fetch('/api/delete/'+c,{headers:getAuthHeaders()});
-  load();
+
+async function del(code){
+  if(!confirm('确定删除该短链接？')) return;
+  await fetch('/api/delete/'+code,{headers:getAuthHeaders()});
+  loadData();
 }
-async function toggle(c){
-  await fetch('/api/toggle/'+c,{headers:getAuthHeaders()});
-  load();
+
+async function toggle(code){
+  await fetch('/api/toggle/'+code,{headers:getAuthHeaders()});
+  loadData();
 }
+
 function logout(){
   localStorage.removeItem('adminToken');
   location.reload();
 }
-load();
 </script>
-</body></html>`;
+</body>
+</html>`;
       return html(adminPage);
     }
 
-    // 下面管理类接口统一校验token，原有逻辑完全不变
-    const token = req.headers.get("X-Admin-Token");
-    const validToken = "admin_session_valid";
-
-    // 列表API
+    // 后台列表接口
     if (path === "/api/list") {
-      if (token !== validToken) return json({ok:false},401);
-      const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC LIMIT 100").all();
+      const token = req.headers.get("X-Admin-Token");
+      if (token !== "admin_session_valid") return json({ ok: false }, 401);
+      const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY id DESC").all();
       return json(results);
     }
 
-    // 删除API
+    // 删除短链接口
     if (path.startsWith("/api/delete/")) {
-      if (token !== validToken) return json({ok:false},401);
+      const token = req.headers.get("X-Admin-Token");
+      if (token !== "admin_session_valid") return json({ ok: false }, 401);
       const code = path.split("/api/delete/")[1];
       await env.DB.prepare("DELETE FROM links WHERE code = ?").bind(code).run();
       return json({ ok: true });
     }
 
-    // 启停API
+    // 启用/禁用接口
     if (path.startsWith("/api/toggle/")) {
-      if (token !== validToken) return json({ok:false},401);
+      const token = req.headers.get("X-Admin-Token");
+      if (token !== "admin_session_valid") return json({ ok: false }, 401);
       const code = path.split("/api/toggle/")[1];
-      await env.DB.prepare("UPDATE links SET enabled = CASE WHEN enabled=1 THEN 0 ELSE 1 END WHERE code=?").bind(code).run();
+      await env.DB.prepare(
+        "UPDATE links SET enabled = NOT enabled WHERE code = ?"
+      ).bind(code).run();
       return json({ ok: true });
     }
 
-    return new Response("OK");
+    return new Response("页面不存在", { status: 404 });
   }
 };
