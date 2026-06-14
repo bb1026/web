@@ -206,7 +206,10 @@ function openLink(){
     // 退出登录接口
     if (path === "/api/admin/logout") {
       const resp = json({ok:true});
-      resp.headers.append("Set-Cookie",ADMIN_COOKIE_KEY + "=; Path=/; HttpOnly; Max-Age=0; Secure");
+      resp.headers.set(
+            "Set-Cookie",
+            `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
+          );
       return resp;
     }
 
