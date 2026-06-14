@@ -43,14 +43,17 @@ export default {
     }
 
     function getCookie(name) {
-      const cookieStr = req.headers.get("Cookie") || "";
-      const pairs = {};
-      cookieStr.split("; ").forEach(function (item) {
-        const arr = item.split("=");
-        pairs[arr[0]] = arr[1];
-      });
-      return pairs[name] || "";
-    }
+  const cookieStr = req.headers.get("Cookie") || "";
+  const pairs = {};
+
+  cookieStr.split(";").forEach(item => {
+    const [key, ...rest] = item.trim().split("=");
+    if (!key) return;
+    pairs[key] = rest.join("=");
+  });
+
+  return pairs[name] || "";
+}
 
     function isLogin() {
       return getCookie(ADMIN_COOKIE_KEY) === ADMIN_COOKIE_VAL;
@@ -190,9 +193,9 @@ function openLink(){
           const resp = json({ ok: true });
         
           resp.headers.set(
-            "Set-Cookie",
-            `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Max-Age=86400; SameSite=Lax`
-          );
+              "Set-Cookie",
+              `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
+            );
         
           return resp;
       } else {
@@ -319,8 +322,12 @@ let currentPage = 1;
 let keyword = "";
 
 // 退出按钮修复：不等待异步请求，立刻跳转，100%响应
-document.getElementById('logoutBtn').addEventListener('click', function(){
-  fetch('/api/admin/logout', {credentials:'include'});
+document.getElementById('logoutBtn').addEventListener('click', async function () {
+  await fetch('/api/admin/logout', {
+    method: 'POST',
+    credentials: 'include'
+  });
+
   location.replace("/admin");
 });
 
