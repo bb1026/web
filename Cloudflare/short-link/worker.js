@@ -187,9 +187,14 @@ function openLink(){
     if (path === "/api/admin/login" && method === "POST") {
       const body = await req.json();
       if (body.pwd === env.ADMIN_PASSWORD) {
-        const resp = json({ok:true});
-        resp.headers.append("Set-Cookie",ADMIN_COOKIE_KEY + "=" + ADMIN_COOKIE_VAL + "; Path=/; HttpOnly; SameSite=Lax; Secure");
-        return resp;
+          const resp = json({ ok: true });
+        
+          resp.headers.set(
+            "Set-Cookie",
+            `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Max-Age=86400; SameSite=Lax`
+          );
+        
+          return resp;
       } else {
         return json({ok:false,msg:"密码错误"},401);
       }
@@ -412,8 +417,8 @@ loadData();
           bindData.push(offset);
         }
 
-        const totalRes = await env.DB.prepare(totalSql).bind(...bindTotal).one();
-        const total = totalRes.cnt;
+        const totalRes = await env.DB.prepare(totalSql).bind(...bindTotal).first();
+        const total = totalRes?.cnt || 0;
         const totalPage = Math.ceil(total / size);
         const dbRes = await env.DB.prepare(dataSql).bind(...bindData).all();
         return json({data:dbRes.results, total:total, totalPage:totalPage});
