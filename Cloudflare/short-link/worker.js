@@ -206,41 +206,43 @@ body{
   background:#fff;
   padding:30px;
   width:90%;
-  max-width:380px;
+  max-width:360px;
   border-radius:12px;
   box-shadow:0 6px 20px rgba(0,0,0,0.08);
 }
 
 h2{
   text-align:center;
-  margin-bottom:24px;
+  margin-bottom:20px;
 }
 
+/* 统一表单节奏 */
 input{
   width:100%;
-  padding:13px;
+  padding:12px 14px;
   border-radius:8px;
   border:1px solid #ddd;
-  margin-bottom:16px;
-  font-size:16px;
+  margin-bottom:14px;
+  font-size:15px;
   outline:none;
-  transition:0.2s;
+  box-sizing:border-box;
 }
 
 input:focus{
   border-color:#2563eb;
 }
 
+/* 按钮做“视觉更紧凑一点” */
 button{
   width:100%;
-  padding:13px;
+  padding:11px 14px;
   background:#2563eb;
   color:#fff;
   border:none;
   border-radius:8px;
-  font-size:16px;
+  font-size:15px;
   cursor:pointer;
-  transition:0.2s;
+  box-sizing:border-box;
 }
 
 button:disabled{
