@@ -63,7 +63,7 @@ export default {
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
       const dbRes = await env.DB.prepare("SELECT url FROM links WHERE code = ? AND enabled = 1").bind(code).all();
-      if (!dbRes.results.length) return new Response("404", { status: 404 });
+      if (!dbRes.results.length) return new Response("404页面无法访问", { status: 404 });
       await env.DB.prepare("UPDATE links SET clicks = clicks + 1 WHERE code = ?").bind(code).run();
       return Response.redirect(dbRes.results[0].url, 302);
     }
