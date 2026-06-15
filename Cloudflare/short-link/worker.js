@@ -186,6 +186,53 @@ function openLink(){
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理员登录</title>
+<style>
+body{background:#111;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}
+.login-box{background:#1e1e1e;padding:30px;width:90%;max-width:380px;border-radius:10px;}
+h2{text-align:center;margin-bottom:24px;}
+input{width:100%;padding:13px;border-radius:8px;border:none;margin-bottom:16px;font-size:16px;}
+button{width:100%;padding:13px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;}
+.tip{color:#f66;text-align:center;margin-bottom:12px;display:none;}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <h2>后台登录</h2>
+  <div class="tip" id="errTip">密码错误</div>
+  <input id="pwd" type="password" placeholder="请输入密码">
+  <button onclick="doLogin()">登录</button>
+</div>
+<script>
+async function doLogin(){
+  const pwd = document.getElementById('pwd').value.trim();
+  if(!pwd)return;
+  const r = await fetch('/api/admin/login',{
+    method:'POST',
+    credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({pwd})
+  });
+  const d = await r.json();
+  if(d.ok){
+    location.reload();
+  }else{
+    document.getElementById('errTip').style.display='block';
+  }
+}
+</script>
+</body>
+</html>`;
+        return html(loginHtml);
+      }
+
+      // 已登录后台主页
+      const adminHtml = `
+<!DOCTYPE html>
+<html>
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>管理后台</title>
