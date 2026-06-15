@@ -460,6 +460,21 @@ document.getElementById("pageSize").onchange = function(){
   loadList();
 };
 
+document.addEventListener("click", function(e){
+  const delBtn = e.target.closest(".btn-del");
+  const toggleBtn = e.target.closest(".btn-toggle");
+
+  if(delBtn){
+    const code = delBtn.dataset.code;
+    delItem(code);
+  }
+
+  if(toggleBtn){
+    const code = toggleBtn.dataset.code;
+    changeStatus(code);
+  }
+});
+
 // 初始化
 window.onload = loadList;
 </script>
