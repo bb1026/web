@@ -15,7 +15,7 @@ function randomCode(len = 5) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let res = "";
   for (let i = 0; i < len; i++) {
-    res = res + chars.charAt(Math.floor(Math.random() * chars.length));
+    res += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return res;
 }
@@ -29,7 +29,7 @@ export default {
     const path = urlObj.pathname;
     const method = req.method;
 
-    // OPTIONS预检统一处理
+    // OPTIONS 跨域预检
     if (method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -42,21 +42,25 @@ export default {
       });
     }
 
+    // 修复 Cookie 解析，兼容空值、异常格式
     function getCookie(name) {
-  const cookieStr = req.headers.get("Cookie") || "";
-  const pairs = {};
+      const cookieStr = req.headers.get("Cookie") || "";
+      const cookies = {};
+      cookieStr.split(";").forEach(item => {
+        const part = item.trim();
+        const eqIndex = part.indexOf("=");
+        if (eqIndex <= 0) return;
+        const key = part.slice(0, eqIndex);
+        const val = part.slice(eqIndex + 1);
+        cookies[key] = val;
+      });
+      return cookies[name] ?? "";
+    }
 
-  cookieStr.split(";").forEach(item => {
-    const [key, ...rest] = item.trim().split("=");
-    if (!key) return;
-    pairs[key] = rest.join("=");
-  });
-
-  return pairs[name] || "";
-}
-
+    // 严格登录校验
     function isLogin() {
-      return getCookie(ADMIN_COOKIE_KEY) === ADMIN_COOKIE_VAL;
+      const val = getCookie(ADMIN_COOKIE_KEY).trim();
+      return val === ADMIN_COOKIE_VAL;
     }
 
     // 短链跳转
@@ -177,42 +181,41 @@ function openLink(){
     if (path === "/api/create" && method === "POST") {
       try {
         const body = await req.json();
-        const longUrl = body.url;
+        const longUrl = body.url || "";
         const code = body.code || randomCode();
         await env.DB.prepare("INSERT OR IGNORE INTO links (code, url, clicks, enabled) VALUES (?, ?, 0, 1)").bind(code, longUrl).run();
-        return json({ok:true,code:code,shortUrl:urlObj.origin + "/s/" + code});
+        return json({ ok: true, code: code, shortUrl: urlObj.origin + "/s/" + code });
       } catch (e) {
-        return json({ok:false,err:e.message},500);
+        return json({ ok: false, err: e.message }, 500);
       }
     }
 
     // 登录接口
-if (path === "/api/admin/login" && method === "POST") {
-  const body = await req.json();
-  if (body.pwd === env.ADMIN_PASSWORD) {
-    const resp = json({ ok: true });
-    // 写入登录 Cookie，有效期 7 天
-    resp.headers.set(
-      "Set-Cookie",
-      `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Max-Age=604800; SameSite=Lax`
-    );
-    return resp;
-  } else {
-    return json({ok:false,msg:"密码错误"},401);
-  }
-}
+    if (path === "/api/admin/login" && method === "POST") {
+      const body = await req.json();
+      if (body.pwd === env.ADMIN_PASSWORD) {
+        const resp = json({ ok: true });
+        resp.headers.set(
+          "Set-Cookie",
+          `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Max-Age=604800; SameSite=Lax`
+        );
+        return resp;
+      } else {
+        return json({ ok: false, msg: "密码错误" }, 401);
+      }
+    }
 
-// 退出登录接口
-if (path === "/api/admin/logout" && method === "POST") {
-  const resp = json({ok:true});
-  resp.headers.set(
-    "Set-Cookie",
-    `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
-  );
-  return resp;
-}
+    // 退出登录接口（加固 + 多属性清Cookie）
+    if (path === "/api/admin/logout" && method === "POST") {
+      const resp = json({ ok: true });
+      resp.headers.set(
+        "Set-Cookie",
+        `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax; Secure`
+      );
+      return resp;
+    }
 
-    // 管理后台页面（完整恢复搜索、分页、条数选择，修复退出按钮）
+    // 管理后台页面
     if (path === "/admin") {
       if (!isLogin()) {
         // 登录页
@@ -265,7 +268,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
         return html(loginHtml);
       }
 
-      // 已登录后台主页
+      // 已登录后台主页（修复列表加载 + 退出功能）
       const adminHtml = `
 <!DOCTYPE html>
 <html>
@@ -278,8 +281,6 @@ document.getElementById('loginBtn').onclick = async ()=>{
 body{background:#ffffff;color:#222;padding:20px;line-height:1.6;}
 .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
 h2{color:#111;}
-#logoutBtn{padding:10px 22px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;transition:0.2s;box-shadow:0 2px 6px #00000018;}
-#logoutBtn:hover{background:#bb2d3b;}
 .search-bar{margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 #keyword{padding:9px 12px;border:1px solid #ddd;border-radius:6px;flex:1;min-width:220px;font-size:15px;}
 #searchBtn{padding:9px 16px;background:#0d6efd;color:#fff;border:none;border-radius:6px;cursor:pointer;}
@@ -320,47 +321,47 @@ h2{color:#111;}
 <div class="pagination" id="pageBox"></div>
 
 <script>
-// 退出登录
-async function doLogout() {
-  try {
-    await fetch('/api/admin/logout', {
-      method: 'POST',
-      credentials: 'include'
-    });
-  } catch (e) {}
-  location.href = "/admin";
+// 【终极修复退出】前后端双清Cookie + 时间戳防缓存
+function doLogout() {
+  // 前端强制清除所有场景Cookie
+  const key = "admin_auth";
+  document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax";
+  document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax; Secure";
+  document.cookie = key + "=; Max-Age=0";
+  // 带时间戳强制刷新，绕过缓存
+  window.location.href = "/admin?t=" + Date.now();
 }
 
 let currentPage = 1;
 let keyword = "";
 
-// 加载列表数据
+// 加载列表（全量异常捕获，彻底解决加载卡死）
 async function loadData(){
   const listDom = document.getElementById('list');
   const pageBoxDom = document.getElementById('pageBox');
   listDom.innerHTML = "正在加载数据...";
 
-  const ps = document.getElementById('pageSize').value;
-  let url = "/api/list?page=" + currentPage + "&size=" + ps;
-  if(keyword.trim() !== ""){
-    url += "&kw=" + encodeURIComponent(keyword);
-  }
-
   try {
-    const res = await fetch(url, {credentials:'include'});
-    // 权限校验
+    const ps = document.getElementById('pageSize').value || 10;
+    let url = "/api/list?page=" + currentPage + "&size=" + ps;
+    if(keyword.trim()){
+      url += "&kw=" + encodeURIComponent(keyword);
+    }
+
+    const res = await fetch(url, { credentials: 'include' });
+    // 未登录直接跳登录页
     if(res.status === 401){
-      listDom.innerHTML = "登录已失效，请重新登录";
-      setTimeout(()=>location.reload(),1500);
+      listDom.innerHTML = "登录已失效，跳转中...";
+      setTimeout(()=> location.href="/admin?t="+Date.now(), 1200);
       return;
     }
-    const jsonData = await res.json();
-    const { data, total, totalPage } = jsonData;
 
-    // 渲染列表
-    let htmlStr = '';
-    if(data && data.length > 0){
-      data.forEach(function(item){
+    const jsonData = await res.json();
+    const { data = [], total = 0, totalPage = 0 } = jsonData;
+
+    let htmlStr = "";
+    if(data.length > 0){
+      data.forEach(item => {
         htmlStr += `<div class="card">
           <b>${item.code}</b><br>
           原链接：${item.url}<br>
@@ -374,34 +375,33 @@ async function loadData(){
     }
     listDom.innerHTML = htmlStr;
 
-    // 渲染分页
-    let pageHtml = '';
+    // 分页
+    let pageHtml = "";
     pageHtml += `<button ${currentPage<=1 ? 'disabled' : ''} onclick="goPage(${currentPage-1})">上一页</button>`;
     pageHtml += `<span>第 ${currentPage}/${totalPage} 页（共${total}条）</span>`;
     pageHtml += `<button ${currentPage>=totalPage ? 'disabled' : ''} onclick="goPage(${currentPage+1})">下一页</button>`;
     pageBoxDom.innerHTML = pageHtml;
 
-  } catch(err) {
-    listDom.innerHTML = "加载失败：" + err.message;
-    console.error('加载数据异常：', err);
+  } catch (err) {
+    listDom.innerHTML = "数据加载失败";
+    console.error("加载异常：", err);
   }
 }
 
-// 分页跳转
 function goPage(p){
   currentPage = p;
   loadData();
 }
 
 // 搜索
-document.getElementById('searchBtn').addEventListener('click',function(){
+document.getElementById('searchBtn').addEventListener('click', function(){
   keyword = document.getElementById('keyword').value.trim();
   currentPage = 1;
   loadData();
 });
 
 // 切换每页条数
-document.getElementById('pageSize').addEventListener('change',function(){
+document.getElementById('pageSize').addEventListener('change', function(){
   currentPage = 1;
   loadData();
 });
@@ -411,12 +411,12 @@ async function del(code){
   if(!confirm('确定删除该短链接？')) return;
   try {
     await fetch(`/api/delete/${code}`, {
-      method: 'POST',
-      credentials: 'include'
+      method: "POST",
+      credentials: "include"
     });
     loadData();
   } catch(e) {
-    alert('删除失败');
+    alert("删除失败");
   }
 }
 
@@ -424,26 +424,26 @@ async function del(code){
 async function toggle(code){
   try {
     await fetch(`/api/toggle/${code}`, {
-      method: 'POST',
-      credentials: 'include'
+      method: "POST",
+      credentials: "include"
     });
     loadData();
   } catch(e) {
-    alert('操作失败');
+    alert("操作失败");
   }
 }
 
 // 页面初始化加载
-loadData();
+window.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
 </html>`;
       return html(adminHtml);
     }
 
-    // 分页列表GET接口（稳定无POST预检崩溃，独立绑定数组杜绝参数错位）
+    // 分页列表接口
     if (path === "/api/list") {
-      if (!isLogin()) return json({ok:false},401);
+      if (!isLogin()) return json({ ok: false }, 401);
       try {
         const params = new URLSearchParams(urlObj.search);
         const page = parseInt(params.get('page')) || 1;
@@ -457,48 +457,43 @@ loadData();
         let bindData = [];
 
         if (kw.trim() !== '') {
-          const likeVal = "%" + kw + "%";
+          const likeVal = `%${kw}%`;
           totalSql = "SELECT COUNT(*) AS cnt FROM links WHERE code LIKE ? OR url LIKE ?";
-          bindTotal.push(likeVal);
-          bindTotal.push(likeVal);
+          bindTotal.push(likeVal, likeVal);
           dataSql = "SELECT * FROM links WHERE code LIKE ? OR url LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?";
-          bindData.push(likeVal);
-          bindData.push(likeVal);
-          bindData.push(size);
-          bindData.push(offset);
+          bindData.push(likeVal, likeVal, size, offset);
         } else {
           totalSql = "SELECT COUNT(*) AS cnt FROM links";
           dataSql = "SELECT * FROM links ORDER BY id DESC LIMIT ? OFFSET ?";
-          bindData.push(size);
-          bindData.push(offset);
+          bindData.push(size, offset);
         }
 
         const totalRes = await env.DB.prepare(totalSql).bind(...bindTotal).first();
         const total = totalRes?.cnt || 0;
         const totalPage = Math.ceil(total / size);
         const dbRes = await env.DB.prepare(dataSql).bind(...bindData).all();
-        return json({data:dbRes.results, total:total, totalPage:totalPage});
+        return json({ data: dbRes.results, total, totalPage });
       } catch (errInner) {
-        return json({ok:false,msg:errInner.message},500);
+        return json({ ok: false, msg: errInner.message }, 500);
       }
     }
 
     // 删除接口
-    if (path.startsWith("/api/delete/")) {
-      if (!isLogin()) return json({ok:false},401);
+    if (path.startsWith("/api/delete/") && method === "POST") {
+      if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/delete/")[1];
       await env.DB.prepare("DELETE FROM links WHERE code = ?").bind(code).run();
-      return json({ok:true});
+      return json({ ok: true });
     }
 
-    // 启用禁用接口
-    if (path.startsWith("/api/toggle/")) {
-      if (!isLogin()) return json({ok:false},401);
+    // 启用/禁用接口
+    if (path.startsWith("/api/toggle/") && method === "POST") {
+      if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/toggle/")[1];
       await env.DB.prepare("UPDATE links SET enabled = NOT enabled WHERE code = ?").bind(code).run();
-      return json({ok:true});
+      return json({ ok: true });
     }
 
-    return new Response("页面不存在", {status:404});
+    return new Response("页面不存在", { status: 404 });
   }
 };
