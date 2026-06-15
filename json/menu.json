@@ -1,48 +1,48 @@
 {
   "小工具": [
-    ["密码生成", "/pages/password.html", "生成高强度密码", "fa-solid fa-key"],
-    ["IP查询", "/pages/ip.html", "查询IP地址信息", "fa-solid fa-network-wired"],
-    ["身份证号码查验", "/pages/idcheck.html", "验证身份证号码", "fa-solid fa-id-card"],
-    ["单位换算", "/pages/unit-conversion.html", "长度/重量/单位转换", "fa-solid fa-ruler-combined"],
-    ["色彩查询", "/pages/color.html", "颜色代码查询工具", "fa-solid fa-palette"],
+    ["密码生成", "/pages/password", "生成高强度密码", "fa-solid fa-key"],
+    ["IP查询", "/pages/ip", "查询IP地址信息", "fa-solid fa-network-wired"],
+    ["身份证号码查验", "/pages/idcheck", "验证身份证号码", "fa-solid fa-id-card"],
+    ["单位换算", "/pages/unit-conversion", "长度/重量/单位转换", "fa-solid fa-ruler-combined"],
+    ["色彩查询", "/pages/color", "颜色代码查询工具", "fa-solid fa-palette"],
     ["个人网盘", "/pan/", "文件存储与管理", "fa-solid fa-cloud"],
     ["日历订阅", "/calendar/", "订阅日历服务", "fa-solid fa-calendar"],
-    ["自制日历", "/calendar/calendaredit.html", "自定义日历生成", "fa-solid fa-calendar-days"],
-    ["定位", "/pages/geoloction.html", "获取当前位置", "fa-solid fa-location-dot"],
-    ["倒计时", "/pages/countdown.html", "倒计时工具", "fa-solid fa-hourglass-half"],
-    ["熊猫汇率", "https://bing.0515364.xyz/panda.html", "汇率查询", "fa-solid fa-yen-sign"],
+    ["自制日历", "/calendar/calendaredit", "自定义日历生成", "fa-solid fa-calendar-days"],
+    ["定位", "/pages/geoloction", "获取当前位置", "fa-solid fa-location-dot"],
+    ["倒计时", "/pages/countdown", "倒计时工具", "fa-solid fa-hourglass-half"],
+    ["熊猫汇率", "https://bing.0515364.xyz/panda", "汇率查询", "fa-solid fa-yen-sign"],
     ["短链接生成", "https://0515364.xyz/shortlink", "将长链接表成短链接", "fa-solid fa-link"]
   ],
 
   "代码工具": [
-    ["VBA 代码混淆器 / 还原器", "/pages/vba.html", "VBA代码加密/解密", "fa-solid fa-code"],
-    ["时间戳", "/pages/timestamp.html", "时间戳转换工具", "fa-solid fa-clock"],
-    ["正则表达式", "/pages/regex.html", "正则表达式测试工具", "fa-solid fa-terminal"],
-    ["64位编码解码", "/pages/encoder.html", "Base64编码解码", "fa-solid fa-code-branch"]
+    ["VBA 代码混淆器 / 还原器", "/pages/vba", "VBA代码加密/解密", "fa-solid fa-code"],
+    ["时间戳", "/pages/timestamp", "时间戳转换工具", "fa-solid fa-clock"],
+    ["正则表达式", "/pages/regex", "正则表达式测试工具", "fa-solid fa-terminal"],
+    ["64位编码解码", "/pages/encoder", "Base64编码解码", "fa-solid fa-code-branch"]
   ],
 
   "文字工具": [
-    ["字数统计", "/pages/word-counter.html", "统计文本字数", "fa-solid fa-font"]
+    ["字数统计", "/pages/word-counter", "统计文本字数", "fa-solid fa-font"]
   ],
 
   "图片工具": [
-    ["图片格式转换", "/pages/converter.html", "图片格式转换工具", "fa-solid fa-image"],
-    ["图像转Base64", "/pages/img2base64.html", "图片转Base64编码", "fa-solid fa-file-image"],
-    ["二维码生成", "/pages/qrcode.html", "生成二维码", "fa-solid fa-qrcode"],
-    ["条形码生成", "/pages/barcode.html", "生成条形码", "fa-solid fa-barcode"],
-    ["Font Awesome 图标选择器", "/pages/icons.html", "图标选择工具", "fa-solid fa-icons"]
+    ["图片格式转换", "/pages/converter", "图片格式转换工具", "fa-solid fa-image"],
+    ["图像转Base64", "/pages/img2base64", "图片转Base64编码", "fa-solid fa-file-image"],
+    ["二维码生成", "/pages/qrcode", "生成二维码", "fa-solid fa-qrcode"],
+    ["条形码生成", "/pages/barcode", "生成条形码", "fa-solid fa-barcode"],
+    ["Font Awesome 图标选择器", "/pages/icons", "图标选择工具", "fa-solid fa-icons"]
   ],
 
   "小游戏": [
-    ["单词消消乐", "https://bing.0515364.xyz/game1.html", "单词消除游戏", "fa-solid fa-gamepad"],
-    ["单词拼写", "https://bing.0515364.xyz/game2.html", "英语拼写练习", "fa-solid fa-spell-check"],
-    ["单词拼写2", "https://bing.0515364.xyz/game3.html", "进阶拼写游戏", "fa-solid fa-spell-check"],
-    ["单词拼写3", "https://bing.0515364.xyz/game4.html", "挑战拼写模式", "fa-solid fa-spell-check"],
-    ["华容道", "https://bing.0515364.xyz/game5.html", "经典华容道游戏", "fa-solid fa-puzzle-piece"],
-    ["井字游戏", "/pages/xogame.html", "井字棋小游戏", "fa-solid fa-o"]
+    ["单词消消乐", "https://bing.0515364.xyz/game1", "单词消除游戏", "fa-solid fa-gamepad"],
+    ["单词拼写", "https://bing.0515364.xyz/game2", "英语拼写练习", "fa-solid fa-spell-check"],
+    ["单词拼写2", "https://bing.0515364.xyz/game3", "进阶拼写游戏", "fa-solid fa-spell-check"],
+    ["单词拼写3", "https://bing.0515364.xyz/game4", "挑战拼写模式", "fa-solid fa-spell-check"],
+    ["华容道", "https://bing.0515364.xyz/game5", "经典华容道游戏", "fa-solid fa-puzzle-piece"],
+    ["井字游戏", "/pages/xogame", "井字棋小游戏", "fa-solid fa-o"]
   ],
 
   "Scriptable": [
-    ["Scriptable代码", "/pages/scriptable.html", "Scriptable脚本集合", "fa-solid fa-mobile-screen"]
+    ["Scriptable代码", "/pages/scriptable", "Scriptable脚本集合", "fa-solid fa-mobile-screen"]
   ]
 }
