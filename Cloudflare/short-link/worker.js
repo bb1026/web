@@ -187,31 +187,30 @@ function openLink(){
     }
 
     // 登录接口
-    if (path === "/api/admin/login" && method === "POST") {
-      const body = await req.json();
-      if (body.pwd === env.ADMIN_PASSWORD) {
-          const resp = json({ ok: true });
-        
-          resp.headers.set(
-              "Set-Cookie",
-              `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
-            );
-        
-          return resp;
-      } else {
-        return json({ok:false,msg:"密码错误"},401);
-      }
-    }
+if (path === "/api/admin/login" && method === "POST") {
+  const body = await req.json();
+  if (body.pwd === env.ADMIN_PASSWORD) {
+    const resp = json({ ok: true });
+    // 写入登录 Cookie，有效期 7 天
+    resp.headers.set(
+      "Set-Cookie",
+      `${ADMIN_COOKIE_KEY}=${ADMIN_COOKIE_VAL}; Path=/; Max-Age=604800; SameSite=Lax`
+    );
+    return resp;
+  } else {
+    return json({ok:false,msg:"密码错误"},401);
+  }
+}
 
     // 退出登录接口
-    if (path === "/api/admin/logout") {
-      const resp = json({ok:true});
-      resp.headers.set(
-            "Set-Cookie",
-            `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
-          );
-      return resp;
-    }
+if (path === "/api/admin/logout") {
+  const resp = json({ok:true});
+  resp.headers.set(
+    "Set-Cookie",
+    `${ADMIN_COOKIE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`
+  );
+  return resp;
+}
 
     // 管理后台页面（完整恢复搜索、分页、条数选择，修复退出按钮）
     if (path === "/admin") {
