@@ -267,8 +267,8 @@ body{padding:20px;margin:0;font-family:system-ui;}
 <script>
 // 全局退出函数，解决 doLogout 未定义
 function doLogout(){
-  document.cookie = "admin_auth=; Path=/; Max-Age=0;";
-  location.href = "/admin?t=" + Date.now();
+  document.cookie = "admin_auth=; Path=/; Max-Age=0; SameSite=Lax";
+  location.href = "/admin";
 }
 
 let page = 1;
