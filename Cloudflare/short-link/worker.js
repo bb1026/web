@@ -343,36 +343,68 @@ pwdInput.addEventListener('keydown', function(e){
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>管理后台</title>
+
 <style>
 body{padding:20px;margin:0;font-family:system-ui;}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .btn-logout{padding:8px 16px;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;}
+
 .search{margin-bottom:16px;}
 #keyword{padding:8px;width:240px;}
 #searchBtn{padding:8px 12px;cursor:pointer;}
-.card{border:1px solid #eee;padding:12px;border-radius:6px;margin-bottom:10px;}
-.btn{margin-right:8px;padding:6px 10px;cursor:pointer;border:none;border-radius:4px;}
+
+.card{
+  border:1px solid #eee;
+  padding:12px;
+  border-radius:6px;
+  margin-bottom:10px;
+  transition:0.2s;
+}
+
+.btn{
+  margin-right:8px;
+  padding:6px 10px;
+  cursor:pointer;
+  border:none;
+  border-radius:4px;
+}
+
 .btn-del{background:#fd7e14;color:#fff;}
 .btn-toggle{background:#198754;color:#fff;}
+
+.status.on{
+  color:#16a34a;
+  font-weight:bold;
+}
+
+.status.off{
+  color:#dc2626;
+  font-weight:bold;
+}
 </style>
 </head>
+
 <body>
+
 <div class="top">
   <h3>短链接列表</h3>
   <button class="btn-logout" onclick="doLogout()">退出登录</button>
 </div>
+
 <div class="search">
   <input id="keyword" placeholder="搜索短码/链接">
   <button id="searchBtn">搜索</button>
+
   <select id="pageSize">
     <option value="10">10条/页</option>
     <option value="20">20条/页</option>
   </select>
 </div>
+
 <div id="list">正在加载数据...</div>
 
 <script>
-// 全局退出函数，解决 doLogout 未定义
+
 function doLogout(){
   document.cookie = "admin_auth=; Path=/; Max-Age=0; SameSite=Lax";
   location.href = "/admin";
@@ -381,12 +413,16 @@ function doLogout(){
 let page = 1;
 let kw = "";
 
-// 加载列表
+/* ======================
+   加载列表（只初始化一次）
+====================== */
 function loadList(){
   const listDom = document.getElementById("list");
   listDom.innerText = "正在加载数据...";
+
   const size = document.getElementById("pageSize").value;
   let url = "/api/list?page="+page+"&size="+size;
+
   if(kw){
     url += "&kw="+encodeURIComponent(kw);
   }
@@ -395,94 +431,152 @@ function loadList(){
     method: "GET",
     credentials: "include"
   })
-  .then(function(res){
+  .then(res => {
     if(res.status === 401){
-      listDom.innerText = "登录失效，跳转中...";
+      listDom.innerText = "登录失效...";
       setTimeout(()=> location.href="/admin",1000);
       return null;
     }
     return res.json();
   })
-  .then(function(data){
+  .then(data => {
     if(!data) return;
+
     let arr = Array.isArray(data.data) ? data.data : [];
+
     if(arr.length === 0){
       listDom.innerText = "暂无数据";
       return;
     }
+
     let html = "";
-    for(let i = 0; i < arr.length; i++){
-      let item = arr[i];
-      let status = item.enabled ? "启用" : "禁用";
-      html += '<div class="card">';
-      html += '短码：' + (item.code || "") + '<br>';
-      html += '链接：' + (item.url || "") + '<br>';
-      html += '访问量：' + (item.clicks || 0) + ' | 状态：' + status + '<br>';
-      // 修复引号语法错误
-      html += '<button class="btn btn-toggle" data-code="' + item.code + '">切换状态</button>';
-      html += '<button class="btn btn-del" data-code="' + item.code + '">删除</button>';
-      html += '</div>';
+
+    for(let item of arr){
+      let isOn = item.enabled;
+
+      html += `
+        <div class="card">
+          短码：${item.code || ""}<br>
+          链接：${item.url || ""}<br>
+          访问量：${item.clicks || 0} |
+          状态：
+          <span class="status ${isOn ? "on" : "off"}">
+            ${isOn ? "启用" : "禁用"}
+          </span>
+          <br>
+
+          <button class="btn btn-toggle" data-code="${item.code}">切换状态</button>
+          <button class="btn btn-del" data-code="${item.code}">删除</button>
+        </div>
+      `;
     }
+
     listDom.innerHTML = html;
   })
-  .catch(function(err){
-    listDom.innerText = "数据加载异常";
-    console.error("加载错误：", err);
+  .catch(err => {
+    console.error(err);
+    listDom.innerText = "加载失败";
   });
 }
 
-// 全局方法
-function delItem(code){
-  if(!confirm("确定删除该短链接？")) return;
+/* ======================
+   无刷新切换状态
+====================== */
+function changeStatus(code, btn){
+  fetch("/api/toggle", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(!res.ok) return;
+
+    const card = btn.closest(".card");
+    const statusEl = card.querySelector(".status");
+
+    const isOn = statusEl.classList.contains("on");
+
+    if(isOn){
+      statusEl.classList.remove("on");
+      statusEl.classList.add("off");
+      statusEl.innerText = "禁用";
+    }else{
+      statusEl.classList.remove("off");
+      statusEl.classList.add("on");
+      statusEl.innerText = "启用";
+    }
+  });
+}
+
+/* ======================
+   无刷新删除
+====================== */
+function delItem(code, btn){
+  if(!confirm("确定删除？")) return;
 
   fetch("/api/delete", {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code })
-  }).then(() => loadList());
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(!res.ok) return;
+
+    const card = btn.closest(".card");
+
+    card.style.opacity = "0";
+    card.style.transform = "scale(0.95)";
+
+    setTimeout(() => {
+      card.remove();
+    }, 200);
+  });
 }
 
-function changeStatus(code){
-  fetch("/api/toggle", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code })
-  }).then(() => loadList());
-}
+/* ======================
+   事件委托（核心）
+====================== */
+document.addEventListener("click", function(e){
 
-// 搜索
+  const delBtn = e.target.closest(".btn-del");
+  const toggleBtn = e.target.closest(".btn-toggle");
+
+  if(delBtn){
+    delItem(delBtn.dataset.code, delBtn);
+  }
+
+  if(toggleBtn){
+    changeStatus(toggleBtn.dataset.code, toggleBtn);
+  }
+
+});
+
+/* ======================
+   搜索
+====================== */
 document.getElementById("searchBtn").onclick = function(){
   kw = document.getElementById("keyword").value.trim();
   page = 1;
   loadList();
 };
 
-// 切换每页条数
+/* ======================
+   每页数量
+====================== */
 document.getElementById("pageSize").onchange = function(){
   page = 1;
   loadList();
 };
 
-document.addEventListener("click", function(e){
-  const delBtn = e.target.closest(".btn-del");
-  const toggleBtn = e.target.closest(".btn-toggle");
-
-  if(delBtn){
-    const code = delBtn.dataset.code;
-    delItem(code);
-  }
-
-  if(toggleBtn){
-    const code = toggleBtn.dataset.code;
-    changeStatus(code);
-  }
-});
-
-// 初始化
+/* 初始化 */
 window.onload = loadList;
+
 </script>
+
 </body>
 </html>`;
       return html(adminHtml);
