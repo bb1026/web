@@ -511,11 +511,19 @@ function delItem(code, btn){
     if(!res.ok) return;
 
     const card = btn.closest(".card");
+    const listDom = document.getElementById("list");
 
     card.style.opacity = "0";
     card.style.transform = "scale(0.95)";
 
-    setTimeout(() => card.remove(), 200);
+    setTimeout(() => {
+      card.remove();
+      // 检查页面剩余卡片，无数据则显示提示文字
+      const allCard = document.querySelectorAll(".card");
+      if(allCard.length === 0){
+        listDom.innerText = "暂无数据";
+      }
+    }, 200);
   });
 }
 
