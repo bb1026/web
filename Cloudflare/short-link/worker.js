@@ -299,7 +299,7 @@ h2{color:#111;}
 <body>
 <div class="top-bar">
   <h2>短链接管理后台</h2>
-  <button id="logoutBtn">🚪 退出登录</button>
+  <button onclick="doLogout()" style="padding:10px 22px;background:#dc3545;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">🚪 退出登录</button>
 </div>
 
 <div class="search-bar">
@@ -320,26 +320,19 @@ h2{color:#111;}
 <div class="pagination" id="pageBox"></div>
 
 <script>
-let currentPage = 1;
-let keyword = "";
-
 // 退出登录
-document.getElementById('logoutBtn').addEventListener('click', async function () {
+async function doLogout() {
   try {
-    // 明确POST + 携带凭证
     await fetch('/api/admin/logout', {
       method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      credentials: 'include'
     });
-  } catch (e) {
-    console.log('退出请求异常', e);
-  }
-  // 强制跳转，清空页面状态
-  window.location.href = "/admin";
-});
+  } catch (e) {}
+  location.href = "/admin";
+}
+
+let currentPage = 1;
+let keyword = "";
 
 // 加载列表数据
 async function loadData(){
