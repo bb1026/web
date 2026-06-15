@@ -42,7 +42,7 @@ export default {
       });
     }
 
-    // 修复 Cookie 解析
+    // Cookie 解析
     function getCookie(name) {
       const cookieStr = req.headers.get("Cookie") || "";
       const cookies = {};
@@ -57,13 +57,13 @@ export default {
       return cookies[name] ?? "";
     }
 
-    // 严格登录校验
+    // 登录校验
     function isLogin() {
       const val = getCookie(ADMIN_COOKIE_KEY).trim();
       return val === ADMIN_COOKIE_VAL;
     }
 
-    // 短链跳转
+    // 短链跳转 /s/xxx
     if (path.startsWith("/s/")) {
       const code = path.split("/s/")[1];
       const dbRes = await env.DB.prepare("SELECT url FROM links WHERE code = ? AND enabled = 1").bind(code).all();
@@ -72,7 +72,7 @@ export default {
       return Response.redirect(dbRes.results[0].url, 302);
     }
 
-    // 短链接生成页面
+    // 短链接生成页 /shortlink
     if (path === "/shortlink") {
       const createPage = `
 <!DOCTYPE html>
@@ -177,7 +177,7 @@ function openLink(){
       return html(createPage);
     }
 
-    // 创建短链接口
+    // 创建短链接口 /api/create
     if (path === "/api/create" && method === "POST") {
       try {
         const body = await req.json();
@@ -190,7 +190,7 @@ function openLink(){
       }
     }
 
-    // 登录接口
+    // 登录接口 /api/admin/login
     if (path === "/api/admin/login" && method === "POST") {
       const body = await req.json();
       if (body.pwd === env.ADMIN_PASSWORD) {
@@ -205,7 +205,7 @@ function openLink(){
       }
     }
 
-    // 退出登录接口
+    // 退出接口 【正确路由：/api/admin/logout】
     if (path === "/api/admin/logout" && method === "POST") {
       const resp = json({ ok: true });
       resp.headers.set(
@@ -215,7 +215,7 @@ function openLink(){
       return resp;
     }
 
-    // 管理后台页面
+    // 管理后台页面 /admin
     if (path === "/admin") {
       if (!isLogin()) {
         // 登录页
@@ -268,7 +268,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
         return html(loginHtml);
       }
 
-      // 已登录后台主页
+      // 已登录后台主页（纯前端清Cookie，彻底解决退出失效）
       const adminHtml = `
 <!DOCTYPE html>
 <html>
@@ -321,11 +321,13 @@ h2{color:#111;}
 <div class="pagination" id="pageBox"></div>
 
 <script>
+// 纯前端清Cookie，不依赖后端接口，100%可用
 function doLogout() {
   const key = "admin_auth";
   document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax";
   document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax; Secure";
   document.cookie = key + "=; Max-Age=0";
+  // 时间戳防缓存
   window.location.href = "/admin?t=" + Date.now();
 }
 
@@ -430,7 +432,7 @@ window.addEventListener('DOMContentLoaded', loadData);
       return html(adminHtml);
     }
 
-    // 分页列表接口
+    // 列表接口 /api/list
     if (path === "/api/list") {
       if (!isLogin()) return json({ ok: false }, 401);
       try {
@@ -467,7 +469,7 @@ window.addEventListener('DOMContentLoaded', loadData);
       }
     }
 
-    // 删除接口
+    // 删除接口 /api/delete/xxx
     if (path.startsWith("/api/delete/") && method === "POST") {
       if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/delete/")[1];
@@ -475,7 +477,7 @@ window.addEventListener('DOMContentLoaded', loadData);
       return json({ ok: true });
     }
 
-    // 启用/禁用接口
+    // 启用/禁用接口 /api/toggle/xxx
     if (path.startsWith("/api/toggle/") && method === "POST") {
       if (!isLogin()) return json({ ok: false }, 401);
       const code = path.split("/api/toggle/")[1];
