@@ -543,8 +543,6 @@ if (path === "/api/delete" && method === "POST") {
 
   return json({ ok: true });
 }
-}
-
     return new Response("404 Not Found", { status: 404 });
   }
 };
