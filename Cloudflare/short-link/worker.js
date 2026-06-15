@@ -42,7 +42,7 @@ export default {
       });
     }
 
-    // 修复 Cookie 解析，兼容空值、异常格式
+    // 修复 Cookie 解析
     function getCookie(name) {
       const cookieStr = req.headers.get("Cookie") || "";
       const cookies = {};
@@ -205,7 +205,7 @@ function openLink(){
       }
     }
 
-    // 退出登录接口（加固 + 多属性清Cookie）
+    // 退出登录接口
     if (path === "/api/admin/logout" && method === "POST") {
       const resp = json({ ok: true });
       resp.headers.set(
@@ -268,7 +268,7 @@ document.getElementById('loginBtn').onclick = async ()=>{
         return html(loginHtml);
       }
 
-      // 已登录后台主页（修复列表加载 + 退出功能）
+      // 已登录后台主页
       const adminHtml = `
 <!DOCTYPE html>
 <html>
@@ -321,21 +321,17 @@ h2{color:#111;}
 <div class="pagination" id="pageBox"></div>
 
 <script>
-// 【终极修复退出】前后端双清Cookie + 时间戳防缓存
 function doLogout() {
-  // 前端强制清除所有场景Cookie
   const key = "admin_auth";
   document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax";
   document.cookie = key + "=; Path=/; Max-Age=0; SameSite=Lax; Secure";
   document.cookie = key + "=; Max-Age=0";
-  // 带时间戳强制刷新，绕过缓存
   window.location.href = "/admin?t=" + Date.now();
 }
 
 let currentPage = 1;
 let keyword = "";
 
-// 加载列表（全量异常捕获，彻底解决加载卡死）
 async function loadData(){
   const listDom = document.getElementById('list');
   const pageBoxDom = document.getElementById('pageBox');
@@ -349,7 +345,6 @@ async function loadData(){
     }
 
     const res = await fetch(url, { credentials: 'include' });
-    // 未登录直接跳登录页
     if(res.status === 401){
       listDom.innerHTML = "登录已失效，跳转中...";
       setTimeout(()=> location.href="/admin?t="+Date.now(), 1200);
@@ -362,24 +357,23 @@ async function loadData(){
     let htmlStr = "";
     if(data.length > 0){
       data.forEach(item => {
-        htmlStr += `<div class="card">
-          <b>${item.code}</b><br>
-          原链接：${item.url}<br>
-          点击量：${item.clicks} | 状态：${item.enabled ? '启用' : '禁用'}<br>
-          <button class="btn-toggle" onclick="toggle('${item.code}')">启用/禁用</button>
-          <button class="btn-del" onclick="del('${item.code}')">删除</button>
-        </div>`;
+        htmlStr += '<div class="card">' +
+          '<b>' + item.code + '</b><br>' +
+          '原链接：' + item.url + '<br>' +
+          '点击量：' + item.clicks + ' | 状态：' + (item.enabled ? '启用' : '禁用') + '<br>' +
+          '<button class="btn-toggle" onclick="toggle(\'' + item.code + '\')">启用/禁用</button>' +
+          '<button class="btn-del" onclick="del(\'' + item.code + '\')">删除</button>' +
+        '</div>';
       });
     } else {
       htmlStr = '<div class="load-tip">暂无匹配数据</div>';
     }
     listDom.innerHTML = htmlStr;
 
-    // 分页
     let pageHtml = "";
-    pageHtml += `<button ${currentPage<=1 ? 'disabled' : ''} onclick="goPage(${currentPage-1})">上一页</button>`;
-    pageHtml += `<span>第 ${currentPage}/${totalPage} 页（共${total}条）</span>`;
-    pageHtml += `<button ${currentPage>=totalPage ? 'disabled' : ''} onclick="goPage(${currentPage+1})">下一页</button>`;
+    pageHtml += '<button ' + (currentPage<=1 ? 'disabled' : '') + ' onclick="goPage(' + (currentPage-1) + ')">上一页</button>';
+    pageHtml += '<span>第 ' + currentPage + '/' + totalPage + ' 页（共' + total + '条）</span>';
+    pageHtml += '<button ' + (currentPage>=totalPage ? 'disabled' : '') + ' onclick="goPage(' + (currentPage+1) + ')">下一页</button>';
     pageBoxDom.innerHTML = pageHtml;
 
   } catch (err) {
@@ -393,24 +387,21 @@ function goPage(p){
   loadData();
 }
 
-// 搜索
 document.getElementById('searchBtn').addEventListener('click', function(){
   keyword = document.getElementById('keyword').value.trim();
   currentPage = 1;
   loadData();
 });
 
-// 切换每页条数
 document.getElementById('pageSize').addEventListener('change', function(){
   currentPage = 1;
   loadData();
 });
 
-// 删除
 async function del(code){
   if(!confirm('确定删除该短链接？')) return;
   try {
-    await fetch(`/api/delete/${code}`, {
+    await fetch('/api/delete/' + code, {
       method: "POST",
       credentials: "include"
     });
@@ -420,10 +411,9 @@ async function del(code){
   }
 }
 
-// 启用/禁用
 async function toggle(code){
   try {
-    await fetch(`/api/toggle/${code}`, {
+    await fetch('/api/toggle/' + code, {
       method: "POST",
       credentials: "include"
     });
@@ -433,7 +423,6 @@ async function toggle(code){
   }
 }
 
-// 页面初始化加载
 window.addEventListener('DOMContentLoaded', loadData);
 </script>
 </body>
