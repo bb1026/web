@@ -202,8 +202,8 @@ if (path === "/api/admin/login" && method === "POST") {
   }
 }
 
-    // 退出登录接口
-if (path === "/api/admin/logout") {
+// 退出登录接口
+if (path === "/api/admin/logout" && method === "POST") {
   const resp = json({ok:true});
   resp.headers.set(
     "Set-Cookie",
@@ -326,12 +326,19 @@ let keyword = "";
 // 退出登录
 document.getElementById('logoutBtn').addEventListener('click', async function () {
   try {
+    // 明确POST + 携带凭证
     await fetch('/api/admin/logout', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
-  } catch (e) {}
-  location.replace("/admin");
+  } catch (e) {
+    console.log('退出请求异常', e);
+  }
+  // 强制跳转，清空页面状态
+  window.location.href = "/admin";
 });
 
 // 加载列表数据
