@@ -186,53 +186,6 @@ function openLink(){
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>管理员登录</title>
-<style>
-body{background:#111;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;}
-.login-box{background:#1e1e1e;padding:30px;width:90%;max-width:380px;border-radius:10px;}
-h2{text-align:center;margin-bottom:24px;}
-input{width:100%;padding:13px;border-radius:8px;border:none;margin-bottom:16px;font-size:16px;}
-button{width:100%;padding:13px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;}
-.tip{color:#f66;text-align:center;margin-bottom:12px;display:none;}
-</style>
-</head>
-<body>
-<div class="login-box">
-  <h2>后台登录</h2>
-  <div class="tip" id="errTip">密码错误</div>
-  <input id="pwd" type="password" placeholder="请输入密码">
-  <button onclick="doLogin()">登录</button>
-</div>
-<script>
-async function doLogin(){
-  const pwd = document.getElementById('pwd').value.trim();
-  if(!pwd)return;
-  const r = await fetch('/api/admin/login',{
-    method:'POST',
-    credentials:'include',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({pwd})
-  });
-  const d = await r.json();
-  if(d.ok){
-    location.reload();
-  }else{
-    document.getElementById('errTip').style.display='block';
-  }
-}
-</script>
-</body>
-</html>`;
-        return html(loginHtml);
-      }
-
-      // 已登录后台主页
-      const adminHtml = `
-<!DOCTYPE html>
-<html>
-<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>管理后台</title>
@@ -244,9 +197,9 @@ body{padding:20px;margin:0;font-family:system-ui;}
 #keyword{padding:8px;width:240px;}
 #searchBtn{padding:8px 12px;cursor:pointer;}
 .card{border:1px solid #eee;padding:12px;border-radius:6px;margin-bottom:10px;}
-.btn{margin-right:8px;padding:6px 10px;cursor:pointer;}
-.btn-del{background:#fd7e14;color:#fff;border:none;}
-.btn-toggle{background:#198754;color:#fff;border:none;}
+.btn{margin-right:8px;padding:6px 10px;cursor:pointer;border:none;border-radius:4px;}
+.btn-del{background:#fd7e14;color:#fff;}
+.btn-toggle{background:#198754;color:#fff;}
 </style>
 </head>
 <body>
@@ -263,10 +216,9 @@ body{padding:20px;margin:0;font-family:system-ui;}
   </select>
 </div>
 <div id="list">正在加载数据...</div>
-<div id="pageBox"></div>
 
 <script>
-// 退出：纯前端清Cookie
+// 全局退出函数，解决 doLogout 未定义
 function doLogout(){
   document.cookie = "admin_auth=; Path=/; Max-Age=0;";
   location.href = "/admin?t=" + Date.now();
@@ -285,13 +237,11 @@ function loadList(){
     url += "&kw="+encodeURIComponent(kw);
   }
 
-  // 强制携带凭证，保证鉴权通过
   fetch(url, {
     method: "GET",
     credentials: "include"
   })
   .then(function(res){
-    // 鉴权失败跳转登录
     if(res.status === 401){
       listDom.innerText = "登录失效，跳转中...";
       setTimeout(()=> location.href="/admin",1000);
@@ -300,10 +250,7 @@ function loadList(){
     return res.json();
   })
   .then(function(data){
-    if(!data){
-      return;
-    }
-    // 多层容错，兼容数据格式
+    if(!data) return;
     let arr = Array.isArray(data.data) ? data.data : [];
     if(arr.length === 0){
       listDom.innerText = "暂无数据";
@@ -317,7 +264,7 @@ function loadList(){
       html += '短码：' + (item.code || "") + '<br>';
       html += '链接：' + (item.url || "") + '<br>';
       html += '访问量：' + (item.clicks || 0) + ' | 状态：' + status + '<br>';
-      // 修复引号嵌套问题
+      <!-- 修复引号语法错误 -->
       html += '<button class="btn btn-toggle" onclick="changeStatus(\'' + item.code + '\')">切换状态</button>';
       html += '<button class="btn btn-del" onclick="delItem(\'' + item.code + '\')">删除</button>';
       html += '</div>';
@@ -330,7 +277,7 @@ function loadList(){
   });
 }
 
-// 删除
+// 全局方法
 function delItem(code){
   if(!confirm("确定删除该短链接？")) return;
   fetch("/api/delete/"+code,{
@@ -339,7 +286,6 @@ function delItem(code){
   }).then(()=> loadList());
 }
 
-// 切换状态
 function changeStatus(code){
   fetch("/api/toggle/"+code,{
     method:"POST",
@@ -347,20 +293,20 @@ function changeStatus(code){
   }).then(()=> loadList());
 }
 
-// 搜索事件
+// 搜索
 document.getElementById("searchBtn").onclick = function(){
   kw = document.getElementById("keyword").value.trim();
   page = 1;
   loadList();
 };
 
-// 分页条数切换
+// 切换每页条数
 document.getElementById("pageSize").onchange = function(){
   page = 1;
   loadList();
 };
 
-// 页面初始化加载
+// 初始化
 window.onload = loadList;
 </script>
 </body>
