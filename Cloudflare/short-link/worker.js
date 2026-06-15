@@ -336,7 +336,7 @@ pwdInput.addEventListener('keydown', function(e){
       }
       
       // 已登录后台主页
-const adminHtml = `
+  const adminHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -346,9 +346,7 @@ const adminHtml = `
 
 <style>
 body{padding:20px;margin:0;font-family:system-ui;}
-
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-
 .btn-logout{padding:8px 16px;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;}
 
 .search{margin-bottom:16px;}
@@ -375,59 +373,6 @@ body{padding:20px;margin:0;font-family:system-ui;}
 
 .status.on{color:#16a34a;font-weight:bold;}
 .status.off{color:#dc2626;font-weight:bold;}
-
-/* ===== 弹窗 ===== */
-#mask{
-  display:none;
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
-  background:rgba(0,0,0,0.5);
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-
-.modal{
-  background:#fff;
-  width:90%;
-  max-width:420px;
-  border-radius:10px;
-  padding:20px;
-}
-
-.modal h3{
-  margin:0 0 10px 0;
-}
-
-.modal-content{
-  font-size:14px;
-  color:#333;
-  margin-bottom:15px;
-  line-height:1.6;
-}
-
-.modal-btns{
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-
-.btn-cancel{
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  background:#eee;
-  cursor:pointer;
-}
-
-.btn-danger{
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  background:#dc2626;
-  color:#fff;
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -450,22 +395,6 @@ body{padding:20px;margin:0;font-family:system-ui;}
 
 <div id="list">加载中...</div>
 
-<!-- ================= 弹窗 ================= -->
-<div id="mask">
-  <div class="modal">
-
-    <h3>确认删除</h3>
-
-    <div id="modalContent" class="modal-content"></div>
-
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-danger" id="confirmDelete">删除</button>
-    </div>
-
-  </div>
-</div>
-
 <script>
 
 function doLogout(){
@@ -475,7 +404,6 @@ function doLogout(){
 
 let page = 1;
 let kw = "";
-let deleteTarget = null;
 
 /* =======================
    加载列表
@@ -491,11 +419,14 @@ function loadList(){
     url += "&kw=" + encodeURIComponent(kw);
   }
 
-  fetch(url, { credentials: "include" })
-  .then(r => r.json())
+  fetch(url, {
+    method: "GET",
+    credentials: "include"
+  })
+  .then(res => res.json())
   .then(data => {
 
-    let arr = data.data || [];
+    let arr = Array.isArray(data.data) ? data.data : [];
 
     if(arr.length === 0){
       listDom.innerText = "暂无数据";
@@ -504,40 +435,42 @@ function loadList(){
 
     let html = "";
 
-    for(let item of arr){
-
+    for(let i = 0; i < arr.length; i++){
+      let item = arr[i];
       let isOn = item.enabled;
 
       html += '<div class="card">';
 
-      html += '短码：' + item.code + '<br>';
-      html += '链接：' + item.url + '<br>';
-      html += '访问量：' + item.clicks + '<br>';
+      html += '短码：' + (item.code || "") + '<br>';
+      html += '链接：' + (item.url || "") + '<br>';
+      html += '访问量：' + (item.clicks || 0) + '<br>';
 
       html += '状态：<span class="status ' + (isOn ? 'on' : 'off') + '">'
-            + (isOn ? '启用' : '禁用') +
-      '</span><br>';
+            + (isOn ? '启用' : '禁用')
+            + '</span><br>';
 
       html += '<button class="btn btn-toggle" data-code="' + item.code + '">切换状态</button>';
-
-      html += '<button class="btn btn-del" data-item=\'' + JSON.stringify(item) + '\'>删除</button>';
+      html += '<button class="btn btn-del" data-code="' + item.code + '">删除</button>';
 
       html += '</div>';
     }
 
     listDom.innerHTML = html;
+  })
+  .catch(err => {
+    console.error(err);
+    listDom.innerText = "加载失败";
   });
 }
 
 /* =======================
-   状态切换
+   切换状态（无刷新）
 ======================= */
 function changeStatus(code, btn){
-
   fetch("/api/toggle", {
-    method:"POST",
-    credentials:"include",
-    headers:{ "Content-Type":"application/json" },
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ code })
   })
   .then(r => r.json())
@@ -545,52 +478,33 @@ function changeStatus(code, btn){
     if(!res.ok) return;
 
     const card = btn.closest(".card");
-    const s = card.querySelector(".status");
+    const status = card.querySelector(".status");
 
-    const isOn = s.classList.contains("on");
+    const isOn = status.classList.contains("on");
 
-    s.classList.toggle("on", !isOn);
-    s.classList.toggle("off", isOn);
-    s.innerText = isOn ? "禁用" : "启用";
+    if(isOn){
+      status.classList.remove("on");
+      status.classList.add("off");
+      status.innerText = "禁用";
+    }else{
+      status.classList.remove("off");
+      status.classList.add("on");
+      status.innerText = "启用";
+    }
   });
 }
 
 /* =======================
-   打开弹窗
+   删除（无刷新）
 ======================= */
-function openModal(item, btn){
-
-  deleteTarget = { item, btn };
-
-  document.getElementById("modalContent").innerHTML =
-    "短码：" + item.code + "<br>" +
-    "链接：" + item.url;
-
-  document.getElementById("mask").style.display = "flex";
-}
-
-/* =======================
-   关闭弹窗
-======================= */
-function closeModal(){
-  document.getElementById("mask").style.display = "none";
-  deleteTarget = null;
-}
-
-/* =======================
-   确认删除
-======================= */
-document.getElementById("confirmDelete").onclick = function(){
-
-  if(!deleteTarget) return;
-
-  const { item, btn } = deleteTarget;
+function delItem(code, btn){
+  if(!confirm("确定删除？")) return;
 
   fetch("/api/delete", {
-    method:"POST",
-    credentials:"include",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ code: item.code })
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
   })
   .then(r => r.json())
   .then(res => {
@@ -599,16 +513,14 @@ document.getElementById("confirmDelete").onclick = function(){
     const card = btn.closest(".card");
 
     card.style.opacity = "0";
-    card.style.transform = "scale(0.9)";
+    card.style.transform = "scale(0.95)";
 
     setTimeout(() => card.remove(), 200);
-
-    closeModal();
   });
-};
+}
 
 /* =======================
-   事件委托
+   事件委托（关键）
 ======================= */
 document.addEventListener("click", function(e){
 
@@ -616,8 +528,7 @@ document.addEventListener("click", function(e){
   const toggleBtn = e.target.closest(".btn-toggle");
 
   if(delBtn){
-    const item = JSON.parse(delBtn.dataset.item);
-    openModal(item, delBtn);
+    delItem(delBtn.dataset.code, delBtn);
   }
 
   if(toggleBtn){
@@ -626,9 +537,19 @@ document.addEventListener("click", function(e){
 
 });
 
-/* 搜索 */
+/* =======================
+   搜索
+======================= */
 document.getElementById("searchBtn").onclick = function(){
   kw = document.getElementById("keyword").value.trim();
+  page = 1;
+  loadList();
+};
+
+/* =======================
+   每页数量
+======================= */
+document.getElementById("pageSize").onchange = function(){
   page = 1;
   loadList();
 };
