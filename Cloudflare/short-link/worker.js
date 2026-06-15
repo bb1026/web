@@ -266,60 +266,77 @@ body{padding:20px;margin:0;font-family:system-ui;}
 <div id="pageBox"></div>
 
 <script>
-// 退出函数：纯前端清Cookie，不请求任何接口
+// 退出：纯前端清Cookie
 function doLogout(){
   document.cookie = "admin_auth=; Path=/; Max-Age=0;";
-  document.cookie = "admin_auth=; Max-Age=0;";
   location.href = "/admin?t=" + Date.now();
 }
 
 let page = 1;
 let kw = "";
 
-// 加载列表（极简写法，杜绝语法报错）
+// 加载列表
 function loadList(){
   const listDom = document.getElementById("list");
   listDom.innerText = "正在加载数据...";
   const size = document.getElementById("pageSize").value;
   let url = "/api/list?page="+page+"&size="+size;
-  if(kw) url += "&kw="+encodeURIComponent(kw);
+  if(kw){
+    url += "&kw="+encodeURIComponent(kw);
+  }
 
-  fetch(url, {credentials:"include"})
+  // 强制携带凭证，保证鉴权通过
+  fetch(url, {
+    method: "GET",
+    credentials: "include"
+  })
   .then(function(res){
+    // 鉴权失败跳转登录
+    if(res.status === 401){
+      listDom.innerText = "登录失效，跳转中...";
+      setTimeout(()=> location.href="/admin",1000);
+      return null;
+    }
     return res.json();
   })
   .then(function(data){
-    let html = "";
-    let arr = data.data || [];
+    if(!data){
+      return;
+    }
+    // 多层容错，兼容数据格式
+    let arr = Array.isArray(data.data) ? data.data : [];
     if(arr.length === 0){
       listDom.innerText = "暂无数据";
       return;
     }
-    for(let i=0;i<arr.length;i++){
+    let html = "";
+    for(let i = 0; i < arr.length; i++){
       let item = arr[i];
       let status = item.enabled ? "启用" : "禁用";
       html += '<div class="card">';
-      html += '短码：'+item.code+'<br>';
-      html += '链接：'+item.url+'<br>';
-      html += '访问量：'+item.clicks+' | 状态：'+status+'<br>';
-      html += '<button class="btn btn-toggle" onclick="changeStatus(\''+item.code+'\')">切换状态</button>';
-      html += '<button class="btn btn-del" onclick="delItem(\''+item.code+'\')">删除</button>';
+      html += '短码：' + (item.code || "") + '<br>';
+      html += '链接：' + (item.url || "") + '<br>';
+      html += '访问量：' + (item.clicks || 0) + ' | 状态：' + status + '<br>';
+      // 修复引号嵌套问题
+      html += '<button class="btn btn-toggle" onclick="changeStatus(\'' + item.code + '\')">切换状态</button>';
+      html += '<button class="btn btn-del" onclick="delItem(\'' + item.code + '\')">删除</button>';
       html += '</div>';
     }
     listDom.innerHTML = html;
   })
-  .catch(function(){
-    listDom.innerText = "数据加载失败";
+  .catch(function(err){
+    listDom.innerText = "数据加载异常";
+    console.error("加载错误：", err);
   });
 }
 
 // 删除
 function delItem(code){
-  if(!confirm("确定删除？"))return;
+  if(!confirm("确定删除该短链接？")) return;
   fetch("/api/delete/"+code,{
     method:"POST",
     credentials:"include"
-  }).then(()=>loadList());
+  }).then(()=> loadList());
 }
 
 // 切换状态
@@ -327,10 +344,10 @@ function changeStatus(code){
   fetch("/api/toggle/"+code,{
     method:"POST",
     credentials:"include"
-  }).then(()=>loadList());
+  }).then(()=> loadList());
 }
 
-// 搜索
+// 搜索事件
 document.getElementById("searchBtn").onclick = function(){
   kw = document.getElementById("keyword").value.trim();
   page = 1;
@@ -343,10 +360,8 @@ document.getElementById("pageSize").onchange = function(){
   loadList();
 };
 
-// 页面初始化
-window.onload = function(){
-  loadList();
-};
+// 页面初始化加载
+window.onload = loadList;
 </script>
 </body>
 </html>`;
