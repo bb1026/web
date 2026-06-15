@@ -312,7 +312,7 @@ function loadList(){
       html += '链接：' + (item.url || "") + '<br>';
       html += '访问量：' + (item.clicks || 0) + ' | 状态：' + status + '<br>';
       // 修复引号语法错误
-      hhtml += `<button class="btn btn-toggle" data-code="${item.code}">切换状态</button>`;
+      html += `<button class="btn btn-toggle" data-code="${item.code}">切换状态</button>`;
       html += `<button class="btn btn-del" data-code="${item.code}">删除</button>`;
       html += '</div>';
     }
