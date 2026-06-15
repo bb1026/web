@@ -434,17 +434,22 @@ function loadList(){
 // 全局方法
 function delItem(code){
   if(!confirm("确定删除该短链接？")) return;
-  fetch("/api/delete/"+code,{
-    method:"POST",
-    credentials:"include"
-  }).then(()=> loadList());
+
+  fetch("/api/delete", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
+  }).then(() => loadList());
 }
 
 function changeStatus(code){
-  fetch("/api/toggle/"+code,{
-    method:"POST",
-    credentials:"include"
-  }).then(()=> loadList());
+  fetch("/api/toggle", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code })
+  }).then(() => loadList());
 }
 
 // 搜索
@@ -513,34 +518,31 @@ window.onload = loadList;
       }
     }
 
-function delItem(code){
-  console.log("delete click:", code);
+if (path === "/api/toggle" && method === "POST") {
+  if (!isLogin()) return json({}, 401);
 
-  fetch("/api/delete/"+code,{
-    method:"POST",
-    credentials:"include"
-  })
-  .then(r => r.json())
-  .then(res => {
-    console.log("delete result:", res);
-    loadList();
-  })
-  .catch(err => console.error("delete error:", err));
+  const body = await req.json();
+  const code = body.code;
+
+  await env.DB.prepare(
+    "UPDATE links SET enabled = CASE WHEN enabled=1 THEN 0 ELSE 1 END WHERE code = ?"
+  ).bind(code).run();
+
+  return json({ ok: true });
 }
 
-function changeStatus(code){
-  console.log("toggle click:", code);
+if (path === "/api/delete" && method === "POST") {
+  if (!isLogin()) return json({}, 401);
 
-  fetch("/api/toggle/"+code,{
-    method:"POST",
-    credentials:"include"
-  })
-  .then(r => r.json())
-  .then(res => {
-    console.log("toggle result:", res);
-    loadList();
-  })
-  .catch(err => console.error("toggle error:", err));
+  const body = await req.json();
+  const code = body.code;
+
+  await env.DB.prepare(
+    "DELETE FROM links WHERE code = ?"
+  ).bind(code).run();
+
+  return json({ ok: true });
+}
 }
 
     return new Response("404 Not Found", { status: 404 });
