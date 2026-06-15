@@ -323,70 +323,117 @@ h2{color:#111;}
 let currentPage = 1;
 let keyword = "";
 
-// 退出按钮修复：不等待异步请求，立刻跳转，100%响应
+// 退出登录
 document.getElementById('logoutBtn').addEventListener('click', async function () {
-  await fetch('/api/admin/logout', {
-    method: 'POST',
-    credentials: 'include'
-  });
-
+  try {
+    await fetch('/api/admin/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (e) {}
   location.replace("/admin");
 });
 
+// 加载列表数据
 async function loadData(){
+  const listDom = document.getElementById('list');
+  const pageBoxDom = document.getElementById('pageBox');
+  listDom.innerHTML = "正在加载数据...";
+
   const ps = document.getElementById('pageSize').value;
   let url = "/api/list?page=" + currentPage + "&size=" + ps;
   if(keyword.trim() !== ""){
-    url = url + "&kw=" + encodeURIComponent(keyword);
+    url += "&kw=" + encodeURIComponent(keyword);
   }
+
   try {
     const res = await fetch(url, {credentials:'include'});
-    const jsonData = await res.json();
-    if(!res.ok){
-      document.getElementById('list').innerHTML = "加载失败：权限异常";
+    // 权限校验
+    if(res.status === 401){
+      listDom.innerHTML = "登录已失效，请重新登录";
+      setTimeout(()=>location.reload(),1500);
       return;
     }
+    const jsonData = await res.json();
     const { data, total, totalPage } = jsonData;
+
+    // 渲染列表
     let htmlStr = '';
-    data.forEach(function(item){
-      htmlStr = htmlStr + '<div class="card"><b>' + item.code + '</b><br>原链接：' + item.url + '<br>点击量：' + item.clicks + ' | 状态：' + (item.enabled?'启用':'禁用') + '<br><button class="btn-toggle" onclick="toggle(\'' + item.code + '\')">启用/禁用</button><button class="btn-del" onclick="del(\'' + item.code + '\')">删除</button></div>';
-    });
-    document.getElementById('list').innerHTML = htmlStr || '<div class="load-tip">暂无匹配数据</div>';
+    if(data && data.length > 0){
+      data.forEach(function(item){
+        htmlStr += `<div class="card">
+          <b>${item.code}</b><br>
+          原链接：${item.url}<br>
+          点击量：${item.clicks} | 状态：${item.enabled ? '启用' : '禁用'}<br>
+          <button class="btn-toggle" onclick="toggle('${item.code}')">启用/禁用</button>
+          <button class="btn-del" onclick="del('${item.code}')">删除</button>
+        </div>`;
+      });
+    } else {
+      htmlStr = '<div class="load-tip">暂无匹配数据</div>';
+    }
+    listDom.innerHTML = htmlStr;
+
+    // 渲染分页
     let pageHtml = '';
-    pageHtml = pageHtml + '<button ' + (currentPage<=1?'disabled':'') + ' onclick="goPage(' + (currentPage-1) + ')">上一页</button>';
-    pageHtml = pageHtml + '<span>第 ' + currentPage + '/' + totalPage + ' 页（共' + total + '条）</span>';
-    pageHtml = pageHtml + '<button ' + (currentPage>=totalPage?'disabled':'') + ' onclick="goPage(' + (currentPage+1) + ')">下一页</button>';
-    document.getElementById('pageBox').innerHTML = pageHtml;
+    pageHtml += `<button ${currentPage<=1 ? 'disabled' : ''} onclick="goPage(${currentPage-1})">上一页</button>`;
+    pageHtml += `<span>第 ${currentPage}/${totalPage} 页（共${total}条）</span>`;
+    pageHtml += `<button ${currentPage>=totalPage ? 'disabled' : ''} onclick="goPage(${currentPage+1})">下一页</button>`;
+    pageBoxDom.innerHTML = pageHtml;
+
   } catch(err) {
-    document.getElementById('list').innerHTML = "加载失败：" + err.message;
+    listDom.innerHTML = "加载失败：" + err.message;
+    console.error('加载数据异常：', err);
   }
 }
 
+// 分页跳转
 function goPage(p){
   currentPage = p;
   loadData();
 }
 
+// 搜索
 document.getElementById('searchBtn').addEventListener('click',function(){
   keyword = document.getElementById('keyword').value.trim();
   currentPage = 1;
   loadData();
 });
+
+// 切换每页条数
 document.getElementById('pageSize').addEventListener('change',function(){
   currentPage = 1;
   loadData();
 });
 
+// 删除
 async function del(code){
   if(!confirm('确定删除该短链接？')) return;
-  await fetch('/api/delete/' + code, {credentials:'include'});
-  loadData();
-}
-async function toggle(code){
-  await fetch('/api/toggle/' + code, {credentials:'include'});
-  loadData();
+  try {
+    await fetch(`/api/delete/${code}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    loadData();
+  } catch(e) {
+    alert('删除失败');
+  }
 }
 
+// 启用/禁用
+async function toggle(code){
+  try {
+    await fetch(`/api/toggle/${code}`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    loadData();
+  } catch(e) {
+    alert('操作失败');
+  }
+}
+
+// 页面初始化加载
 loadData();
 </script>
 </body>
