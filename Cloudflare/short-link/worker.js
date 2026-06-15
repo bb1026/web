@@ -498,21 +498,35 @@ window.onload = loadList;
       }
     }
 
-    // 删除接口
-    if (path.startsWith("/api/delete/") && method === "POST") {
-      if (!isLogin()) return json({}, 401);
-      const code = path.split("/api/delete/")[1];
-      await env.DB.prepare("DELETE FROM links WHERE code = ?").bind(code).run();
-      return json({ ok: true });
-    }
+function delItem(code){
+  console.log("delete click:", code);
 
-    // 切换状态接口
-    if (path.startsWith("/api/toggle/") && method === "POST") {
-      if (!isLogin()) return json({}, 401);
-      const code = path.split("/api/toggle/")[1];
-      await env.DB.prepare("UPDATE links SET enabled = NOT enabled WHERE code = ?").bind(code).run();
-      return json({ ok: true });
-    }
+  fetch("/api/delete/"+code,{
+    method:"POST",
+    credentials:"include"
+  })
+  .then(r => r.json())
+  .then(res => {
+    console.log("delete result:", res);
+    loadList();
+  })
+  .catch(err => console.error("delete error:", err));
+}
+
+function changeStatus(code){
+  console.log("toggle click:", code);
+
+  fetch("/api/toggle/"+code,{
+    method:"POST",
+    credentials:"include"
+  })
+  .then(r => r.json())
+  .then(res => {
+    console.log("toggle result:", res);
+    loadList();
+  })
+  .catch(err => console.error("toggle error:", err));
+}
 
     return new Response("404 Not Found", { status: 404 });
   }
