@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apple设备尺寸重量查询</title>
+<title>苹果设备自动识别查询</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen py-10 px-4 relative">
@@ -37,102 +37,150 @@
 <div id="mask" class="fixed inset-0 z-10 hidden"></div>
 
 <script>
-let deviceDatabase=[];
+let deviceDatabase = [];
 let timer;
-const loading=document.getElementById("loading");
-const resultBox=document.getElementById("result-box");
-const dropdown=document.getElementById("search-dropdown");
-const list=document.getElementById("result-list");
-const mask=document.getElementById("mask");
-const input=document.getElementById("search-input");
+const loading = document.getElementById("loading");
+const resultBox = document.getElementById("result-box");
+const dropdown = document.getElementById("search-dropdown");
+const list = document.getElementById("result-list");
+const mask = document.getElementById("mask");
+const input = document.getElementById("search-input");
 
-async function loadJsonDB(){
-try{
-const res=await fetch("/json/apple-devices.json",{cache:"default"});
-if(!res.ok) throw new Error("HTTP "+res.status);
-deviceDatabase=await res.json();
-detectCurrentDevice();
-}catch(e){
-loading.innerHTML='<p class="text-red-500">数据库加载失败，请检查 apple-devices.json</p>';
-console.error(e);
-}
-}
-
-function getDeviceIdentifier(){
-const ua=navigator.userAgent;
-for(const r of [/iPhone(\d+),(\d+)/,/iPad(\d+),(\d+)/,/iPod(\d+),(\d+)/]){
-const m=ua.match(r);
-if(m) return m[0];
-}
-return null;
+async function loadJsonDB() {
+  try {
+    const res = await fetch(`/json/apple-devices.json?_v=${Date.now()}`, {
+      cache: "no-cache",
+      headers: {
+        Accept: "application/json"
+      }
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    deviceDatabase = await res.json();
+    detectCurrentDevice();
+  } catch (e) {
+    loading.innerHTML = '<p class="text-red-500">数据库加载失败，请检查 apple-devices.json 文件路径</p>';
+    console.error(e);
+  }
 }
 
-const findDeviceById=id=>deviceDatabase.find(v=>v.identifier===id)||null;
+function getDeviceIdentifier() {
+  const ua = navigator.userAgent;
+  const touchPoints = navigator.maxTouchPoints;
 
-function normalize(v){return String(v||"").toLowerCase().replace(/\s+/g,"").trim();}
+  const iphoneMatch = ua.match(/iPhone(\d+),(\d+)/);
+  if (iphoneMatch) return iphoneMatch[0];
 
-function fuzzySearch(keyword){
-const kw=normalize(keyword);
-if(!kw) return [];
-return deviceDatabase.filter(item=>{
-return normalize(item.modelName).includes(kw)||
-(item.keywords||[]).some(k=>normalize(k).includes(kw))||
-(item.aNumbers||[]).some(a=>normalize(a).includes(kw));
-}).slice(0,20);
+  const ipadMatch = ua.match(/iPad(\d+),(\d+)/);
+  if (ipadMatch) return ipadMatch[0];
+
+  if (/Macintosh/.test(ua) && touchPoints > 1) {
+    return "IS_HIDDEN_IPAD";
+  }
+
+  const ipodMatch = ua.match(/iPod(\d+),(\d+)/);
+  if (ipodMatch) return ipodMatch[0];
+
+  return null;
 }
 
-function renderInfo(d){
-loading.classList.add("hidden");
-resultBox.classList.remove("hidden");
-resultBox.innerHTML=`<div class="space-y-3">
+const findDeviceById = id => deviceDatabase.find(v => v.identifier === id) || null;
+
+function normalize(v) {
+  return String(v || "").toLowerCase().replace(/\s+/g, "").trim();
+}
+
+function fuzzySearch(keyword) {
+  const kw = normalize(keyword);
+  if (!kw) return [];
+  return deviceDatabase.filter(item => {
+    return normalize(item.modelName).includes(kw) ||
+      (item.keywords || []).some(k => normalize(k).includes(kw)) ||
+      (item.aNumbers || []).some(a => normalize(a).includes(kw));
+  }).slice(0, 20);
+}
+
+function renderInfo(d) {
+  loading.classList.add("hidden");
+  resultBox.classList.remove("hidden");
+  resultBox.innerHTML = `<div class="space-y-3">
 <div class="flex justify-between items-center border-b pb-2">
-<span class="text-lg font-bold text-gray-900">${d.modelName??"-"}</span>
-<span class="px-2 py-1 bg-gray-100 text-sm rounded text-gray-600">${d.deviceType??"-"}</span>
+<span class="text-lg font-bold text-gray-900">${d.modelName ?? "-"}</span>
+<span class="px-2 py-1 bg-gray-100 text-sm rounded text-gray-600">${d.deviceType ?? "-"}</span>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-<div>硬件代号：<span class="font-mono">${d.identifier??"-"}</span></div>
-<div>发布年份：${d.releaseYear??"-"}</div>
-<div>机身尺寸：${d.height??"-"} × ${d.width??"-"} × ${d.depth??"-"} mm</div>
-<div>整机重量：${d.weight??"-"} g</div>
-<div>屏幕尺寸：${d.screenSize??"-"} 英寸</div>
-<div>屏幕分辨率：${d.resolution??"-"}</div>
-<div class="md:col-span-2"><span>后盖A型号编码：</span><div class="overflow-x-auto whitespace-nowrap font-mono text-blue-600 mt-1 pb-1">${(d.aNumbers||[]).join("  ")}</div></div>
+<div>硬件代号：<span class="font-mono">${d.identifier ?? "-"}</span></div>
+<div>发布年份：${d.releaseYear ?? "-"}</div>
+<div>机身尺寸：${d.height ?? "-"} × ${d.width ?? "-"} × ${d.depth ?? "-"} mm</div>
+<div>整机重量：${d.weight ?? "-"} g</div>
+<div>屏幕尺寸：${d.screenSize ?? "-"} 英寸</div>
+<div>屏幕分辨率：${d.resolution ?? "-"}</div>
+<div class="md:col-span-2"><span>后盖A型号编码：</span><div class="overflow-x-auto whitespace-nowrap font-mono text-blue-600 mt-1 pb-1">${(d.aNumbers || []).join("  ")}</div></div>
 </div></div>`;
 }
 
-function detectCurrentDevice(){
-const id=getDeviceIdentifier();
-if(!id){
-loading.innerHTML='<p class="text-gray-500">未识别到 iPhone / iPad / iPod</p><p class="text-xs mt-1 text-gray-400">MacBook 无法自动识别，请使用上方搜索框查询</p>';
-return;
-}
-const info=findDeviceById(id);
-if(info) renderInfo(info);
-else loading.innerHTML=`<p class="text-orange-500">识别到代号：${id}</p><p class="text-xs mt-1 text-gray-400">暂无该设备参数数据，等待更新数据库</p>`;
+function detectCurrentDevice() {
+  const id = getDeviceIdentifier();
+  if (id === "IS_HIDDEN_IPAD") {
+    loading.innerHTML = '<p class="text-gray-500">当前为新版iPad（系统已隐藏硬件代号）</p><p class="text-xs mt-1 text-gray-400">请在上方搜索框手动查询型号</p>';
+    return;
+  }
+  if (!id) {
+    loading.innerHTML = '<p class="text-gray-500">未识别到 iPhone / iPad / iPod</p><p class="text-xs mt-1 text-gray-400">MacBook 无法自动识别，请使用上方搜索框查询</p>';
+    return;
+  }
+  const info = findDeviceById(id);
+  if (info) {
+    renderInfo(info);
+  } else {
+    loading.innerHTML = `<p class="text-orange-500">识别到代号：${id}</p><p class="text-xs mt-1 text-gray-400">暂无该设备参数数据，等待更新数据库</p>`;
+  }
 }
 
-function closeDropdown(){dropdown.classList.add("hidden");mask.classList.add("hidden");}
+function closeDropdown() {
+  dropdown.classList.add("hidden");
+  mask.classList.add("hidden");
+}
 
-function doSearch(v){
-const rs=fuzzySearch(v);
-list.innerHTML="";
-if(!rs.length){closeDropdown();return;}
-rs.forEach(d=>{
-const li=document.createElement("li");
-li.className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition";
-li.innerHTML=`<div class="font-medium text-gray-800">${d.modelName}</div><div class="text-xs text-gray-500 mt-1">A码：${(d.aNumbers||[]).join(" ")}</div>`;
-li.onclick=()=>{renderInfo(d);input.value="";closeDropdown();};
-list.appendChild(li);
+function doSearch(v) {
+  const rs = fuzzySearch(v);
+  list.innerHTML = "";
+  if (!rs.length) {
+    closeDropdown();
+    return;
+  }
+  rs.forEach(d => {
+    const li = document.createElement("li");
+    li.className = "px-4 py-3 hover:bg-gray-50 cursor-pointer transition";
+    li.innerHTML = `<div class="font-medium text-gray-800">${d.modelName}</div><div class="text-xs text-gray-500 mt-1">A码：${(d.aNumbers || []).join(" ")}</div>`;
+    li.onclick = () => {
+      renderInfo(d);
+      input.value = "";
+      closeDropdown();
+    };
+    list.appendChild(li);
+  });
+  dropdown.classList.remove("hidden");
+  mask.classList.remove("hidden");
+}
+
+input.addEventListener("input", e => {
+  clearTimeout(timer);
+  timer = setTimeout(() => doSearch(e.target.value), 150);
 });
-dropdown.classList.remove("hidden");
-mask.classList.remove("hidden");
-}
+input.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeDropdown();
+  if (e.key === "Enter") {
+    const firstItem = list.querySelector("li");
+    if (firstItem) firstItem.click();
+  }
+});
+mask.onclick = closeDropdown;
+document.getElementById("clear-btn").onclick = () => {
+  input.value = "";
+  closeDropdown();
+};
 
-input.addEventListener("input",e=>{clearTimeout(timer);timer=setTimeout(()=>doSearch(e.target.value),150);});
-input.addEventListener("keydown",e=>{if(e.key==="Escape")closeDropdown();if(e.key==="Enter"){const f=list.querySelector("li");if(f)f.click();}});
-mask.onclick=closeDropdown;
-document.getElementById("clear-btn").onclick=()=>{input.value="";closeDropdown();};
-document.addEventListener("DOMContentLoaded",loadJsonDB);
+document.addEventListener("DOMContentLoaded", loadJsonDB);
 </script>
 </body>
 </html>
