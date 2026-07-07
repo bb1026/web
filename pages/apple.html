@@ -8,6 +8,9 @@
 </head>
 <body class="bg-gray-100 min-h-screen py-10 px-4 relative">
 <div class="max-w-xl mx-auto">
+
+<div id="debug-info" class="mb-6 p-4 bg-slate-800 text-green-400 text-xs rounded overflow-x-auto whitespace-pre-wrap"></div>
+
 <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">苹果设备识别工具</h1>
 <p class="text-center text-gray-500 mb-8">自动读取当前设备型号 · 展示尺寸/重量/屏幕/A型号编码</p>
 
@@ -45,42 +48,81 @@ const dropdown = document.getElementById("search-dropdown");
 const list = document.getElementById("result-list");
 const mask = document.getElementById("mask");
 const input = document.getElementById("search-input");
+const debugInfo = document.getElementById("debug-info");
+
+// 屏幕分辨率对照表 key:宽,高,dpr
+const screenMap = {
+    "428,926,3": "iPhone14,2", // iPhone 13
+    "390,844,3": "iPhone14,7", // iPhone 14
+    "430,932,3": "iPhone15,2", // iPhone15
+    "402,874,3": "iPhone16,1", // iPhone16
+};
+
+function printDebug() {
+    const ua = navigator.userAgent;
+    const touch = navigator.maxTouchPoints;
+    const platform = navigator.platform;
+    const width = screen.width;
+    const height = screen.height;
+    const dpr = window.devicePixelRatio;
+    const key = `${width},${height},${dpr}`;
+
+    debugInfo.innerText = `
+=== UA信息 ===
+${ua}
+=== 其他参数 ===
+maxTouchPoints: ${touch}
+platform: ${platform}
+屏幕宽高: ${width} × ${height}
+设备像素比: ${dpr}
+匹配key: ${key}
+    `.trim();
+}
 
 async function loadJsonDB() {
   try {
-    const res = await fetch(`/json/apple-devices.json?_v=${Date.now()}`, {
-      cache: "no-cache",
+    const res = await fetch(`/json/apple-devices.json?_t=${Date.now()}`, {
+      cache: "no-store",
       headers: {
-        Accept: "application/json"
+        Accept: "application/json",
       }
     });
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("文件加载失败 状态码:" + res.status);
     deviceDatabase = await res.json();
     detectCurrentDevice();
   } catch (e) {
-    loading.innerHTML = '<p class="text-red-500">数据库加载失败，请检查 apple-devices.json 文件路径</p>';
+    loading.innerHTML = `<p class="text-red-500">JSON加载失败：${e.message}</p>`;
     console.error(e);
   }
 }
 
+// 新版识别函数：优先分辨率匹配，降级旧UA匹配
 function getDeviceIdentifier() {
-  const ua = navigator.userAgent;
-  const touchPoints = navigator.maxTouchPoints;
+    const ua = navigator.userAgent;
+    const touch = navigator.maxTouchPoints;
+    const width = screen.width;
+    const height = screen.height;
+    const dpr = window.devicePixelRatio;
+    const screenKey = `${width},${height},${dpr}`;
 
-  const iphoneMatch = ua.match(/iPhone(\d+),(\d+)/);
-  if (iphoneMatch) return iphoneMatch[0];
+    // 1.先用分辨率匹配
+    if(screenMap[screenKey]){
+        return screenMap[screenKey];
+    }
 
-  const ipadMatch = ua.match(/iPad(\d+),(\d+)/);
-  if (ipadMatch) return ipadMatch[0];
+    // 2.兼容老设备UA匹配
+    const iPhoneReg = ua.match(/iPhone(\d+),(\d+)/);
+    if(iPhoneReg) return iPhoneReg[0];
 
-  if (/Macintosh/.test(ua) && touchPoints > 1) {
-    return "IS_HIDDEN_IPAD";
-  }
+    const iPadReg = ua.match(/iPad(\d+),(\d+)/);
+    if(iPadReg) return iPadReg[0];
 
-  const ipodMatch = ua.match(/iPod(\d+),(\d+)/);
-  if (ipodMatch) return ipodMatch[0];
+    if(/Macintosh/.test(ua) && touch > 1) return "HIDE_IPAD";
 
-  return null;
+    const iPodReg = ua.match(/iPod(\d+),(\d+)/);
+    if(iPodReg) return iPodReg[0];
+
+    return null;
 }
 
 const findDeviceById = id => deviceDatabase.find(v => v.identifier === id) || null;
@@ -120,19 +162,19 @@ function renderInfo(d) {
 
 function detectCurrentDevice() {
   const id = getDeviceIdentifier();
-  if (id === "IS_HIDDEN_IPAD") {
-    loading.innerHTML = '<p class="text-gray-500">当前为新版iPad（系统已隐藏硬件代号）</p><p class="text-xs mt-1 text-gray-400">请在上方搜索框手动查询型号</p>';
+  if (id === "HIDE_IPAD") {
+    loading.innerHTML = '<p class="text-gray-500">新版iPad已被系统隐藏硬件ID</p><p class="text-xs mt-1 text-gray-400">请在上方搜索框手动查找型号</p>';
     return;
   }
   if (!id) {
-    loading.innerHTML = '<p class="text-gray-500">未识别到 iPhone / iPad / iPod</p><p class="text-xs mt-1 text-gray-400">MacBook 无法自动识别，请使用上方搜索框查询</p>';
+    loading.innerHTML = '<p class="text-gray-500">无法自动识别设备</p><p class="text-xs mt-1 text-gray-400">建议在搜索框输入A码手动查询</p>';
     return;
   }
   const info = findDeviceById(id);
   if (info) {
     renderInfo(info);
   } else {
-    loading.innerHTML = `<p class="text-orange-500">识别到代号：${id}</p><p class="text-xs mt-1 text-gray-400">暂无该设备参数数据，等待更新数据库</p>`;
+    loading.innerHTML = `<p class="text-orange-500">识别到代号：${id}</p><p class="text-xs mt-1 text-gray-400">数据库内暂无该机型数据</p>`;
   }
 }
 
@@ -180,7 +222,10 @@ document.getElementById("clear-btn").onclick = () => {
   closeDropdown();
 };
 
-document.addEventListener("DOMContentLoaded", loadJsonDB);
+document.addEventListener("DOMContentLoaded", () => {
+    printDebug();
+    loadJsonDB();
+});
 </script>
 </body>
 </html>
