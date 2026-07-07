@@ -48,7 +48,7 @@ const input=document.getElementById("search-input");
 
 async function loadJsonDB(){
 try{
-const res=await fetch("./apple-devices.json",{cache:"default"});
+const res=await fetch("/json/apple-devices.json",{cache:"default"});
 if(!res.ok) throw new Error("HTTP "+res.status);
 deviceDatabase=await res.json();
 detectCurrentDevice();
