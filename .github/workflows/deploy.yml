@@ -1,11 +1,13 @@
-name: Deploy Cloudflare Worker (网站规则)
+name: Deploy Cloudflare Worker
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'Cloudflare/worker.js'
       - 'Cloudflare/wrangler.toml'
+
   workflow_dispatch:
 
 jobs:
@@ -13,14 +15,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Wrangler v2
-        run: npm install -g wrangler@2
+      - name: Install Wrangler
+        run: npm install -g wrangler
 
-      - name: Publish Worker
-        working-directory: Cloudflare #toml文件存放的内置,worker的位置在toml配置
-        run: wrangler publish
+      - name: Deploy Worker
+        working-directory: Cloudflare
+        run: wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
