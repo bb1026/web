@@ -1,11 +1,6 @@
 const config = {
   mainDomain: '0515364.xyz',
   restrictedExtensions: ['.js', '.json'],
-  authKeys: [
-    'tX3$9mGz@7vLq#F!b2R',
-    'dev-key-1',
-    'scriptable-key'
-  ],
   get ALLOWED_ORIGINS() {
     return [
       'http://localhost:9898',
@@ -36,9 +31,15 @@ function isRestrictedFile(url) {
   return config.restrictedExtensions.some(ext => pathname.endsWith(ext));
 }
 
-function hasValidAuthKey(request) {
+function hasValidAuthKey(request, env) {
   const key = request.headers.get('X-Auth-Key');
-  return key && config.authKeys.includes(key);
+  if (!key || !env.AUTH_KEYS) {
+    return false;
+  }
+  return env.AUTH_KEYS
+    .split(',')
+    .map(k => k.trim())
+    .includes(key);
 }
 
 function isAllowedOrigin(request) {
@@ -110,11 +111,13 @@ function createErrorResponse(message, timestamp, status = config.errorStatus) {
   });
 }
 
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
+export default {
+  async fetch(request, env) {
+    return handleRequest(request, env);
+  }
+};
 
-async function handleRequest(request) {
+async function handleRequest(request, env) {
   const url = new URL(request.url);
   const timestamp = Date.now();
   
@@ -152,7 +155,7 @@ async function handleRequest(request) {
     }
 
     // 3.3 无效密钥拒绝
-    if (!hasValidAuthKey(request)) {
+    if (!hasValidAuthKey(request, env)) {
       return createErrorResponse('密钥认证失败', timestamp);
     }
 
