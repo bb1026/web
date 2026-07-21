@@ -11,7 +11,7 @@
     ["定位", "/pages/geoloction", "获取当前位置", "fa-solid fa-location-dot"],
     ["倒计时", "/pages/countdown", "倒计时工具", "fa-solid fa-hourglass-half"],
     ["熊猫汇率", "https://bing.0515364.xyz/panda", "汇率查询", "fa-solid fa-yen-sign"],
-    ["短链接生成", "https://0515364.xyz/shortlink", "将长链接表成短链接", "fa-solid fa-link"]
+    ["短链接生成", "/shortlink", "将长链接表成短链接", "fa-solid fa-link"]
   ],
 
   "代码工具": [
