@@ -3,29 +3,24 @@
 }
 
 body{
-
     margin:0;
     padding:0;
-
     background:#f4f7fb;
-
     font-family:
-    "Microsoft YaHei",
-    Arial,
-    sans-serif;
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
 }
 
+/* ===== Header ===== */
+
 header{
-
     text-align:center;
-
     padding:20px;
 }
 
 h1{
-
     margin-bottom:5px;
-
     color:#1e293b;
 }
 
@@ -34,34 +29,39 @@ p{
 }
 
 #search{
-
     width:100%;
     max-width:600px;
 
     padding:12px;
 
     border-radius:10px;
-
     border:1px solid #d1d5db;
 
     font-size:16px;
 }
 
+.field-en{
+
+    color:#64748b;
+
+    font-size:11px;
+
+    font-style:italic;
+}
+
+/* ===== Table ===== */
+
 .table-wrapper{
-
     width:100%;
-
     overflow-x:auto;
-
     padding:10px;
 }
 
 .periodic-table{
-
     display:grid;
 
     grid-template-columns:
-    repeat(18,1fr);
+        repeat(18,1fr);
 
     gap:4px;
 
@@ -69,11 +69,10 @@ p{
 }
 
 .series{
-
     display:grid;
 
     grid-template-columns:
-    repeat(15,1fr);
+        repeat(15,1fr);
 
     gap:4px;
 
@@ -82,23 +81,18 @@ p{
     margin-bottom:20px;
 }
 
-/* 元素块 */
+/* ===== Elements ===== */
 
 .element{
 
-    min-height:90px;
+    min-height:120px;
 
     border-radius:10px;
 
     display:flex;
-
     flex-direction:column;
 
     align-items:center;
-
-    justify-content:flex-start;
-
-    color:#fff;
 
     position:relative;
 
@@ -106,10 +100,14 @@ p{
 
     cursor:pointer;
 
-    text-shadow:
-    1px 1px 3px rgba(0,0,0,.8);
+    color:#fff;
 
-    border:1px solid rgba(255,255,255,.3);
+    border:1px solid
+        rgba(255,255,255,.3);
+
+    text-shadow:
+        1px 1px 3px
+        rgba(0,0,0,.8);
 
     transition:.3s;
 
@@ -119,15 +117,15 @@ p{
 .element:hover{
 
     transform:
-    scale(1.08)
-    translateY(-5px);
+        scale(1.08)
+        translateY(-5px);
 
-    z-index:50;
+    z-index:100;
 
     box-shadow:
-    0 0 10px #00e5ff,
-    0 0 20px #00e5ff,
-    0 0 40px #00e5ff;
+        0 0 10px #00e5ff,
+        0 0 20px #00e5ff,
+        0 0 40px #00e5ff;
 }
 
 .element::after{
@@ -143,12 +141,12 @@ p{
     height:200%;
 
     background:
-    linear-gradient(
-        45deg,
-        transparent,
-        rgba(255,255,255,.15),
-        transparent
-    );
+        linear-gradient(
+            45deg,
+            transparent,
+            rgba(255,255,255,.15),
+            transparent
+        );
 
     transition:.5s;
 }
@@ -159,17 +157,17 @@ p{
     left:100%;
 }
 
-/* 元素内容 */
-
 .atomic{
 
     width:100%;
 
     text-align:left;
 
-    font-size:10px;
-
     padding:4px;
+
+    font-size:11px;
+
+    font-weight:bold;
 }
 
 .symbol{
@@ -179,13 +177,40 @@ p{
     font-weight:bold;
 
     margin-top:2px;
+
+    text-shadow:
+        0 0 3px rgba(255,255,255,.8),
+        0 0 6px rgba(255,255,255,.5);
 }
 
-.name{
+.cn-name{
 
-    font-size:10px;
+    font-size:12px;
+
+    font-weight:bold;
 
     text-align:center;
+
+    line-height:1.2;
+}
+
+.en-name{
+
+    width:95%;
+
+    font-size:8px;
+
+    text-align:center;
+
+    line-height:1.1;
+
+    opacity:.95;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
 }
 
 .mass{
@@ -194,12 +219,14 @@ p{
 
     padding-bottom:4px;
 
-    font-size:9px;
+    font-size:10px;
 
     font-weight:bold;
+
+    height:14px;
 }
 
-/* 分类颜色 */
+/* ===== Categories ===== */
 
 .nonmetal{
     background:#43a047;
@@ -233,27 +260,104 @@ p{
     background:#607d8b;
 }
 
-/* API 返回的分类 */
+/* ===== Lanthanides ===== */
 
-.lanthanide{
+.lanthanide,
+.lanthanoid{
 
-    background:linear-gradient(135deg,#ffb300,#ef6c00);
+    background:
+        linear-gradient(
+            135deg,
+            #ffb300,
+            #ef6c00
+        );
 
-    border:2px solid rgba(255,255,255,.35);
+    border:2px solid
+        rgba(255,255,255,.35);
 }
 
-.actinide{
+/* ===== Actinides ===== */
 
-    background:linear-gradient(135deg,#ef5350,#8e0000);
+.actinide,
+.actinoid{
 
-    border:2px solid rgba(255,255,255,.35);
+    background:
+        linear-gradient(
+            135deg,
+            #ef5350,
+            #8e0000
+        );
+
+    border:2px solid
+        rgba(255,255,255,.35);
 }
 
 .unknown{
     background:#546e7a;
 }
 
-/* 镧系锕系标题 */
+/* ===== Placeholder ===== */
+
+.series-placeholder{
+
+    min-height:120px;
+
+    border-radius:10px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    color:#fff;
+
+    font-weight:bold;
+
+    text-shadow:
+        1px 1px 3px rgba(0,0,0,.7);
+
+    border:2px solid
+        rgba(255,255,255,.35);
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,.2);
+}
+
+.lan-placeholder{
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffb300,
+            #ef6c00
+        );
+}
+
+.act-placeholder{
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef5350,
+            #8e0000
+        );
+}
+
+.series-range{
+
+    font-size:12px;
+
+    margin-top:4px;
+
+    opacity:.95;
+}
+
+/* ===== Titles ===== */
 
 .series-title{
 
@@ -261,9 +365,9 @@ p{
 
     padding:12px;
 
-    color:white;
-
     text-align:center;
+
+    color:white;
 
     border-radius:10px;
 }
@@ -276,20 +380,20 @@ p{
     background:#8e0000;
 }
 
-/* 详情 */
+/* ===== Detail Panel ===== */
 
 .detail-panel{
 
     margin:20px;
 
+    padding:20px;
+
     background:white;
 
     border-radius:15px;
 
-    padding:20px;
-
     box-shadow:
-    0 5px 20px rgba(0,0,0,.1);
+        0 5px 20px rgba(0,0,0,.1);
 }
 
 .detail-top{
@@ -303,9 +407,13 @@ p{
 
 .wiki-image{
 
-    width:300px;
+    width:280px;
 
     max-width:100%;
+
+    height:auto;
+
+    object-fit:contain;
 
     border-radius:12px;
 }
@@ -319,9 +427,18 @@ p{
     display:grid;
 
     grid-template-columns:
-    repeat(auto-fit,minmax(200px,1fr));
+        repeat(auto-fit,minmax(200px,1fr));
 
     gap:10px;
+}
+
+.title-en{
+
+    font-size:18px;
+
+    color:#64748b;
+
+    font-weight:normal;
 }
 
 .wiki-area{
@@ -331,7 +448,25 @@ p{
     line-height:1.8;
 }
 
-/* 动画 */
+.wiki-section{
+    margin-bottom:20px;
+}
+
+.wiki-cn{
+
+    color:#222;
+
+    line-height:1.9;
+}
+
+.wiki-en{
+
+    color:#555;
+
+    line-height:1.9;
+}
+
+/* ===== Animations ===== */
 
 @keyframes fadeUp{
 
@@ -340,7 +475,7 @@ p{
         opacity:0;
 
         transform:
-        translateY(20px);
+            translateY(20px);
     }
 
     to{
@@ -351,7 +486,7 @@ p{
     }
 }
 
-/* 手机 */
+/* ===== Mobile ===== */
 
 @media(max-width:768px){
 
@@ -367,11 +502,15 @@ p{
         font-size:16px;
     }
 
-    .name{
+    .en-name{
         display:none;
     }
 
     .atomic{
         font-size:8px;
+    }
+
+    .detail-panel{
+        margin:10px;
     }
 }
