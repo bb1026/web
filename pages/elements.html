@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <title>元素周期表</title>
+
+    <link rel="stylesheet" href="elementsstyle.css">
+</head>
+
+<body>
+
+<header>
+
+    <h1>元素周期表</h1>
+
+    <p>Periodic Table of the Elements</p>
+
+    <form autocomplete="off">
+
+        <input
+            id="search"
+            type="search"
+            placeholder="搜索元素名称、符号、原子序数"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            name="element-search">
+
+    </form>
+
+</header>
+
+<div class="table-wrapper">
+
+    <div id="table" class="periodic-table"></div>
+
+</div>
+
+<h2 class="series-title lan-title">
+    镧系元素（57-71）
+</h2>
+
+<div class="table-wrapper">
+
+    <div id="lanthanides" class="series"></div>
+
+</div>
+
+<h2 class="series-title act-title">
+    锕系元素（89-103）
+</h2>
+
+<div class="table-wrapper">
+
+    <div id="actinides" class="series"></div>
+
+</div>
+
+<section id="detail" class="detail-panel">
+
+    <div class="detail-top">
+
+        <img
+            id="wikiImage"
+            class="wiki-image"
+            style="display:none">
+
+        <div class="element-info">
+
+            <h2 id="title">请选择元素</h2>
+
+            <div class="info-grid">
+
+                <div>
+                    原子序数：
+                    <span id="atomic"></span>
+                </div>
+
+                <div>
+                    原子量：
+                    <span id="mass"></span>
+                </div>
+
+                <div>
+                    分类：
+                    <span id="category"></span>
+                </div>
+
+                <div>
+                    周期：
+                    <span id="period"></span>
+                </div>
+
+                <div>
+                    族：
+                    <span id="group"></span>
+                </div>
+
+                <div>
+                    密度：
+                    <span id="density"></span>
+                </div>
+
+                <div>
+                    熔点：
+                    <span id="melting"></span>
+                </div>
+
+                <div>
+                    沸点：
+                    <span id="boiling"></span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="wiki-area">
+
+        <h3>Wikipedia介绍</h3>
+
+        <p id="wikiText">
+            点击元素查看详情
+        </p>
+
+    </div>
+
+</section>
+
+<script src="elementsscript.js"></script>
+
+</body>
+
+</html>
