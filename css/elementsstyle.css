@@ -1,0 +1,377 @@
+*{
+    box-sizing:border-box;
+}
+
+body{
+
+    margin:0;
+    padding:0;
+
+    background:#f4f7fb;
+
+    font-family:
+    "Microsoft YaHei",
+    Arial,
+    sans-serif;
+}
+
+header{
+
+    text-align:center;
+
+    padding:20px;
+}
+
+h1{
+
+    margin-bottom:5px;
+
+    color:#1e293b;
+}
+
+p{
+    color:#64748b;
+}
+
+#search{
+
+    width:100%;
+    max-width:600px;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    border:1px solid #d1d5db;
+
+    font-size:16px;
+}
+
+.table-wrapper{
+
+    width:100%;
+
+    overflow-x:auto;
+
+    padding:10px;
+}
+
+.periodic-table{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(18,1fr);
+
+    gap:4px;
+
+    min-width:1200px;
+}
+
+.series{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(15,1fr);
+
+    gap:4px;
+
+    min-width:900px;
+
+    margin-bottom:20px;
+}
+
+/* 元素块 */
+
+.element{
+
+    min-height:90px;
+
+    border-radius:10px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    color:#fff;
+
+    position:relative;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+    text-shadow:
+    1px 1px 3px rgba(0,0,0,.8);
+
+    border:1px solid rgba(255,255,255,.3);
+
+    transition:.3s;
+
+    animation:fadeUp .4s ease;
+}
+
+.element:hover{
+
+    transform:
+    scale(1.08)
+    translateY(-5px);
+
+    z-index:50;
+
+    box-shadow:
+    0 0 10px #00e5ff,
+    0 0 20px #00e5ff,
+    0 0 40px #00e5ff;
+}
+
+.element::after{
+
+    content:"";
+
+    position:absolute;
+
+    top:-100%;
+    left:-100%;
+
+    width:200%;
+    height:200%;
+
+    background:
+    linear-gradient(
+        45deg,
+        transparent,
+        rgba(255,255,255,.15),
+        transparent
+    );
+
+    transition:.5s;
+}
+
+.element:hover::after{
+
+    top:100%;
+    left:100%;
+}
+
+/* 元素内容 */
+
+.atomic{
+
+    width:100%;
+
+    text-align:left;
+
+    font-size:10px;
+
+    padding:4px;
+}
+
+.symbol{
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    margin-top:2px;
+}
+
+.name{
+
+    font-size:10px;
+
+    text-align:center;
+}
+
+.mass{
+
+    margin-top:auto;
+
+    padding-bottom:4px;
+
+    font-size:9px;
+
+    font-weight:bold;
+}
+
+/* 分类颜色 */
+
+.nonmetal{
+    background:#43a047;
+}
+
+.transition_metal{
+    background:#1e88e5;
+}
+
+.noble_gas{
+    background:#8e24aa;
+}
+
+.halogen{
+    background:#d81b60;
+}
+
+.alkali_metal{
+    background:#f4511e;
+}
+
+.alkaline_earth_metal{
+    background:#fb8c00;
+}
+
+.metalloid{
+    background:#00897b;
+}
+
+.post_transition_metal{
+    background:#607d8b;
+}
+
+/* API 返回的分类 */
+
+.lanthanide{
+
+    background:linear-gradient(135deg,#ffb300,#ef6c00);
+
+    border:2px solid rgba(255,255,255,.35);
+}
+
+.actinide{
+
+    background:linear-gradient(135deg,#ef5350,#8e0000);
+
+    border:2px solid rgba(255,255,255,.35);
+}
+
+.unknown{
+    background:#546e7a;
+}
+
+/* 镧系锕系标题 */
+
+.series-title{
+
+    margin:15px 10px;
+
+    padding:12px;
+
+    color:white;
+
+    text-align:center;
+
+    border-radius:10px;
+}
+
+.lan-title{
+    background:#ef6c00;
+}
+
+.act-title{
+    background:#8e0000;
+}
+
+/* 详情 */
+
+.detail-panel{
+
+    margin:20px;
+
+    background:white;
+
+    border-radius:15px;
+
+    padding:20px;
+
+    box-shadow:
+    0 5px 20px rgba(0,0,0,.1);
+}
+
+.detail-top{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:20px;
+}
+
+.wiki-image{
+
+    width:300px;
+
+    max-width:100%;
+
+    border-radius:12px;
+}
+
+.element-info{
+    flex:1;
+}
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(200px,1fr));
+
+    gap:10px;
+}
+
+.wiki-area{
+
+    margin-top:20px;
+
+    line-height:1.8;
+}
+
+/* 动画 */
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:
+        translateY(20px);
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:none;
+    }
+}
+
+/* 手机 */
+
+@media(max-width:768px){
+
+    .periodic-table{
+        min-width:1000px;
+    }
+
+    .series{
+        min-width:850px;
+    }
+
+    .symbol{
+        font-size:16px;
+    }
+
+    .name{
+        display:none;
+    }
+
+    .atomic{
+        font-size:8px;
+    }
+}
