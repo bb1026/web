@@ -134,60 +134,42 @@ async function handleRequest(request, env) {
     });
   }
 
-  // 2. 来源在白名单内则放行
-  if (isAllowedOrigin(request)) {
-    return fetch(request);
-  }
+ if (isRestrictedFile(url)) {
 
-  // 3. 判断是否是受限资源
-  if (isRestrictedFile(url)) {
-    // 3.1 浏览器直接访问禁止
-    if (isBrowserDirectAccess(request)) {
-      return createErrorResponse(
-        '禁止访问的文件，请通过合法程序并通过认证访问',
+    const dest = request.headers.get("Sec-Fetch-Dest") || "";
+    const site = request.headers.get("Sec-Fetch-Site") || "";
+    const referer = request.headers.get("Referer") || "";
+
+    // 同源脚本加载
+    if (
+        dest === "script" &&
+        (
+            site === "same-origin" ||
+            site === "same-site"
+        )
+    ) {
+        return fetch(request);
+    }
+
+    // 允许同源Referer
+    if (
+        referer &&
+        new URL(referer).hostname.endsWith(config.mainDomain)
+    ) {
+        return fetch(request);
+    }
+
+    // 允许密钥访问
+    if (hasValidAuthKey(request, env)) {
+        return fetch(request);
+    }
+
+    return createErrorResponse(
+        "禁止直接访问",
         timestamp
-      );
-    }
+    );
+}
 
-    // 3.2 同源请求允许
-    if (isSameOrigin(request)) {
-      return fetch(request);
-    }
-
-    // 3.3 无效密钥拒绝
-    if (!hasValidAuthKey(request, env)) {
-      return createErrorResponse('密钥认证失败', timestamp);
-    }
-
-    // 3.4 密钥访问成功，处理文件获取
-    try {
-      const response = await fetch(request);
-
-      if (response.status === 404) {
-        const fallbackScript = `
-Safari.open('https://www.0515364.xyz');
-// 创建 Scriptable 失败，请访问主页
-        `.trim();
-
-        return new Response(fallbackScript, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'X-Fallback': 'true'
-          }
-        });
-      }
-
-      return new Response(await response.body, {
-        status: response.status,
-        headers: response.headers
-      });
-
-    } catch (error) {
-      return createErrorResponse(`资源获取失败: ${error.message}`, timestamp, 500);
-    }
-  }
-
-  // 4. 非受限文件类型直接放行
-  return fetch(request);
+// 非受限资源
+return fetch(request);
 }
