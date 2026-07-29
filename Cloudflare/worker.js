@@ -135,7 +135,6 @@ async function handleRequest(request, env) {
   }
 
  if (isRestrictedFile(url)) {
-
     const dest = request.headers.get("Sec-Fetch-Dest") || "";
     const site = request.headers.get("Sec-Fetch-Site") || "";
     const referer = request.headers.get("Referer") || "";
