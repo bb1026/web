@@ -12,8 +12,6 @@ body{
         sans-serif;
 }
 
-/* ===== Header ===== */
-
 header{
     text-align:center;
     padding:20px;
@@ -31,25 +29,17 @@ p{
 #search{
     width:100%;
     max-width:600px;
-
     padding:12px;
-
     border-radius:10px;
     border:1px solid #d1d5db;
-
     font-size:16px;
 }
 
 .field-en{
-
     color:#64748b;
-
     font-size:11px;
-
     font-style:italic;
 }
-
-/* ===== Table ===== */
 
 .table-wrapper{
     width:100%;
@@ -59,67 +49,42 @@ p{
 
 .periodic-table{
     display:grid;
-
-    grid-template-columns:
-        repeat(18,1fr);
-
+    grid-template-columns: repeat(18,1fr);
     gap:4px;
-
     min-width:1200px;
 }
 
 .series{
     display:grid;
-
-    grid-template-columns:
-        repeat(15,1fr);
-
+    grid-template-columns: repeat(15,1fr);
     gap:4px;
-
     min-width:900px;
-
     margin-bottom:20px;
 }
 
-/* ===== Elements ===== */
-
 .element{
-
-    min-height:120px;
-
+    min-height:80px;
     border-radius:10px;
-
     display:flex;
     flex-direction:column;
-
     align-items:center;
-
     position:relative;
-
     overflow:hidden;
-
     cursor:pointer;
-
     color:#fff;
-
     border:1px solid
         rgba(255,255,255,.3);
-
     text-shadow:
         1px 1px 3px
         rgba(0,0,0,.8);
-
     transition:.3s;
-
     animation:fadeUp .4s ease;
 }
 
 .element:hover{
-
     transform:
         scale(1.08)
         translateY(-5px);
-
     z-index:100;
 
     box-shadow:
@@ -129,17 +94,12 @@ p{
 }
 
 .element::after{
-
     content:"";
-
     position:absolute;
-
     top:-100%;
     left:-100%;
-
     width:200%;
     height:200%;
-
     background:
         linear-gradient(
             45deg,
@@ -147,86 +107,56 @@ p{
             rgba(255,255,255,.15),
             transparent
         );
-
     transition:.5s;
 }
 
 .element:hover::after{
-
     top:100%;
     left:100%;
 }
 
 .atomic{
-
     width:100%;
-
     text-align:left;
-
-    padding:4px;
-
+    padding:2px 4px 0;
     font-size:11px;
-
     font-weight:bold;
+    line-height:1;
 }
 
 .symbol{
-
     font-size:24px;
-
     font-weight:bold;
-
-    margin-top:2px;
-
-    text-shadow:
-        0 0 3px rgba(255,255,255,.8),
-        0 0 6px rgba(255,255,255,.5);
+    margin-top:0;
+    line-height:1;
 }
 
 .cn-name{
-
     font-size:12px;
-
     font-weight:bold;
-
     text-align:center;
-
     line-height:1.2;
 }
 
 .en-name{
-
     width:95%;
-
+    height:10px; 
     font-size:8px;
-
+    line-height:10px;
     text-align:center;
 
-    line-height:1.1;
-
-    opacity:.95;
-
     overflow:hidden;
-
     text-overflow:ellipsis;
-
     white-space:nowrap;
 }
 
 .mass{
-
-    margin-top:auto;
-
-    padding-bottom:4px;
-
+    margin-top:2px;
+    padding-bottom:3px;
     font-size:10px;
-
     font-weight:bold;
-
-    height:14px;
+    line-height:1;
 }
-
-/* ===== Categories ===== */
 
 .nonmetal{
     background:#43a047;
@@ -260,27 +190,20 @@ p{
     background:#607d8b;
 }
 
-/* ===== Lanthanides ===== */
-
 .lanthanide,
 .lanthanoid{
-
     background:
         linear-gradient(
             135deg,
             #ffb300,
             #ef6c00
         );
-
     border:2px solid
         rgba(255,255,255,.35);
 }
 
-/* ===== Actinides ===== */
-
 .actinide,
 .actinoid{
-
     background:
         linear-gradient(
             135deg,
@@ -296,40 +219,25 @@ p{
     background:#546e7a;
 }
 
-/* ===== Placeholder ===== */
-
 .series-placeholder{
-
-    min-height:120px;
-
+    min-height:80px;
     border-radius:10px;
-
     display:flex;
-
     flex-direction:column;
-
     justify-content:center;
-
     align-items:center;
-
     text-align:center;
-
     color:#fff;
-
     font-weight:bold;
-
     text-shadow:
         1px 1px 3px rgba(0,0,0,.7);
-
     border:2px solid
         rgba(255,255,255,.35);
-
     box-shadow:
         0 4px 10px rgba(0,0,0,.2);
 }
 
 .lan-placeholder{
-
     background:
         linear-gradient(
             135deg,
@@ -339,7 +247,6 @@ p{
 }
 
 .act-placeholder{
-
     background:
         linear-gradient(
             135deg,
@@ -349,26 +256,16 @@ p{
 }
 
 .series-range{
-
     font-size:12px;
-
     margin-top:4px;
-
     opacity:.95;
 }
 
-/* ===== Titles ===== */
-
 .series-title{
-
     margin:15px 10px;
-
     padding:12px;
-
     text-align:center;
-
     color:white;
-
     border-radius:10px;
 }
 
@@ -380,41 +277,26 @@ p{
     background:#8e0000;
 }
 
-/* ===== Detail Panel ===== */
-
 .detail-panel{
-
     margin:20px;
-
     padding:20px;
-
     background:white;
-
     border-radius:15px;
-
     box-shadow:
         0 5px 20px rgba(0,0,0,.1);
 }
 
 .detail-top{
-
     display:flex;
-
     flex-wrap:wrap;
-
     gap:20px;
 }
 
 .wiki-image{
-
     width:280px;
-
     max-width:100%;
-
     height:auto;
-
     object-fit:contain;
-
     border-radius:12px;
 }
 
@@ -423,28 +305,19 @@ p{
 }
 
 .info-grid{
-
     display:grid;
-
     grid-template-columns:
         repeat(auto-fit,minmax(200px,1fr));
-
     gap:10px;
 }
-
 .title-en{
-
     font-size:18px;
-
     color:#64748b;
-
     font-weight:normal;
 }
 
 .wiki-area{
-
     margin-top:20px;
-
     line-height:1.8;
 }
 
@@ -453,43 +326,28 @@ p{
 }
 
 .wiki-cn{
-
     color:#222;
-
     line-height:1.9;
 }
 
 .wiki-en{
-
     color:#555;
-
     line-height:1.9;
 }
 
-/* ===== Animations ===== */
-
 @keyframes fadeUp{
-
     from{
-
         opacity:0;
-
         transform:
             translateY(20px);
     }
-
     to{
-
         opacity:1;
-
         transform:none;
     }
 }
 
-/* ===== Mobile ===== */
-
 @media(max-width:768px){
-
     .periodic-table{
         min-width:1000px;
     }
