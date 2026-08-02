@@ -30,399 +30,202 @@ const categoryMap = {
 };
 
 let allElements = [];
-
 /* 加载元素数据 */
 async function loadElements() {
-
     try {
-
- const response = await fetch(
-     "https://api.periodictableofelements.org/elements/"
- );
-
+ const response = await fetch("https://api.periodictableofelements.org/elements/");
  allElements = await response.json();
-
  renderAll();
-
     } catch (err) {
-
  console.error(err);
-
  alert("元素数据加载失败");
     }
 }
 
 /* 分类转换为CSS类 */
 function cssCategory(category) {
-
     if (!category) return "unknown";
-
-    return category
- .replace(/\s+/g, "_")
- .replace(/-/g, "_")
- .toLowerCase();
-}
+    return category.replace(/\s+/g, "_").replace(/-/g, "_").toLowerCase();}
 
 /* 创建元素卡片 */
 function createCard(el) {
-
     const card = document.createElement("div");
-
-    card.className =
- "element " +
- cssCategory(el.category);
-
-    const cnName =
- cnNameMap[el.symbol] || "";
-
+    card.className = "element " + cssCategory(el.category);
+    const cnName = cnNameMap[el.symbol] || "";
     let mass = "-";
-
-    if (el.atomic_mass) {
-
- mass = Number(el.atomic_mass)
-     .toPrecision(6);
-    }
-
-    card.innerHTML = `
- <div class="atomic">
-     ${el.atomic_number}
- </div>
-
- <div class="symbol">
-     ${el.symbol}
- </div>
-
- <div class="cn-name">
-     ${cnName}
- </div>
-
- <div class="en-name">
-     ${el.name}
- </div>
-
- <div class="mass">
-     ${mass}
- </div>
-    `;
-
+    if (el.atomic_mass) {mass = Number(el.atomic_mass).toPrecision(6);}
+    card.innerHTML = `<div class="atomic">${el.atomic_number}</div>
+ <div class="symbol">${el.symbol} </div>
+ <div class="cn-name">${cnName}</div>
+ <div class="en-name">${el.name}</div>
+ <div class="mass">${mass}</div>`;
     card.onclick = () => showDetail(el);
-
     return card;
 }
 
 /* 渲染全部 */
 function renderAll() {
-
-    const table =
- document.getElementById("table");
-
-    const lanthanides =
- document.getElementById("lanthanides");
-
-    const actinides =
- document.getElementById("actinides");
-
+    const table = document.getElementById("table");
+    const lanthanides = document.getElementById("lanthanides");
+    const actinides = document.getElementById("actinides");
     table.innerHTML = "";
     lanthanides.innerHTML = "";
     actinides.innerHTML = "";
+    const mainElements = allElements.filter(e => e.atomic_number < 57 || (e.atomic_number > 71 && e.atomic_number < 89) || e.atomic_number > 103);
 
-    const mainElements =
- allElements.filter(e =>
-
-     e.atomic_number < 57 ||
-
-     (
-  e.atomic_number > 71 &&
-  e.atomic_number < 89
-     ) ||
-
-     e.atomic_number > 103
- );
-
-    const lanthSeries =
- allElements.filter(e =>
-     e.atomic_number >= 57 &&
-     e.atomic_number <= 71
- );
-
-    const actSeries =
- allElements.filter(e =>
-     e.atomic_number >= 89 &&
-     e.atomic_number <= 103
- );
-
+    const lanthSeries = allElements.filter(e => e.atomic_number >= 57 && e.atomic_number <= 71);
+    const actSeries = allElements.filter(e => e.atomic_number >= 89 && e.atomic_number <= 103);
     mainElements.forEach(el => {
-
- const card =
-     createCard(el);
-
+ const card = createCard(el);
  if (el.group_number) {
-
-     card.style.gridColumn =
-  el.group_number;
+     card.style.gridColumn = el.group_number;
  }
 
  if (el.period) {
-
-     card.style.gridRow =
-  el.period;
+     card.style.gridRow = el.period;
  }
-
  table.appendChild(card);
 
  /* La-Lu 占位 */
  if (el.atomic_number === 56) {
-
-     const lanBox =
-  document.createElement("div");
-
-     lanBox.className =
-  "series-placeholder lan-placeholder";
-
+     const lanBox =  document.createElement("div");
+     lanBox.className =  "series-placeholder lan-placeholder";
      lanBox.style.gridColumn = 3;
      lanBox.style.gridRow = 6;
-
-     lanBox.innerHTML = `
-  <div>La-Lu</div>
-  <div class="series-range">
-      57-71
-  </div>
-     `;
-
+     lanBox.innerHTML = `<div>La-Lu</div><div class="series-range">57-71</div>`;
      table.appendChild(lanBox);
  }
 
  /* Ac-Lr 占位 */
  if (el.atomic_number === 88) {
-
-     const actBox =
-  document.createElement("div");
-
-     actBox.className =
-  "series-placeholder act-placeholder";
-
+     const actBox = document.createElement("div");
+     actBox.className = "series-placeholder act-placeholder";
      actBox.style.gridColumn = 3;
      actBox.style.gridRow = 7;
-
-     actBox.innerHTML = `
-  <div>Ac-Lr</div>
-  <div class="series-range">
-      89-103
-  </div>
-     `;
-
+     actBox.innerHTML = `<div>Ac-Lr</div><div class="series-range">89-103</div>`;
      table.appendChild(actBox);
  }
     });
-
-    lanthSeries.forEach(el => {
- lanthanides.appendChild(
-     createCard(el)
- );
+    lanthSeries.forEach(el => {lanthanides.appendChild(createCard(el));
     });
-
-    actSeries.forEach(el => {
- actinides.appendChild(
-     createCard(el)
- );
+    actSeries.forEach(el => {actinides.appendChild(createCard(el));
     });
 }
 
 /* 搜索 */
 function handleSearch(keyword) {
-
-    const text =
- keyword.trim().toLowerCase();
-
+    const text = keyword.trim().toLowerCase();
     if (!text) {
-
  renderAll();
  return;
     }
-
-    const result =
- allElements.filter(el => {
-
-     const cnName =
-  cnNameMap[el.symbol] || "";
-
+    const result = allElements.filter(el => {
+     const cnName = cnNameMap[el.symbol] || "";
      return (
-
-  el.name
-      .toLowerCase()
-      .includes(text)
-
-  ||
-
-  el.symbol
-      .toLowerCase()
-      .includes(text)
-
-  ||
-
-  cnName.includes(text)
-
-  ||
-
-  String(el.atomic_number)
-      .includes(text)
+  el.name.toLowerCase().includes(text) || el.symbol.toLowerCase().includes(text) || cnName.includes(text) || String(el.atomic_number).includes(text)
      );
  });
-
-    const table =
- document.getElementById("table");
-
-    const lanthanides =
- document.getElementById("lanthanides");
-
-    const actinides =
- document.getElementById("actinides");
-
+    const table = document.getElementById("table");
+    const lanthanides = document.getElementById("lanthanides");
+    const actinides = document.getElementById("actinides");
     table.innerHTML = "";
     lanthanides.innerHTML = "";
     actinides.innerHTML = "";
 
     result.forEach(el => {
-
- table.appendChild(
-     createCard(el)
- );
+ table.appendChild(createCard(el) );
     });
 }
 
 /* 详情 */
 async function showDetail(el) {
-
-    const cnName =
- cnNameMap[el.symbol] || el.name;
-
+    const cnName = cnNameMap[el.symbol] || el.name;
     document.getElementById("title").innerHTML = `${cnName} (${el.symbol})<br><span class="title-en">${el.name}</span>`;
-
     document.getElementById("atomic").innerHTML =`${el.atomic_number}<br><span class="field-en">Atomic Number</span>`;
-
     document.getElementById("mass").innerHTML =`${el.atomic_mass || "-"}<br><span class="field-en">Atomic Mass</span>`;
-
     document.getElementById("category").innerHTML =`${categoryMap[cssCategory(el.category)] || el.category}<br><span class="field-en"> ${el.category || "-"}</span>`;
-
     document.getElementById("period").innerHTML =`${el.period}<br><span class="field-en">Period</span>`;
-
     document.getElementById("group").innerHTML =`${el.group_number || "-"}<br><span class="field-en">Group</span>`;
-
     document.getElementById("density").innerHTML =`${el.density || "-"}<br><span class="field-en">g/cm³</span>`;
-
     document.getElementById("melting").innerHTML =`${el.melting_point || "-"} K<br><span class="field-en">Melting Point</span>`;
-
     document.getElementById("boiling").innerHTML =`${el.boiling_point || "-"} K<br><span class="field-en">Boiling Point</span>`;
-
     const wikiText = document.getElementById("wikiText");
-
     const wikiImage = document.getElementById("wikiImage");
-
     wikiText.innerHTML = "正在加载资料...";
-
     wikiImage.src = "";
     wikiImage.style.display = "none";
-
     try {
-
  let cnWiki = null;
  let enWiki = null;
 
  /* 中文 */
  try {
-
-     const cnResponse =
-  await fetch(
-      `https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cnName)}`
-  );
-
+     const cnResponse = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cnName)}`);
      if (cnResponse.ok) {
-
-  cnWiki =
-      await cnResponse.json();
+  cnWiki =await cnResponse.json();
      }
-
  } catch {}
-
  /* 英文 */
  try {
-
-     const enResponse =
-  await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(el.name)}`
-  );
-
+     const enResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(el.name)}`);
      if (enResponse.ok) {
-
-  enWiki =
-      await enResponse.json();
+  enWiki = await enResponse.json();
      }
-
  } catch {}
-
  /* 图片优先英文 */
- const image =
-
-     enWiki?.thumbnail?.source ||
-
-     cnWiki?.thumbnail?.source;
-
+ const image = enWiki?.thumbnail?.source || cnWiki?.thumbnail?.source;
  if (image) {
-
      wikiImage.src = image;
-     wikiImage.style.display =
-  "block";
+     wikiImage.style.display = "block";
  }
 
- const cnText =
-     cnWiki?.extract ||
-     "暂无中文介绍";
-
- const enText =
-     enWiki?.extract ||
-     "No English description available.";
+const cnText = cnWiki?.extract || "暂无中文介绍";
+const enText = enWiki?.extract || "No English description available.";
+let translatedText = "";
+if (
+    enWiki && enWiki.extract
+) {
+    translatedText =
+        await translateText(enWiki.extract);
+}
 
  wikiText.innerHTML = `
-
-     <div class="wiki-section">
-
-  <h3>中文介绍</h3>
-
-  <p class="wiki-cn">
-      ${cnText}
-  </p>
-
-     </div>
-
-     <hr>
-
-     <div class="wiki-section">
-
-  <h3>English Description</h3>
-
-  <p class="wiki-en">
-      ${enText}
-  </p>
-
-     </div>
-
- `;
-
+<div class="wiki-section">
+    <h3>中文维基介绍</h3>
+    <p class="wiki-cn">${cnText}</p></div>
+<hr>
+<div class="wiki-section">
+    <h3>英文维基翻译</h3>
+    <p class="wiki-cn">
+        ${translatedText}
+    </p>
+</div>
+<hr>
+<div class="wiki-section">
+    <h3>English Description</h3>
+    <p class="wiki-en">${enText}</p></div>`;
     } catch (error) {
-
  console.error(error);
-
  wikiText.innerHTML = `<div class="wiki-cn">暂无资料</div>`;
+    }
+}
+
+async function translateText(text) {
+    try {
+        const response = await fetch(
+            `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=${encodeURIComponent(text)}`
+        );
+        const data = await response.json();
+        return data[0].map(item => item[0]).join("");
+    } catch {
+        return "翻译失败";
     }
 }
 
 /* 搜索框 */
 document.getElementById("search").addEventListener("input",
  function () {
-
-     handleSearch(
-  this.value
-     );
+     handleSearch(this.value);
  }
     );
 
@@ -430,11 +233,7 @@ document.getElementById("search").addEventListener("input",
 window.addEventListener(
     "load",
     () => {
-
- document
-     .getElementById("search")
-     .value = "";
-
+ document.getElementById("search").value = "";
  loadElements();
     }
 );
