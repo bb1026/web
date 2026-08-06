@@ -40,7 +40,8 @@
     ["单词拼写2", "https://bing.0515364.xyz/game3", "进阶拼写游戏", "fa-solid fa-spell-check"],
     ["单词拼写3", "https://bing.0515364.xyz/game4", "挑战拼写模式", "fa-solid fa-spell-check"],
     ["华容道", "https://bing.0515364.xyz/game5", "经典华容道游戏", "fa-solid fa-puzzle-piece"],
-    ["井字游戏", "/pages/xogame", "井字棋小游戏", "fa-solid fa-o"]
+    ["井字游戏", "/pages/xogame", "井字棋小游戏", "fa-solid fa-o"],
+    ["E-moji消消乐游戏", "/pages/xxl", "消消乐小游戏", "fa-solid fa-o"]
   ],
 
   "Scriptable": [
