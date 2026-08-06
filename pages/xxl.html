@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Emoji Match Deluxe</title>
+<style>
+*{
+    box-sizing: border-box;
+    margin:0;
+    padding:0;
+    font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    touch-action: manipulation;
+}
+html, body{
+    min-height:100vh;
+    height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+    -webkit-overflow-scrolling: none;
+}
+body{
+    background: linear-gradient(135deg,#eef2ff,#f8fafc);
+    color:#222;
+    display:flex;
+    justify-content:center;
+}
+body.dark{
+    background:#111827;
+    color:#eee;
+}
+.app{
+    width:100%;
+    max-width:650px;
+    padding:20px;
+}
+.title{
+    text-align:center;
+    font-size:32px;
+    font-weight:800;
+    margin-bottom:15px;
+}
+.info{
+    display:grid;
+    grid-template-columns: repeat(3,1fr);
+    gap:10px;
+    margin-bottom:15px;
+}
+.info div{
+    background:white;
+    border-radius:15px;
+    padding:12px 6px;
+    text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    font-size:14px;
+}
+.dark .info div{
+    background:#1f2937;
+}
+#board{
+    display:grid;
+    gap:6px;
+    justify-content:center;
+    margin:auto;
+}
+.cell{
+    background:white;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:clamp(24px,4vw,32px);
+    cursor:pointer;
+    user-select:none;
+    transition:transform .15s,opacity .2s;
+    box-shadow:0 3px 8px rgba(0,0,0,.12);
+}
+.dark .cell{
+    background:#374151;
+}
+.cell:hover{
+    transform:scale(1.08);
+}
+.cell.selected{
+    outline:3px solid #3b82f6;
+    transform:scale(1.12);
+}
+.cell.remove{
+    animation: remove .35s forwards;
+}
+@keyframes remove{
+    0%{transform:scale(1);opacity:1;}
+    50%{transform:scale(1.4) rotate(20deg);}
+    100%{transform:scale(0);opacity:0;}
+}
+.cell.drop{
+    animation: drop .35s;
+}
+@keyframes drop{
+    from{transform:translateY(-80px);opacity:0;}
+    to{transform:translateY(0);opacity:1;}
+}
+.cell.hint{
+    animation: shake 0.4s infinite alternate;
+}
+@keyframes shake {
+    0% { transform: translateX(-4px); }
+    100% { transform: translateX(4px); }
+}
+.combo{
+    position:fixed;
+    top:45%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:42px;
+    font-weight:900;
+    color:#f97316;
+    pointer-events:none;
+    animation: comboAnim 1s;
+}
+@keyframes comboAnim{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.3);}
+    40%{opacity:1;transform:translate(-50%,-50%) scale(1.3);}
+    100%{opacity:0;transform:translate(-50%,-80%) scale(1);}
+}
+.controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-top:20px;
+    align-items:center;
+}
+button, select{
+    border:none;
+    border-radius:12px;
+    padding:10px 18px;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+}
+select{
+    appearance:none;
+    background-image: url("data:image/svg+xml,%3Csvg fill='white' width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l6 8 6-8H0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right:32px;
+}
+button:disabled{
+    background:#94a3b8;
+    cursor:not-allowed;
+    opacity:0.6;
+}
+button:hover:not(:disabled), select:hover{
+    opacity:.85;
+}
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:99;
+}
+.modal.show{
+    display:flex;
+}
+.dialog{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    width:320px;
+}
+.dark .dialog{
+    background:#1f2937;
+}
+.dialog h2{
+    margin-bottom:20px;
+}
+.dialog-btns{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin-top:20px;
+}
+</style>
+</head>
+<body>
+<div class="app">
+    <h1 class="title">🧩 Emoji Match Deluxe</h1>
+    <div class="info">
+        <div>⭐<br>分数<br><span id="score">0</span></div>
+        <div>👣<br>步数<br><span id="steps">60</span></div>
+        <div>📈<br>本局最高<br><span id="roundMaxCombo">0</span></div>
+    </div>
+    <div id="board"></div>
+    <div class="controls">
+        <button onclick="openSwitchConfirm('easy')">普通 6×6</button>
+        <button onclick="openSwitchConfirm('medium')">中等 7×7</button>
+        <button onclick="openSwitchConfirm('hard')">困难 8×8</button>
+        <select id="skinSelect">
+            <option value="fruit">🍎 水果</option>
+            <option value="animal">🐱 动物</option>
+            <option value="dessert">🍰 甜品</option>
+            <option value="ocean">🐬 海洋</option>
+            <option value="smile">😃 笑脸</option>
+        </select>
+        <button id="shuffleBtn" onclick="doShuffle()">🔄 洗牌</button>
+        <button onclick="toggleDark()">🌙 模式</button>
+    </div>
+</div>
+
+<!-- 切换模式确认弹窗 -->
+<div id="switchModal" class="modal">
+    <div class="dialog">
+        <h2>确认切换难度？</h2>
+        <p>当前进度将会清空，确定更换棋盘吗？</p>
+        <div class="dialog-btns">
+            <button onclick="closeSwitchModal()">取消</button>
+            <button id="confirmSwitchBtn">确认切换</button>
+        </div>
+    </div>
+</div>
+
+<!-- 游戏结束弹窗 -->
+<div id="gameOver" class="modal">
+    <div class="dialog">
+        <h2>🎉 游戏结束</h2>
+        <p>最终分数：<span id="finalScore">0</span></p>
+        <p>本局最大连击：<span id="finalRoundCombo">0</span></p>
+        <br>
+        <button onclick="newGame(currentMode)">重新开始</button>
+    </div>
+</div>
+
+<script>
+// 皮肤配置【新增笑脸smile】
+const SKINS = {
+    fruit: ["🍎","🍊","🍋","🍇","🍓","🥝","🌸","🌺"],
+    animal: ["🐱","🐶","🐰","🦊","🐼","🐨","🐯","🐸"],
+    dessert: ["🍰","🍩","🍦","🍪","🧁","🍫","🍯","🍬"],
+    ocean: ["🐬","🐠","🐙","🦀","🦐","🐡","🦑","🪼"],
+    smile: ["😃","😭","😆","🥺","😎","🥳","😴","😡"]
+};
+let currentSkin = localStorage.getItem("skin") || "fruit";
+const skinSelect = document.getElementById("skinSelect");
+
+function getCurrentEmojis(){
+    return SKINS[currentSkin];
+}
+
+const MODE={
+    easy:{size:6,steps:60},
+    medium:{size:7,steps:80},
+    hard:{size:8,steps:110}
+};
+let board=[];
+let size=6;
+let currentMode="easy";
+let pendingSwitchMode=null;
+let score=0;
+let steps=60;
+let combo=0;
+let roundMaxCombo=0; // 本局最高combo
+let busy=false;
+let idleTimer=null;
+const IDLE_SECOND=10;
+
+const boardDOM=document.getElementById("board");
+const scoreDOM=document.getElementById("score");
+const stepDOM=document.getElementById("steps");
+const roundMaxComboDOM=document.getElementById("roundMaxCombo");
+const shuffleBtn=document.getElementById("shuffleBtn");
+const switchModal=document.getElementById("switchModal");
+const confirmSwitchBtn=document.getElementById("confirmSwitchBtn");
+
+// 初始化下拉选中状态
+skinSelect.value = currentSkin;
+skinSelect.addEventListener("change", ()=>{
+    changeSkin(skinSelect.value);
+});
+
+// 切换皮肤（不重置对局，只刷新方块外观）
+function changeSkin(skinKey){
+    currentSkin = skinKey;
+    localStorage.setItem("skin", currentSkin);
+    // 只替换普通方块，保留道具💥🌟🌈
+    const emojis = getCurrentEmojis();
+    for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++){
+            const val = board[y][x];
+            if(!["💥","🌟","🌈"].includes(val)){
+                board[y][x] = emojis[Math.floor(Math.random()*emojis.length)];
+            }
+        }
+    }
+    renderBoard();
+}
+
+// 切换弹窗绑定
+function openSwitchConfirm(mode){
+    pendingSwitchMode = mode;
+    switchModal.classList.add("show");
+    confirmSwitchBtn.onclick = function(){
+        newGame(pendingSwitchMode);
+        closeSwitchModal();
+    }
+}
+function closeSwitchModal(){
+    pendingSwitchMode = null;
+    switchModal.classList.remove("show");
+}
+
+function randomEmoji(){
+    const list = getCurrentEmojis();
+    return list[Math.floor(Math.random()*list.length)];
+}
+function sleep(t){return new Promise(r=>setTimeout(r,t));}
+function inRange(x,y){return x>=0&&y>=0&&x<size&&y<size;}
+
+// 闲置计时、抖动提示
+function resetIdleTimer(){
+    clearTimeout(idleTimer);
+    idleTimer=setTimeout(()=>showHintBlock(),IDLE_SECOND*1000);
+}
+function clearAllHint(){
+    document.querySelectorAll(".cell.hint").forEach(el=>el.classList.remove("hint"));
+}
+function showHintBlock(){
+    clearAllHint();
+    const pair=findHintPair();
+    if(!pair)return;
+    const [p1,p2]=pair;
+    const d1=getCell(p1.x,p1.y),d2=getCell(p2.x,p2.y);
+    if(d1)d1.classList.add("hint");
+    if(d2)d2.classList.add("hint");
+}
+function findHintPair(){
+    for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++){
+            if(x+1<size){
+                swap(x,y,x+1,y);
+                let ok=findMatches().length>0;
+                swap(x,y,x+1,y);
+                if(ok)return [{x,y},{x:x+1,y}];
+            }
+            if(y+1<size){
+                swap(x,y,x,y+1);
+                let ok=findMatches().length>0;
+                swap(x,y,x,y+1);
+                if(ok)return [{x,y},{x,y:y+1}];
+            }
+        }
+    }
+    return null;
+}
+
+// 棋盘生成，仅禁止横竖三连
+function createBoard(){
+    board=[];
+    for(let y=0;y<size;y++){
+        let r=[];
+        for(let x=0;x<size;x++)r.push(null);
+        board.push(r);
+    }
+}
+function randomSafeEmoji(x,y){
+    let list=[...getCurrentEmojis()];
+    if(x>=2&&board[y][x-1]===board[y][x-2]) list=list.filter(e=>e!==board[y][x-1]);
+    if(y>=2&&board[y-1][x]===board[y-2][x]) list=list.filter(e=>e!==board[y-1][x]);
+    return list[Math.floor(Math.random()*list.length)];
+}
+function generateBoard(){
+    createBoard();
+    for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++) board[y][x]=randomSafeEmoji(x,y);
+    }
+    if(findMatches().length>0||!hasAvailableMove()) generateBoard();
+}
+
+// 自适应格子尺寸渲染
+function renderBoard(){
+    let cellSize;
+    if(size===6) cellSize=clamp(46,window.innerWidth/9,56);
+    if(size===7) cellSize=clamp(42,window.innerWidth/10,52);
+    if(size===8) cellSize=clamp(38,window.innerWidth/11,48);
+    cellSize=Math.round(cellSize);
+    boardDOM.style.gridTemplateColumns=`repeat(${size},${cellSize}px)`;
+    boardDOM.innerHTML="";
+    for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++){
+            const div=document.createElement("div");
+            div.className="cell";
+            div.style.width=cellSize+"px";
+            div.style.height=cellSize+"px";
+            div.dataset.x=x;div.dataset.y=y;
+            div.textContent=board[y][x];
+            div.onclick=()=>selectCell(x,y);
+            boardDOM.appendChild(div);
+        }
+    }
+    refreshShuffleBtnState();
+    resetIdleTimer();
+}
+function refreshShuffleBtnState(){
+    shuffleBtn.disabled=hasAvailableMove();
+}
+function clamp(min,val,max){
+    return Math.max(min,Math.min(val,max));
+}
+
+// 点击交换逻辑
+let selected=null;
+function selectCell(x,y){
+    if(busy)return;
+    clearAllHint();
+    resetIdleTimer();
+    const val=board[y][x];
+    if(val==="💥"||val==="🌟"||val==="🌈"){useSpecial(x,y);return;}
+    if(!selected){
+        selected={x,y};
+        getCell(x,y).classList.add("selected");
+        return;
+    }
+    const s=selected;
+    getCell(s.x,s.y).classList.remove("selected");
+    if(Math.abs(x-s.x)+Math.abs(y-s.y)===1) swapAndCheck(s.x,s.y,x,y);
+    selected=null;
+}
+function getCell(x,y){return document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);}
+async function swapAndCheck(x1,y1,x2,y2){
+    if(busy)return;
+    busy=true;
+    swap(x1,y1,x2,y2);
+    renderBoard();
+    await sleep(150);
+    const matches=findMatches();
+    if(matches.length===0){
+        swap(x1,y1,x2,y2);
+        renderBoard();
+        busy=false;
+        return;
+    }
+    steps--;
+    updateInfo();
+    await resolveMatches();
+    busy=false;
+    checkGameOver();
+}
+function swap(x1,y1,x2,y2){
+    [board[y1][x1],board[y2][x2]]=[board[y2][x2],board[y1][x1]];
+}
+
+// 仅横竖消除，无斜向
+function findMatches(){
+    const set=new Set();
+    // 横向
+    for(let y=0;y<size;y++){
+        let cnt=1;
+        for(let x=1;x<=size;x++){
+            if(x<size&&board[y][x]===board[y][x-1]) cnt++;
+            else{
+                if(cnt>=3) for(let i=0;i<cnt;i++) set.add(`${x-1-i},${y}`);
+                cnt=1;
+            }
+        }
+    }
+    // 纵向
+    for(let x=0;x<size;x++){
+        let cnt=1;
+        for(let y=1;y<=size;y++){
+            if(y<size&&board[y][x]===board[y-1][x]) cnt++;
+            else{
+                if(cnt>=3) for(let i=0;i<cnt;i++) set.add(`${x},${y-1-i}`);
+                cnt=1;
+            }
+        }
+    }
+    return [...set].map(s=>{const [x,y]=s.split(",");return {x:+x,y:+y};});
+}
+function hasAvailableMove(){
+    for(let y=0;y<size;y++){
+        for(let x=0;x<size;x++){
+            if(x+1<size){
+                swap(x,y,x+1,y);
+                let ok=findMatches().length>0;
+                swap(x,y,x+1,y);
+                if(ok)return true;
+            }
+            if(y+1<size){
+                swap(x,y,x,y+1);
+                let ok=findMatches().length>0;
+                swap(x,y,x,y+1);
+                if(ok)return true;
+            }
+        }
+    }
+    return false;
+}
+
+// 消除下落
+async function resolveMatches(){
+    let matches=findMatches();
+    while(matches.length>0){
+        combo++;
+
+        // 更新本局最高combo
+        if(combo > roundMaxCombo){
+            roundMaxCombo = combo;
+        }
+
+        showCombo();
+        matches.forEach(p=>getCell(p.x,p.y)?.classList.add("remove"));
+        await sleep(350);
+        score+=matches.length*10*combo;
+        updateInfo();
+        createSpecialBlock(matches);
+        matches.forEach(p=>{
+            if(!["💥","🌟","🌈"].includes(board[p.y][p.x])) board[p.y][p.x]=null;
+        });
+        dropBlocks();
+        fillBlocks();
+        renderBoard();
+        await sleep(250);
+        matches=findMatches();
+    }
+    combo=0;
+    updateInfo();
+    refreshShuffleBtnState();
+}
+function createSpecialBlock(matches){
+    if(matches.length<4)return;
+    const c=matches[Math.floor(matches.length/2)];
+    board[c.y][c.x]=matches.length>=5?"🌈":"💥";
+}
+function dropBlocks(){
+    for(let x=0;x<size;x++){
+        let col=[];
+        for(let y=size-1;y>=0;y--) if(board[y][x]) col.push(board[y][x]);
+        for(let y=size-1;y>=0;y--) board[y][x]=col[size-1-y]||null;
+    }
+}
+function fillBlocks(){
+    for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!board[y][x])board[y][x]=randomEmoji();
+}
+async function useSpecial(x,y){
+    if(busy)return;
+    busy=true;
+    clearAllHint();resetIdleTimer();
+    const t=board[y][x];
+    if(t==="💥") for(let i=0;i<size;i++) board[y][i]=null;
+    if(t==="🌟") for(let i=0;i<size;i++){board[y][i]=null;board[i][x]=null;}
+    if(t==="🌈"){
+        const tar=randomEmoji();
+        for(let yy=0;yy<size;yy++)for(let xx=0;xx<size;xx++)if(board[yy][xx]===tar)board[yy][xx]=null;
+    }
+    score+=100;steps--;updateInfo();renderBoard();
+    await sleep(300);await resolveMatches();busy=false;
+}
+function showCombo(){
+    if(combo<=1)return;
+    const div=document.createElement("div");
+    div.className="combo";div.textContent=`🔥 Combo ×${combo}`;
+    document.body.appendChild(div);
+    setTimeout(()=>div.remove(),1000);
+}
+
+// 修复洗牌：单次点击立即生效
+async function doShuffle(){
+    if(busy || hasAvailableMove()) return;
+    busy = true;
+    clearAllHint();
+    generateBoard();
+    renderBoard();
+    busy = false;
+}
+
+function updateInfo(){
+    scoreDOM.textContent=score;
+    stepDOM.textContent=steps;
+    roundMaxComboDOM.textContent=roundMaxCombo;
+}
+function checkGameOver(){
+    if(steps<=0){
+        clearTimeout(idleTimer);
+        saveScore();
+        document.getElementById("finalScore").textContent=score;
+        document.getElementById("finalRoundCombo").textContent=roundMaxCombo;
+        document.getElementById("gameOver").classList.add("show");
+    }
+}
+function saveScore(){
+    const best=Number(localStorage.getItem("emoji_best")||0);
+    if(score>best)localStorage.setItem("emoji_best",score);
+}
+
+// 深色模式
+function toggleDark(){
+    document.body.classList.toggle("dark");
+    localStorage.setItem("dark",document.body.classList.contains("dark"));
+}
+if(localStorage.getItem("dark")==="true") document.body.classList.add("dark");
+
+// 新游戏入口
+function newGame(mode="easy"){
+    clearTimeout(idleTimer);
+    currentMode=mode;
+    const cfg=MODE[mode];
+    size=cfg.size;
+    steps=cfg.steps;
+    score=0;
+    combo=0;
+    roundMaxCombo=0; // 重置本局最高连击
+    document.getElementById("gameOver").classList.remove("show");
+    generateBoard();
+    renderBoard();
+    updateInfo();
+}
+
+// 滑动防滚动
+let touchStart=null;
+let isDraggingBoard = false;
+boardDOM.addEventListener("touchstart",e=>{
+    const cell=e.target.closest(".cell");
+    if(cell){
+        isDraggingBoard = true;
+        clearAllHint();
+        resetIdleTimer();
+        touchStart={
+            x:+cell.dataset.x,y:+cell.dataset.y,
+            px:e.touches[0].clientX,py:e.touches[0].clientY
+        };
+    }
+},{passive:true});
+boardDOM.addEventListener("touchmove",e=>{
+    if(isDraggingBoard){
+        e.preventDefault();
+    }
+},{passive:false});
+boardDOM.addEventListener("touchend",e=>{
+    if(!touchStart){
+        isDraggingBoard = false;
+        return;
+    }
+    const dx=e.changedTouches[0].clientX-touchStart.px;
+    const dy=e.changedTouches[0].clientY-touchStart.py;
+    if(Math.abs(dx)<20&&Math.abs(dy)<20){
+        touchStart=null;
+        isDraggingBoard = false;
+        return;
+    }
+    let tx=touchStart.x,ty=touchStart.y;
+    if(Math.abs(dx)>Math.abs(dy)) tx+=dx>0?1:-1;
+    else ty+=dy>0?1:-1;
+    if(inRange(tx,ty)) swapAndCheck(touchStart.x,touchStart.y,tx,ty);
+    touchStart=null;
+    isDraggingBoard = false;
+},{passive:true});
+
+// 音效
+let audioCtx=null;
+function playSound(freq=500){
+    if(!audioCtx) audioCtx=new AudioContext();
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.frequency.value=freq;osc.type="sine";gain.gain.value=0.08;
+    osc.connect(gain);gain.connect(audioCtx.destination);
+    osc.start();osc.stop(audioCtx.currentTime+0.12);
+}
+const oldResolve=resolveMatches;
+resolveMatches=async function(){playSound(650);await oldResolve();};
+
+// R键重开
+document.addEventListener("keydown",e=>{
+    if(e.key==="r"||e.key==="R") newGame(currentMode);
+});
+
+// 启动
+updateInfo();
+newGame(currentMode);
+</script>
+</body>
+</html>
