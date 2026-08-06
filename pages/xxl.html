@@ -34,11 +34,22 @@ body.dark{
     max-width:650px;
     padding:20px;
 }
-.title{
+.title-wrap{
     text-align:center;
+    margin-bottom:15px;
+}
+.title{
     font-size:32px;
     font-weight:800;
-    margin-bottom:15px;
+}
+.gm-tag{
+    color:#e11d48;
+    font-weight:bold;
+    font-size:14px;
+    display:none;
+}
+.gm-tag.show{
+    display:block;
 }
 .info{
     display:grid;
@@ -140,6 +151,9 @@ button, select{
     font-size:15px;
     cursor:pointer;
 }
+button.gm-btn{
+    background:#dc2626;
+}
 select{
     appearance:none;
     background-image: url("data:image/svg+xml,%3Csvg fill='white' width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l6 8 6-8H0z'/%3E%3C/svg%3E");
@@ -190,7 +204,11 @@ button:hover:not(:disabled), select:hover{
 </head>
 <body>
 <div class="app">
-    <h1 class="title">🧩 Emoji 消消乐</h1>
+    <div class="title-wrap">
+        <h1 class="title">表情消消乐</h1>
+        <div id="gmTag" class="gm-tag" style="display:none;">🔧 GM测试模式已开启</div>
+<!-- 删除style="display:none;"开启GM -->
+    </div>
     <div class="info">
         <div>⭐<br>分数<br><span id="score">0</span></div>
         <div>👣<br>步数<br><span id="steps">60</span></div>
@@ -210,6 +228,8 @@ button:hover:not(:disabled), select:hover{
         </select>
         <button id="shuffleBtn" onclick="doShuffle()">🔄 洗牌</button>
         <button onclick="toggleDark()">🌙 模式</button>
+        <button id="gmBtn" class="gm-btn" onclick="toggleGM()" style="display:none;">🔧 GM测试</button>
+<!-- 删除style="display:none;"开启GM -->
     </div>
 </div>
 
@@ -237,7 +257,6 @@ button:hover:not(:disabled), select:hover{
 </div>
 
 <script>
-// 皮肤配置【新增笑脸smile】
 const SKINS = {
     fruit: ["🍎","🍊","🍋","🍇","🍓","🥝","🌸","🌺"],
     animal: ["🐱","🐶","🐰","🦊","🐼","🐨","🐯","🐸"],
@@ -247,6 +266,22 @@ const SKINS = {
 };
 let currentSkin = localStorage.getItem("skin") || "fruit";
 const skinSelect = document.getElementById("skinSelect");
+
+// GM模式变量
+let gmMode = false;
+const gmTag = document.getElementById("gmTag");
+
+function updateGMUI(){
+    if(gmMode){
+        gmTag.classList.add("show");
+    }else{
+        gmTag.classList.remove("show");
+    }
+}
+function toggleGM(){
+    gmMode = !gmMode;
+    updateGMUI();
+}
 
 function getCurrentEmojis(){
     return SKINS[currentSkin];
@@ -264,7 +299,7 @@ let pendingSwitchMode=null;
 let score=0;
 let steps=60;
 let combo=0;
-let roundMaxCombo=0; // 本局最高combo
+let roundMaxCombo=0;
 let busy=false;
 let idleTimer=null;
 const IDLE_SECOND=10;
@@ -277,17 +312,14 @@ const shuffleBtn=document.getElementById("shuffleBtn");
 const switchModal=document.getElementById("switchModal");
 const confirmSwitchBtn=document.getElementById("confirmSwitchBtn");
 
-// 初始化下拉选中状态
 skinSelect.value = currentSkin;
 skinSelect.addEventListener("change", ()=>{
     changeSkin(skinSelect.value);
 });
 
-// 切换皮肤（不重置对局，只刷新方块外观）
 function changeSkin(skinKey){
     currentSkin = skinKey;
     localStorage.setItem("skin", currentSkin);
-    // 只替换普通方块，保留道具💥🌟🌈
     const emojis = getCurrentEmojis();
     for(let y=0;y<size;y++){
         for(let x=0;x<size;x++){
@@ -300,7 +332,6 @@ function changeSkin(skinKey){
     renderBoard();
 }
 
-// 切换弹窗绑定
 function openSwitchConfirm(mode){
     pendingSwitchMode = mode;
     switchModal.classList.add("show");
@@ -321,7 +352,6 @@ function randomEmoji(){
 function sleep(t){return new Promise(r=>setTimeout(r,t));}
 function inRange(x,y){return x>=0&&y>=0&&x<size&&y<size;}
 
-// 闲置计时、抖动提示
 function resetIdleTimer(){
     clearTimeout(idleTimer);
     idleTimer=setTimeout(()=>showHintBlock(),IDLE_SECOND*1000);
@@ -358,7 +388,6 @@ function findHintPair(){
     return null;
 }
 
-// 棋盘生成，仅禁止横竖三连
 function createBoard(){
     board=[];
     for(let y=0;y<size;y++){
@@ -381,7 +410,6 @@ function generateBoard(){
     if(findMatches().length>0||!hasAvailableMove()) generateBoard();
 }
 
-// 自适应格子尺寸渲染
 function renderBoard(){
     let cellSize;
     if(size===6) cellSize=clamp(46,window.innerWidth/9,56);
@@ -412,14 +440,38 @@ function clamp(min,val,max){
     return Math.max(min,Math.min(val,max));
 }
 
-// 点击交换逻辑
 let selected=null;
-function selectCell(x,y){
+async function selectCell(x,y){
     if(busy)return;
     clearAllHint();
     resetIdleTimer();
+
+    // GM模式：删除格子自动下落填充
+    if(gmMode){
+        board[y][x]=null;
+        dropBlocks();
+        fillBlocks();
+        renderBoard();
+        await sleep(100);
+        await resolveMatches();
+        return;
+    }
+
     const val=board[y][x];
-    if(val==="💥"||val==="🌟"||val==="🌈"){useSpecial(x,y);return;}
+    // 🌈彩虹禁止手动点击释放；💥🌟保留手动点击释放
+    if(val==="💥"||val==="🌟"){
+        useSpecial(x,y);
+        return;
+    }
+    if(val==="🌈"){
+        //彩虹不能手动激活，只能参与匹配消除
+        if(!selected){
+            selected={x,y};
+            getCell(x,y).classList.add("selected");
+            return;
+        }
+    }
+
     if(!selected){
         selected={x,y};
         getCell(x,y).classList.add("selected");
@@ -444,7 +496,9 @@ async function swapAndCheck(x1,y1,x2,y2){
         busy=false;
         return;
     }
-    steps--;
+    if(!gmMode){
+        steps--;
+    }
     updateInfo();
     await resolveMatches();
     busy=false;
@@ -454,10 +508,8 @@ function swap(x1,y1,x2,y2){
     [board[y1][x1],board[y2][x2]]=[board[y2][x2],board[y1][x1]];
 }
 
-// 仅横竖消除，无斜向
 function findMatches(){
     const set=new Set();
-    // 横向
     for(let y=0;y<size;y++){
         let cnt=1;
         for(let x=1;x<=size;x++){
@@ -468,7 +520,6 @@ function findMatches(){
             }
         }
     }
-    // 纵向
     for(let x=0;x<size;x++){
         let cnt=1;
         for(let y=1;y<=size;y++){
@@ -501,26 +552,47 @@ function hasAvailableMove(){
     return false;
 }
 
-// 消除下落
 async function resolveMatches(){
     let matches=findMatches();
     while(matches.length>0){
         combo++;
-
-        // 更新本局最高combo
         if(combo > roundMaxCombo){
             roundMaxCombo = combo;
         }
-
         showCombo();
         matches.forEach(p=>getCell(p.x,p.y)?.classList.add("remove"));
         await sleep(350);
         score+=matches.length*10*combo;
         updateInfo();
-        createSpecialBlock(matches);
+
+        let hasRainbow = matches.some(p=> board[p.y][p.x]==="🌈");
+
+        let specialPos = null;
+        let specialItem = null;
+        if(matches.length >=4){
+            const c=matches[Math.floor(matches.length/2)];
+            specialPos = {x:c.x,y:c.y};
+            specialItem = matches.length>=5 ? "🌈" : "💥";
+        }
+
         matches.forEach(p=>{
-            if(!["💥","🌟","🌈"].includes(board[p.y][p.x])) board[p.y][p.x]=null;
+            board[p.y][p.x]=null;
         });
+
+        if(specialPos){
+            board[specialPos.y][specialPos.x] = specialItem;
+        }
+
+        //🌈被匹配消除，触发彩虹能力：清除场上随机一种表情
+        if(hasRainbow){
+            let tar = randomEmoji();
+            for(let yy=0;yy<size;yy++){
+                for(let xx=0;xx<size;xx++){
+                    if(board[yy][xx]===tar) board[yy][xx]=null;
+                }
+            }
+        }
+
         dropBlocks();
         fillBlocks();
         renderBoard();
@@ -531,11 +603,7 @@ async function resolveMatches(){
     updateInfo();
     refreshShuffleBtnState();
 }
-function createSpecialBlock(matches){
-    if(matches.length<4)return;
-    const c=matches[Math.floor(matches.length/2)];
-    board[c.y][c.x]=matches.length>=5?"🌈":"💥";
-}
+
 function dropBlocks(){
     for(let x=0;x<size;x++){
         let col=[];
@@ -546,6 +614,7 @@ function dropBlocks(){
 function fillBlocks(){
     for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!board[y][x])board[y][x]=randomEmoji();
 }
+
 async function useSpecial(x,y){
     if(busy)return;
     busy=true;
@@ -553,11 +622,9 @@ async function useSpecial(x,y){
     const t=board[y][x];
     if(t==="💥") for(let i=0;i<size;i++) board[y][i]=null;
     if(t==="🌟") for(let i=0;i<size;i++){board[y][i]=null;board[i][x]=null;}
-    if(t==="🌈"){
-        const tar=randomEmoji();
-        for(let yy=0;yy<size;yy++)for(let xx=0;xx<size;xx++)if(board[yy][xx]===tar)board[yy][xx]=null;
-    }
-    score+=100;steps--;updateInfo();renderBoard();
+    score+=100;
+    if(!gmMode) steps--;
+    updateInfo();renderBoard();
     await sleep(300);await resolveMatches();busy=false;
 }
 function showCombo(){
@@ -568,7 +635,6 @@ function showCombo(){
     setTimeout(()=>div.remove(),1000);
 }
 
-// 修复洗牌：单次点击立即生效
 async function doShuffle(){
     if(busy || hasAvailableMove()) return;
     busy = true;
@@ -584,6 +650,8 @@ function updateInfo(){
     roundMaxComboDOM.textContent=roundMaxCombo;
 }
 function checkGameOver(){
+    // GM模式不判定游戏结束
+    if(gmMode) return;
     if(steps<=0){
         clearTimeout(idleTimer);
         saveScore();
@@ -597,14 +665,12 @@ function saveScore(){
     if(score>best)localStorage.setItem("emoji_best",score);
 }
 
-// 深色模式
 function toggleDark(){
     document.body.classList.toggle("dark");
     localStorage.setItem("dark",document.body.classList.contains("dark"));
 }
 if(localStorage.getItem("dark")==="true") document.body.classList.add("dark");
 
-// 新游戏入口
 function newGame(mode="easy"){
     clearTimeout(idleTimer);
     currentMode=mode;
@@ -613,14 +679,14 @@ function newGame(mode="easy"){
     steps=cfg.steps;
     score=0;
     combo=0;
-    roundMaxCombo=0; // 重置本局最高连击
+    roundMaxCombo=0;
     document.getElementById("gameOver").classList.remove("show");
     generateBoard();
     renderBoard();
     updateInfo();
+    updateGMUI();
 }
 
-// 滑动防滚动
 let touchStart=null;
 let isDraggingBoard = false;
 boardDOM.addEventListener("touchstart",e=>{
@@ -660,7 +726,6 @@ boardDOM.addEventListener("touchend",e=>{
     isDraggingBoard = false;
 },{passive:true});
 
-// 音效
 let audioCtx=null;
 function playSound(freq=500){
     if(!audioCtx) audioCtx=new AudioContext();
@@ -673,13 +738,16 @@ function playSound(freq=500){
 const oldResolve=resolveMatches;
 resolveMatches=async function(){playSound(650);await oldResolve();};
 
-// R键重开
+//电脑快捷键G切换GM；R重开
 document.addEventListener("keydown",e=>{
+    if(e.key==="g"||e.key==="G"){
+        toggleGM();
+    }
     if(e.key==="r"||e.key==="R") newGame(currentMode);
 });
 
-// 启动
 updateInfo();
+updateGMUI();
 newGame(currentMode);
 </script>
 </body>
