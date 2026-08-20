@@ -218,7 +218,15 @@ document.getElementById('startDate').addEventListener('change',function(){
     }
 });
 
-document.getElementById('endDate').addEventListener('change',function(){
+document.getElementById('startDate').addEventListener('change',function(){
+    const s = this.value;
+    const endInput = document.getElementById('endDate');
+    const e = endInput.value;
+    if(s){
+        if(!e || s > e){
+            endInput.value = s;
+        }
+    }
     if(!isFirstLoad){
         calc();
     }
