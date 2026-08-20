@@ -12,7 +12,8 @@
     ["倒计时", "/pages/countdown", "倒计时工具", "fa-solid fa-hourglass-half"],
     ["熊猫汇率", "https://bing.0515364.xyz/panda", "汇率查询", "fa-solid fa-yen-sign"],
     ["短链接生成", "/shortlink", "将长链接表成短链接", "fa-solid fa-link"],
-    ["元素周期表", "/pages/elements", "查询化学元素属性、维基百科资料", "fa-solid fa-atom"]
+    ["元素周期表", "/pages/elements", "查询化学元素属性、维基百科资料", "fa-solid fa-atom"],
+    ["日期计算", "/pages/date_calc", "日期区间计算、生成日期列表、复制导出表格", "fa-solid fa-calendar-days"]
   ],
 
   "代码工具": [
