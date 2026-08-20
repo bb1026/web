@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>课程表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Microsoft YaHei",system-ui,-apple-system,sans-serif;}
+body{background:#f3f4f6;padding:12px;max-width:1300px;margin:0 auto;}
+.wrap{background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,0.10);overflow:hidden;}
+.header-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;background:#2b5788;color:#fff;}
+#titleInput{font-size:24px;font-weight:bold;background:transparent;border:none;color:#fff;text-align:center;flex:1;outline:none;}
+.top-controls{padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;background:#e8edf4;}
+.bottom-controls{padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap;background:#f0f4f9;}
+.btn{padding:7px 12px;border:none;border-radius:5px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:5px;}
+.btn-green{background:#048858;color:white;}
+.btn-blue{background:#2b5788;color:white;}
+.btn-red{background:#c83232;color:white;}
+.btn-gray{background:#888888;color:white;}
+.btn-small{padding:4px 8px;font-size:13px;}
+
+.main-layout{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:14px;
+    padding:14px;
+}
+@media(max-width:820px){
+    .main-layout{grid-template-columns:1fr;}
+}
+
+.course-pool{
+    border:1px solid #cad4e2;
+    border-radius:7px;
+    padding:12px;
+    background:#f7f9fc;
+}
+.pool-title{font-weight:600;margin-bottom:10px;font-size:15px;color:#2b5788;}
+.add-course-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+#courseNameInput{flex:1;padding:7px;border:1px solid #cbd5e1;border-radius:5px;min-width:80px;}
+#colorPicker{width:36px;height:34px;border:none;border-radius:5px;cursor:pointer;}
+
+#courseList{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap:8px;
+}
+@media(max-width:700px){
+    #courseList{
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+@media(max-width:480px){
+    #courseList{
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.course-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 8px;
+    border-radius:5px;
+    color:#fff;
+    cursor:grab;
+    font-size:13px;
+    min-height:38px;
+    overflow:hidden;
+}
+.course-item span:first-child{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.course-item:active{cursor:grabbing;}
+.course-item.selectable{cursor:pointer;}
+.course-item .del{cursor:pointer;padding-left:4px;flex-shrink:0;}
+
+.table-wrap{overflow-x:auto;}
+table.course-table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:920px;
+    table-layout:fixed;
+}
+.course-table th,.course-table td{
+    border:1px solid #667788;
+    padding:6px;
+    text-align:center;
+    vertical-align:middle;
+    overflow-wrap:break-word;
+}
+.course-table th:nth-child(1){width:70px;}
+.course-table th:nth-child(2){width:120px;}
+.course-table th:nth-child(10){width:110px;}
+
+.course-table th{background:#c6d8ec;color:#1a2c42;font-weight:bold;}
+.cell{min-height:54px;min-width:84px;cursor:pointer;}
+.cell.drag-over{background:#dbeafe;}
+.cell-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;padding:4px;}
+.row-actions{display:flex;gap:4px;flex-wrap:nowrap;justify-content:center;white-space:nowrap;}
+.pdf-hide{display:none !important;}
+.span-rest{background:#c6d8ec;font-weight:bold;font-size:16px;}
+.editable-td:hover{background-color:#f0f6ff;cursor:text;}
+
+@media(max-width:768px){
+    .course-item{font-size:13px;min-height:40px;}
+    .course-table th,.course-table td{padding:4px;font-size:13px;}
+    .cell{min-width:72px;min-height:48px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="pdfWrap">
+    <div class="header-bar">
+        <input type="text" id="titleInput" value="中小学课程表" placeholder="课程表标题">
+        <button class="btn btn-green" onclick="exportPdf()"><i class="fa fa-file-pdf-o"></i>导出PDF</button>
+    </div>
+    <div class="top-controls">
+        <button class="btn btn-blue btn-small" onclick="toggleWeekend()"><i class="fa fa-calendar"></i>显示/隐藏周六周日</button>
+        <button class="btn btn-red btn-small" onclick="clearAllLocal()"><i class="fa fa-trash"></i>重置清除本地缓存</button>
+    </div>
+
+    <div class="main-layout">
+        <div class="course-pool">
+            <div class="pool-title">课程库（拖拽/点击填充表格）</div>
+            <div class="add-course-row">
+                <input id="courseNameInput" placeholder="课程名称">
+                <input type="color" id="colorPicker" value="#3b82f6">
+                <button class="btn btn-blue btn-small" onclick="addCourse()"><i class="fa fa-plus"></i></button>
+            </div>
+            <div id="courseList"></div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="course-table" id="courseTable">
+                <thead>
+                    <tr>
+                        <th>时段</th>
+                        <th>节次/时间</th>
+                        <th>周一</th>
+                        <th>周二</th>
+                        <th>周三</th>
+                        <th>周四</th>
+                        <th>周五</th>
+                        <th class="col-sat">周六</th>
+                        <th class="col-sun">周日</th>
+                        <th class="col-action">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr data-row-id="r1">
+                        <td rowspan="4"><strong>上午</strong></td>
+                        <td class="editable-td" contenteditable="true">第一节<br>8:00‑8:45</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r2">
+                        <td class="editable-td" contenteditable="true">第二节<br>8:55‑9:40</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r3">
+                        <td class="editable-td" contenteditable="true">第三节<br>9:50‑10:35</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r4">
+                        <td class="editable-td" contenteditable="true">第四节<br>10:45‑11:30</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r-rest">
+                        <td colspan="10" class="span-rest">午 休 时 间</td>
+                    </tr>
+                    <tr data-row-id="r5">
+                        <td rowspan="4"><strong>下午</strong></td>
+                        <td class="editable-td" contenteditable="true">第五节<br>14:00‑14:45</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r6">
+                        <td class="editable-td" contenteditable="true">第六节<br>14:55‑15:40</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r7">
+                        <td class="editable-td" contenteditable="true">第七节<br>15:50‑16:35</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+                    <tr data-row-id="r8">
+                        <td class="editable-td" contenteditable="true">第八节<br>16:45‑17:30</td>
+                        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                        <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                    </tr>
+
+                    <tbody id="nightBlock" style="display:none;">
+                        <tr data-row-id="r-night-split">
+                            <td colspan="10" class="span-rest">晚 间 课 程</td>
+                        </tr>
+                        <tr data-row-id="r9">
+                            <td rowspan="4"><strong>晚上</strong></td>
+                            <td class="editable-td" contenteditable="true">晚一<br>18:30‑19:15</td>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                            <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                            <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                        </tr>
+                        <tr data-row-id="r10">
+                            <td class="editable-td" contenteditable="true">晚二<br>19:25‑20:10</td>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                            <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                            <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                        </tr>
+                        <tr data-row-id="r11">
+                            <td class="editable-td" contenteditable="true">晚三<br>20:20‑21:05</td>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                            <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                            <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                        </tr>
+                        <tr data-row-id="r12">
+                            <td class="editable-td" contenteditable="true">晚四<br>21:15‑22:00</td>
+                            <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+                            <td class="cell col-sat"></td><td class="cell col-sun"></td>
+                            <td class="row-actions"><button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button><button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button></td>
+                        </tr>
+                    </tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="bottom-controls">
+        <button class="btn btn-blue btn-small" id="toggleNightBtn" onclick="toggleNightCourse()"><i class="fa fa-moon-o"></i>显示晚间课程</button>
+    </div>
+</div>
+
+<div class="modal-mask" id="addRowModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:999;">
+    <div class="modal-box" style="background:white;padding:16px;border-radius:10px;gap:10px;display:flex;flex-direction:column;">
+        <div>在哪里插入新行？</div>
+        <div class="modal-buttons" style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="insertRow('above')">在上方</button>
+            <button class="btn btn-blue" onclick="insertRow('below')">在下方</button>
+            <button class="btn btn-gray" onclick="closeAddRowModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let coursePool = [];
+let dragCourseData = null;
+let selectedCourse = null;
+let currentTargetTr = null;
+let rowIdCounter = 200;
+let weekendVisible = false;
+let nightVisible = false;
+
+function randomColor(){
+    const colors = ['#2563eb','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777'];
+    return colors[Math.floor(Math.random()*colors.length)];
+}
+
+const defaultCourses = [
+    {name:"语文",color:"#2563eb"},
+    {name:"数学",color:"#dc2626"},
+    {name:"英语",color:"#059669"},
+    {name:"物理",color:"#7c3aed"},
+    {name:"化学",color:"#d97706"},
+    {name:"生物",color:"#0891b2"},
+];
+
+function addCourse(){
+    const name = document.getElementById('courseNameInput').value.trim();
+    if(!name) return;
+    let color = document.getElementById('colorPicker').value;
+    if(!color || color === "#000000") color = randomColor();
+    const id = Date.now();
+    coursePool.push({id,name,color});
+    document.getElementById('courseNameInput').value='';
+    renderCoursePool();
+    saveLocal();
+}
+
+function renderCoursePool(){
+    const dom = document.getElementById('courseList');
+    dom.innerHTML = '';
+    coursePool.forEach(c=>{
+        const div = document.createElement('div');
+        div.className = "course-item selectable";
+        div.style.background = c.color;
+        div.draggable = true;
+        div.dataset.courseId = c.id;
+        div.innerHTML = `<span>${c.name}</span><span class="del"><i class="fa fa-times"></i></span>`;
+        div.addEventListener('dragstart',(e)=>{
+            dragCourseData = {...c};
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("application/json", JSON.stringify(c));
+        });
+        div.onclick = ()=>{
+            selectedCourse = {...c};
+            document.querySelectorAll('.course-item').forEach(el=>el.style.outline="");
+            div.style.outline="3px solid white";
+        }
+        div.querySelector('.del').onclick = (ev)=>{
+            ev.stopPropagation();
+            coursePool = coursePool.filter(x=>x.id!==c.id);
+            renderCoursePool();
+            saveLocal();
+        }
+        dom.appendChild(div);
+    })
+}
+
+function bindCellDrag(){
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach(cell=>{
+        cell.onclick = ()=>{
+            if(selectedCourse){
+                cell.style.background = selectedCourse.color;
+                cell.innerHTML = `<div class="cell-content">${selectedCourse.name}</div>`;
+                saveLocal();
+            }else{
+                cell.innerHTML = "";
+                cell.style.background = "";
+                saveLocal();
+            }
+        };
+        cell.addEventListener('dragover',e=>{
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            cell.classList.add('drag-over');
+        });
+        cell.addEventListener('dragleave',()=>{
+            cell.classList.remove('drag-over');
+        });
+        cell.addEventListener('drop',e=>{
+            e.preventDefault();
+            cell.classList.remove('drag-over');
+            const raw = e.dataTransfer.getData("application/json");
+            if(!raw) return;
+            const c = JSON.parse(raw);
+            cell.style.background = c.color;
+            cell.innerHTML = `<div class="cell-content">${c.name}</div>`;
+            saveLocal();
+        });
+    })
+    document.querySelectorAll('.editable-td').forEach(td=>{
+        td.addEventListener('blur',()=>saveLocal());
+    })
+}
+
+function updateWeekendUI(){
+    const sat = document.querySelectorAll('.col-sat');
+    const sun = document.querySelectorAll('.col-sun');
+    const thSat = document.querySelector('th.col-sat');
+    const thSun = document.querySelector('th.col-sun');
+    const spanCells = document.querySelectorAll('#tableBody .span-rest');
+
+    sat.forEach(el=> el.style.display = weekendVisible ? 'table-cell':'none');
+    sun.forEach(el=> el.style.display = weekendVisible ? 'table-cell':'none');
+    if(thSat) thSat.style.display = weekendVisible ? 'table-cell':'none';
+    if(thSun) thSun.style.display = weekendVisible ? 'table-cell':'none';
+
+    const colSpanVal = weekendVisible ? 10 : 8;
+    spanCells.forEach(cell=>{
+        cell.setAttribute('colspan', colSpanVal);
+    });
+}
+
+function toggleWeekend(){
+    weekendVisible = !weekendVisible;
+    updateWeekendUI();
+    saveLocal();
+}
+
+function toggleNightCourse(){
+    nightVisible = !nightVisible;
+    const nightBlock = document.getElementById('nightBlock');
+    const btn = document.getElementById('toggleNightBtn');
+    if(nightVisible){
+        nightBlock.style.display = 'table-row-group';
+        btn.innerHTML = '<i class="fa fa-moon-o"></i>隐藏晚间课程';
+    }else{
+        nightBlock.style.display = 'none';
+        btn.innerHTML = '<i class="fa fa-moon-o"></i>显示晚间课程';
+    }
+    bindCellDrag();
+    saveLocal();
+}
+
+function openAddRowModal(btn){
+    currentTargetTr = btn.closest('tr');
+    document.getElementById('addRowModal').style.display = 'flex';
+}
+function closeAddRowModal(){
+    document.getElementById('addRowModal').style.display = 'none';
+    currentTargetTr = null;
+}
+
+function insertRow(position){
+    if(!currentTargetTr) return;
+    rowIdCounter++;
+    const newTr = document.createElement('tr');
+    newTr.setAttribute('data-row-id','r'+rowIdCounter);
+    let html = `
+        <td>自定义时段</td>
+        <td class="editable-td" contenteditable="true">新课节<br>00:00‑00:00</td>
+        <td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td>
+        <td class="cell col-sat"></td><td class="cell col-sun"></td>
+        <td class="row-actions">
+            <button class="btn btn-blue btn-small" onclick="openAddRowModal(this)">➕</button>
+            <button class="btn btn-red btn-small" onclick="deleteRow(this)">🗑</button>
+        </td>`;
+    newTr.innerHTML = html;
+    newTr.querySelectorAll('.col-sat').forEach(el=>el.style.display = weekendVisible ? 'table-cell':'none');
+    newTr.querySelectorAll('.col-sun').forEach(el=>el.style.display = weekendVisible ? 'table-cell':'none');
+
+    if(position === 'above'){
+        currentTargetTr.parentNode.insertBefore(newTr, currentTargetTr);
+    }else{
+        currentTargetTr.parentNode.insertBefore(newTr, currentTargetTr.nextSibling);
+    }
+    bindCellDrag();
+    closeAddRowModal();
+    saveLocal();
+}
+
+function deleteRow(btn){
+    const tr = btn.closest('tr');
+    const tbody = document.getElementById('tableBody');
+    if(tbody.children.length <=2){
+        alert("至少保留基础课表行");
+        return;
+    }
+    tr.remove();
+    saveLocal();
+}
+
+function exportPdf(){
+    const title = document.getElementById('titleInput').value;
+    const actionEls = document.querySelectorAll('.row-actions,.top-controls,.bottom-controls,.header-bar button');
+    actionEls.forEach(el=>el.classList.add('pdf-hide'));
+    const opt = {
+        margin:8,
+        filename:`${title}.pdf`,
+        image:{type:'jpeg',quality:0.96},
+        html2canvas:{scale:2},
+        jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}
+    };
+    const element = document.getElementById('pdfWrap');
+    html2pdf().set(opt).from(element).save().then(()=>{
+        actionEls.forEach(el=>el.classList.remove('pdf-hide'));
+    });
+}
+
+function clearAllLocal(){
+    if(confirm('⚠️确定要清除本地缓存？所有课程、课表数据全部丢失，恢复默认模板！')){
+        localStorage.removeItem("scheduleData");
+        window.location.reload();
+    }
+}
+
+function saveLocal(){
+    const data = {
+        title:document.getElementById('titleInput').value,
+        coursePool:coursePool,
+        tableHtml:document.getElementById('tableBody').innerHTML,
+        rowIdCounter:rowIdCounter,
+        weekendVisible:weekendVisible,
+        nightVisible:nightVisible
+    };
+    localStorage.setItem("scheduleData",JSON.stringify(data));
+}
+
+function loadLocal(){
+    const str = localStorage.getItem("scheduleData");
+    if(!str){
+        coursePool = [...defaultCourses];
+        updateWeekendUI();
+        return;
+    }
+    const data = JSON.parse(str);
+    document.getElementById('titleInput').value = data.title;
+    coursePool = data.coursePool||[...defaultCourses];
+    document.getElementById('tableBody').innerHTML = data.tableHtml;
+    rowIdCounter = data.rowIdCounter||200;
+    weekendVisible = !!data.weekendVisible;
+    nightVisible = !!data.nightVisible;
+
+    updateWeekendUI();
+
+    const nightBlock = document.getElementById('nightBlock');
+    const btn = document.getElementById('toggleNightBtn');
+    if(nightVisible){
+        nightBlock.style.display = 'table-row-group';
+        btn.innerHTML = '<i class="fa fa-moon-o"></i>隐藏晚间课程';
+    }else{
+        nightBlock.style.display = 'none';
+        btn.innerHTML = '<i class="fa fa-moon-o"></i>显示晚间课程';
+    }
+}
+
+window.onload = function(){
+    loadLocal();
+    renderCoursePool();
+    bindCellDrag();
+}
+</script>
+</body>
+</html>
