@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>日期区间计算器</title>
+<title>日期区间计算</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
@@ -23,6 +23,7 @@ input[type="date"]{
     width:100%;
 }
 input[type="date"]:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.2);}
+.date-hint{font-size:14px;color:#475569;margin-top:4px;}
 .btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
 button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:0.2s;white-space:nowrap;justify-content:center;}
 button:hover{background:#1d4ed8;}
@@ -80,10 +81,12 @@ tr.row-weekend td{
 <div class="form-item">
     <label><i class="fa fa-play-circle-o"></i>开始日期：</label>
     <input type="date" id="startDate">
+    <div class="date-hint" id="startWeekText"></div>
 </div>
 <div class="form-item">
     <label><i class="fa fa-stop-circle-o"></i>结束日期：</label>
     <input type="date" id="endDate">
+    <div class="date-hint" id="endWeekText"></div>
 </div>
 
 <div class="btn-row">
@@ -127,6 +130,14 @@ function formatDate(d){
     return `${y}-${m}-${day}`;
 }
 
+function getDateWithWeekStr(dateStr){
+    if(!dateStr) return '';
+    const d = new Date(dateStr);
+    const wRaw = d.getDay();
+    const idx = dayMap[wRaw];
+    return `${dateStr} ${weekCn[idx]}`;
+}
+
 function showToast(text){
     const el = document.getElementById('toast');
     el.innerText = text;
@@ -138,6 +149,8 @@ function quickToday(){
     const s = formatDate(now);
     document.getElementById('startDate').value = s;
     document.getElementById('endDate').value = s;
+    document.getElementById('startWeekText').innerText = getDateWithWeekStr(s);
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(s);
     if(!isFirstLoad) calc();
 }
 
@@ -147,6 +160,8 @@ function quick7(){
     start.setDate(end.getDate()-6);
     document.getElementById('startDate').value = formatDate(start);
     document.getElementById('endDate').value = formatDate(end);
+    document.getElementById('startWeekText').innerText = getDateWithWeekStr(document.getElementById('startDate').value);
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(document.getElementById('endDate').value);
     if(!isFirstLoad) calc();
 }
 
@@ -156,6 +171,8 @@ function quick30(){
     start.setDate(end.getDate()-29);
     document.getElementById('startDate').value = formatDate(start);
     document.getElementById('endDate').value = formatDate(end);
+    document.getElementById('startWeekText').innerText = getDateWithWeekStr(document.getElementById('startDate').value);
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(document.getElementById('endDate').value);
     if(!isFirstLoad) calc();
 }
 
@@ -165,6 +182,8 @@ function quickMonth(){
     const last = new Date(now.getFullYear(), now.getMonth()+1, 0);
     document.getElementById('startDate').value = formatDate(first);
     document.getElementById('endDate').value = formatDate(last);
+    document.getElementById('startWeekText').innerText = getDateWithWeekStr(document.getElementById('startDate').value);
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(document.getElementById('endDate').value);
     if(!isFirstLoad) calc();
 }
 
@@ -210,16 +229,6 @@ function downloadAllTxt(){
 
 document.getElementById('startDate').addEventListener('change',function(){
     const s = this.value;
-    if(s){
-        document.getElementById('endDate').value = s;
-    }
-    if(!isFirstLoad){
-        calc();
-    }
-});
-
-document.getElementById('startDate').addEventListener('change',function(){
-    const s = this.value;
     const endInput = document.getElementById('endDate');
     const e = endInput.value;
     if(s){
@@ -227,6 +236,16 @@ document.getElementById('startDate').addEventListener('change',function(){
             endInput.value = s;
         }
     }
+    document.getElementById('startWeekText').innerText = getDateWithWeekStr(s);
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(endInput.value);
+    if(!isFirstLoad){
+        calc();
+    }
+});
+
+document.getElementById('endDate').addEventListener('change',function(){
+    const e = this.value;
+    document.getElementById('endWeekText').innerText = getDateWithWeekStr(e);
     if(!isFirstLoad){
         calc();
     }
@@ -238,6 +257,8 @@ window.addEventListener('DOMContentLoaded', function () {
         const defaultDayStr = formatDate(today);
         document.getElementById('startDate').value = defaultDayStr;
         document.getElementById('endDate').value = defaultDayStr;
+        document.getElementById('startWeekText').innerText = getDateWithWeekStr(defaultDayStr);
+        document.getElementById('endWeekText').innerText = getDateWithWeekStr(defaultDayStr);
         isFirstLoad = false;
     },50);
 });
