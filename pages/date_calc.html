@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日期区间计算器</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+body{background:#f0f4f8;padding:16px;max-width:960px;margin:0 auto;}
+.wrap{background:#ffffff;border-radius:14px;padding:20px 16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;}
+h2{font-size:20px;margin-bottom:20px;color:#222;display:flex;align-items:center;gap:8px;}
+.form-item{margin-bottom:14px;}
+label{font-size:15px;color:#444;white-space:nowrap;display:block;margin-bottom:4px;}
+input[type="date"]{
+    padding:10px 12px;
+    font-size:16px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    outline:none;
+    min-width:0;
+    max-width:320px;
+    width:100%;
+}
+input[type="date"]:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.2);}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:0.2s;white-space:nowrap;justify-content:center;}
+button:hover{background:#1d4ed8;}
+.btn-gray{background:#64748b;}
+.btn-gray:hover{background:#475569;}
+.btn-green{background:#059669;}
+.btn-green:hover{background:#047857;}
+.total-info{margin:16px 0;font-size:16px;}
+.stat-box{background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:16px;border:1px solid #e2e8f0;}
+.stat-title{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-weight:600;color:#333;}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.stat-item{background:#fff;padding:8px 6px;border-radius:6px;text-align:center;border:1px solid #e9edf2;font-size:14px;}
+.stat-item-weekend{
+    background:#fef2f2 !important;
+    color:#dc2626 !important;
+    border-color:#fecaca !important;
+    font-weight:600;
+}
+.table-wrap{
+    overflow-y:auto;
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+    max-height:calc(44px + 20 * 38px);
+    -webkit-overflow-scrolling: touch;
+}
+table#dataTable{width:100%;border-collapse:collapse;}
+th,td{border:1px solid #e2e8f0;padding:10px 6px;text-align:center;font-size:14px;}
+th{background:#f1f5f9;color:#333;position:sticky;top:0;z-index:2;}
+tr.row-weekend td{
+    color:#dc2626;
+    background:#fef2f2;
+    font-weight:500;
+}
+.toast{font-size:14px;color:#059669;margin:8px 0;height:20px;}
+
+@media(max-width:480px){
+    .btn-row{flex-wrap:wrap;}
+    th,td{padding:8px 4px;font-size:13px;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .table-wrap{max-height:calc(40px + 20 * 34px);}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2><i class="fa fa-calendar"></i>日期区间计算（包含当天）</h2>
+
+<div class="btn-row">
+    <button onclick="quickToday()"><i class="fa fa-clock-o"></i>今天</button>
+    <button onclick="quick7()"><i class="fa fa-calendar"></i>近7天</button>
+    <button onclick="quick30()"><i class="fa fa-calendar"></i>近30天</button>
+    <button onclick="quickMonth()"><i class="fa fa-calendar-check-o"></i>本月</button>
+</div>
+
+<div class="form-item">
+    <label><i class="fa fa-play-circle-o"></i>开始日期：</label>
+    <input type="date" id="startDate">
+</div>
+<div class="form-item">
+    <label><i class="fa fa-stop-circle-o"></i>结束日期：</label>
+    <input type="date" id="endDate">
+</div>
+
+<div class="btn-row">
+    <button onclick="calc()"><i class="fa fa-calculator"></i>开始计算</button>
+    <button class="btn-gray" onclick="copyAllTable()"><i class="fa fa-copy"></i>复制数据</button>
+    <button class="btn-green" onclick="downloadAllTxt()"><i class="fa fa-download"></i>导出TXT</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="total-info" id="totalInfo"></div>
+
+<div class="stat-box">
+    <div class="stat-title"><i class="fa fa-bar-chart"></i>星期统计</div>
+    <div class="stat-grid" id="weekStat"></div>
+</div>
+
+<div class="table-wrap">
+<table id="dataTable">
+<thead>
+<tr>
+<th>序号</th>
+<th>日期</th>
+<th>星期</th>
+</tr>
+</thead>
+<tbody id="listBody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const weekCn = ["星期一","星期二","星期三","星期四","星期五","星期六","星期日"];
+const dayMap = {1:0,2:1,3:2,4:3,5:4,6:5,0:6};
+let isFirstLoad = true;
+let dateList = [];
+
+function formatDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+}
+
+function showToast(text){
+    const el = document.getElementById('toast');
+    el.innerText = text;
+    setTimeout(()=>el.innerText='',2000);
+}
+
+function quickToday(){
+    const now = new Date();
+    const s = formatDate(now);
+    document.getElementById('startDate').value = s;
+    document.getElementById('endDate').value = s;
+    if(!isFirstLoad) calc();
+}
+
+function quick7(){
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate()-6);
+    document.getElementById('startDate').value = formatDate(start);
+    document.getElementById('endDate').value = formatDate(end);
+    if(!isFirstLoad) calc();
+}
+
+function quick30(){
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate()-29);
+    document.getElementById('startDate').value = formatDate(start);
+    document.getElementById('endDate').value = formatDate(end);
+    if(!isFirstLoad) calc();
+}
+
+function quickMonth(){
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    document.getElementById('startDate').value = formatDate(first);
+    document.getElementById('endDate').value = formatDate(last);
+    if(!isFirstLoad) calc();
+}
+
+function getAllTableText(){
+    if(!dateList || dateList.length === 0) return null;
+    let lines = [];
+    lines.push("序号\t日期\t星期");
+    dateList.forEach((item,idx)=>{
+        lines.push(`${idx+1}\t${item.dateStr}\t${item.weekText}`);
+    });
+    return lines.join('\n');
+}
+
+async function copyAllTable(){
+    const text = getAllTableText();
+    if(!text){
+        showToast("暂无表格数据，请先计算");
+        return;
+    }
+    try{
+        await navigator.clipboard.writeText(text);
+        showToast("复制成功，直接粘贴Excel");
+    }catch(e){
+        showToast("复制失败");
+    }
+}
+
+function downloadAllTxt(){
+    const text = getAllTableText();
+    if(!text){
+        showToast("暂无表格数据，请先计算");
+        return;
+    }
+    const blob = new Blob([text],{type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "日期表格.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("TXT全部数据已下载");
+}
+
+document.getElementById('startDate').addEventListener('change',function(){
+    const s = this.value;
+    if(s){
+        document.getElementById('endDate').value = s;
+    }
+    if(!isFirstLoad){
+        calc();
+    }
+});
+
+document.getElementById('endDate').addEventListener('change',function(){
+    if(!isFirstLoad){
+        calc();
+    }
+});
+
+window.addEventListener('DOMContentLoaded', function () {
+    setTimeout(()=>{
+        const today = new Date();
+        const defaultDayStr = formatDate(today);
+        document.getElementById('startDate').value = defaultDayStr;
+        document.getElementById('endDate').value = defaultDayStr;
+        isFirstLoad = false;
+    },50);
+});
+
+function calc(){
+    const sVal = document.getElementById('startDate').value;
+    const eVal = document.getElementById('endDate').value;
+    if(!sVal || !eVal){
+        document.getElementById('totalInfo').innerHTML = "";
+        document.getElementById('weekStat').innerHTML = "";
+        document.getElementById('listBody').innerHTML = "";
+        dateList = [];
+        return;
+    }
+    let start = new Date(sVal);
+    let end = new Date(eVal);
+
+    if(start > end){
+        alert("开始日期不能晚于结束日期");
+        return;
+    }
+
+    let weekCount = [0,0,0,0,0,0,0];
+    dateList = [];
+
+    let cur = new Date(start);
+    while(cur <= end){
+        let wRaw = cur.getDay();
+        let idx = dayMap[wRaw];
+        weekCount[idx]++;
+
+        let cy = cur.getFullYear();
+        let cm = String(cur.getMonth()+1).padStart(2,'0');
+        let cd = String(cur.getDate()).padStart(2,'0');
+        dateList.push({
+            dateStr:`${cy}-${cm}-${cd}`,
+            weekRaw:wRaw,
+            weekIdx: idx,
+            weekText:weekCn[idx],
+            isWeekend:(wRaw===0 || wRaw===6)
+        });
+        cur.setDate(cur.getDate()+1);
+    }
+
+    const totalDays = dateList.length;
+    document.getElementById('totalInfo').innerHTML = `<p><i class="fa fa-info-circle"></i>总天数（包含起止）：<strong>${totalDays}</strong> 天</p>`;
+
+    let statHtml = '';
+    weekCn.forEach((name,i)=>{
+        const weekendCls = (i === 5 || i ===6) ? 'stat-item stat-item-weekend' : 'stat-item';
+        statHtml += `<div class="${weekendCls}">${name}：${weekCount[i]}天</div>`;
+    });
+    document.getElementById('weekStat').innerHTML = statHtml;
+
+    const tbody = document.getElementById('listBody');
+    tbody.innerHTML = '';
+    dateList.forEach((item,idx)=>{
+        const tr = document.createElement('tr');
+        if(item.isWeekend){
+            tr.className = 'row-weekend';
+        }
+        tr.innerHTML = `
+            <td>${idx+1}</td>
+            <td>${item.dateStr}</td>
+            <td>${item.weekText}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+</script>
+</body>
+</html>
