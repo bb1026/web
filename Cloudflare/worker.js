@@ -124,30 +124,53 @@ async function handleRequest(request, env) {
   // 新增：处理OPTIONS预检请求，直接返回允许跨域的响应头
   if (request.method === 'OPTIONS') {
     return new Response(null, {
-      status: 204, // 预检请求成功无响应体，用204状态码
+      status: 204,
       headers: {
-        'Access-Control-Allow-Origin': request.headers.get('Origin') || '*', // 允许请求来源
-        'Access-Control-Allow-Methods': 'GET, OPTIONS', // 允许的方法（包含预检请求的OPTIONS和实际的GET）
-        'Access-Control-Allow-Headers': 'X-Auth-Key', // 明确允许客户端携带的x-auth-key头
-        'Access-Control-Max-Age': '86400' // 预检结果缓存1天，减少重复预检
+        'Access‑Control‑Allow‑Origin': request.headers.get('Origin') || '*',
+        'Access‑Control‑Allow‑Methods': 'GET, OPTIONS',
+        'Access‑Control‑Allow‑Headers': 'X‑Auth‑Key',
+        'Access‑Control‑Max‑Age': '86400'
       }
     });
   }
 
- if (isRestrictedFile(url)) {
-    const dest = request.headers.get("Sec-Fetch-Dest") || "";
-    const site = request.headers.get("Sec-Fetch-Site") || "";
+  /**
+   * 包装fetch：获取源响应，移除附件下载头，修复二进制文件可被JS fetch读取
+   */
+  async function fetchAndStripAttachmentHeader(req) {
+    const originResp = await fetch(req);
+    // 克隆response，body只读必须clone
+    const newHeaders = new Headers(originResp.headers);
+    // 删除导致浏览器直接下载的附件头
+    newHeaders.delete('Content‑Disposition');
+
+    // 如果是dat文件，设置二进制MIME类型
+    if(url.pathname.toLowerCase().endsWith('.dat')){
+      newHeaders.set('Content‑Type', 'application/octet‑stream');
+    }
+
+    // 返回新的响应对象，使用原始body、status，替换headers
+    return new Response(originResp.body, {
+      status: originResp.status,
+      statusText: originResp.statusText,
+      headers: newHeaders
+    });
+  }
+
+  if (isRestrictedFile(url)) {
+    const dest = request.headers.get("Sec‑Fetch‑Dest") || "";
+    const site = request.headers.get("Sec‑Fetch‑Site") || "";
     const referer = request.headers.get("Referer") || "";
 
     // 同源脚本加载
     if (
         dest === "script" &&
         (
-            site === "same-origin" ||
-            site === "same-site"
+            site === "same‑origin" ||
+            site === "same‑site"
         )
     ) {
-        return fetch(request);
+      return fetchAndStripAttachmentHeader(request);
     }
 
     // 允许同源Referer
@@ -155,20 +178,20 @@ async function handleRequest(request, env) {
         referer &&
         new URL(referer).hostname.endsWith(config.mainDomain)
     ) {
-        return fetch(request);
+      return fetchAndStripAttachmentHeader(request);
     }
 
     // 允许密钥访问
     if (hasValidAuthKey(request, env)) {
-        return fetch(request);
+      return fetchAndStripAttachmentHeader(request);
     }
 
     return createErrorResponse(
         "禁止直接访问",
         timestamp
     );
-}
+  }
 
-// 非受限资源
-return fetch(request);
+  // 非受限资源，同样走头处理逻辑
+  return fetchAndStripAttachmentHeader(request);
 }
