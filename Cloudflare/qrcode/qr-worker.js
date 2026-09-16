@@ -8,6 +8,11 @@ function renderDocPage() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>二维码生成</title>
+<meta property="og:title" content="www.0515364.xyz">
+<meta property="og:description" content="二维码生成API QRCode API">
+<meta property="og:image" content="https://www.0515364.xyz/imgs/logo.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://qr.0515364.xyz">
 <style>
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
