@@ -6,7 +6,11 @@
   <meta name="theme-color" content="#444">
 
   <title>关于本站</title>
-
+  <meta property="og:title" content="www.0515364.xyz">
+  <meta property="og:description" content="关于">
+  <meta property="og:image" content="https://www.0515364.xyz/imgs/logo.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.0515364.xyz/pages/about">
   <!-- 样式 -->
   <link rel="stylesheet" href="/css/style.css" />
 
@@ -149,7 +153,6 @@
     ========================= */
 
     @media (min-width:768px){
-
       body{
         padding:30px 20px;
       }
@@ -163,9 +166,7 @@
         font-size:22px;
         margin-top:30px;
       }
-
     }
-
   </style>
 </head>
 
@@ -173,15 +174,10 @@
 
   <!-- 顶部导航 -->
   <div class="topbar">
-
-    <a href="/" class="home-btn">
-      ← 返回首页
-    </a>
-
+    <a href="/" class="home-btn">← 返回首页</a>
   </div>
 
   <h1>关于本站</h1>
-
   <p>
     欢迎使用
     <strong>在线工具箱</strong>，
@@ -191,62 +187,34 @@
   </p>
 
   <h2>联系方式</h2>
-
   <p>
     如果您有任何建议、意见或合作意向，
     欢迎通过以下方式联系：
   </p>
-
   <ul>
-
     <li>
       邮箱：
       <a href="mailto:admin@0515364.xyz?subject=反馈建议&body=网页开发者你好：%0D%0A%0D%0A我有以下建议：%0D%0A1. 优化界面设计%0D%0A2. 增加新功能%0D%0A%0D%0A谢谢！">
         发送反馈邮件
       </a>
     </li>
-
-    <li>
-
-      QQ：
-
-      <a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">
-        添加好友
-      </a>
-
+    <li>QQ：<a href="https://qm.qq.com/q/AjEFGwMg5a" target="_blank">添加好友</a>
       <a onclick="showQr('qq')" style="margin-left:10px;">
         显示二维码
       </a>
-
     </li>
-
     <li>
-
       微信：
-
-      <a onclick="showQr('wechat')">
-        显示二维码
-      </a>
-
+      <a onclick="showQr('wechat')">显示二维码</a>
     </li>
-
   </ul>
-
   <h2>使用声明</h2>
-
   <p>
     本站工具大部分由
-    <a href="https://chat.openai.com/" target="_blank">
-      ChatGPT
-    </a>
+    <a href="https://chat.openai.com/" target="_blank">ChatGPT</a>
     、
-    <a href="https://chat.deepseek.com/" target="_blank">
-      DeepSeek
-    </a>
-    和
-    <a href="https://www.doubao.com/chat/" target="_blank">
-      豆包
-    </a>
+    <a href="https://chat.deepseek.com/" target="_blank">DeepSeek</a>和
+    <a href="https://www.doubao.com/chat/" target="_blank">豆包</a>
     自动生成，仅供学习和个人使用。
   </p>
 
@@ -254,94 +222,55 @@
     我们不对因使用本站工具所产生的任何直接或间接损失承担责任，
     使用者需自行对生成内容的准确性和适用性进行核对。
   </p>
-
   <p>
     如涉及第三方资源，版权归原作者所有。
   </p>
-
   <h2>开源协议</h2>
-
   <p>
     本项目以 MIT 协议开源，
     您可自由使用、修改、分发源码，
     唯需保留原作者信息和许可证声明。
   </p>
-
   <!-- 页脚 -->
   <div id="footerContainer"></div>
-
   <!-- 遮罩层 -->
   <div id="overlay" onclick="hideQr()"></div>
-
   <!-- QQ 二维码 -->
   <div id="qqQr" class="qr-popup">
-
     <p>扫码添加 QQ 好友</p>
-
-    <img
-      src="https://bing.0515364.xyz/imgs/QQqrcode.jpeg"
-      alt="QQ二维码"
-    >
+    <img src="https://bing.0515364.xyz/imgs/QQqrcode.jpeg" alt="QQ二维码">
 
     <p>
       <a onclick="hideQr()">关闭</a>
     </p>
 
   </div>
-
   <!-- 微信二维码 -->
   <div id="wechatQr" class="qr-popup">
-
     <p>扫码添加微信好友</p>
-
-    <img
-      src="https://bing.0515364.xyz/imgs/WeChatQR.jpg"
-      alt="微信二维码"
-    >
+    <img src="https://bing.0515364.xyz/imgs/WeChatQR.jpg" alt="微信二维码">
 
     <p>
       <a onclick="hideQr()">关闭</a>
     </p>
-
   </div>
-
   <script>
-
     function showQr(type){
-
-      document.getElementById("overlay")
-        .style.display = "block";
-
+      document.getElementById("overlay").style.display = "block";
       if(type === "qq"){
-
-        document.getElementById("qqQr")
-          .style.display = "block";
-
+        document.getElementById("qqQr").style.display = "block";
       }
 
       if(type === "wechat"){
-
-        document.getElementById("wechatQr")
-          .style.display = "block";
-
+        document.getElementById("wechatQr").style.display = "block";
       }
-
     }
 
     function hideQr(){
-
-      document.getElementById("overlay")
-        .style.display = "none";
-
-      document.getElementById("qqQr")
-        .style.display = "none";
-
-      document.getElementById("wechatQr")
-        .style.display = "none";
-
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("qqQr").style.display = "none";
+      document.getElementById("wechatQr").style.display = "none";
     }
-
   </script>
-
 </body>
 </html>
