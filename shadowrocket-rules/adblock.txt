@@ -1,7 +1,7 @@
 #TITLE=adblock
-#VER=20251209
+#VER=20260920
 #URL=https://0515364.xyz/shadowrocket-rules/adblock.txt
-# ======= 广告链接 =======
+# ======= 广告链接 国内APP广告（抖音/淘宝/拼多多/短剧SDK）=======
 DOMAIN-SUFFIX,amdc.alipay.com
 DOMAIN-SUFFIX,adash.man.aliyuncs.com
 DOMAIN-SUFFIX,alimama.com
@@ -15,13 +15,12 @@ DOMAIN-SUFFIX,ad.toutiaoapi.com
 DOMAIN-SUFFIX,sg-adapi.byteoversea.com
 DOMAIN-SUFFIX,log.snssdk.com
 DOMAIN-SUFFIX,mon.snssdk.com
+DOMAIN-SUFFIX,analytics.snssdk.com
+DOMAIN-SUFFIX,ad.byteimg.com
+DOMAIN-SUFFIX,report.snssdk.com
 DOMAIN-SUFFIX,partner-ad.pinduoduo.com
 DOMAIN-SUFFIX,tinfo.pinduoduo.com
 DOMAIN-SUFFIX,tracking.pddpic.com
-DOMAIN-SUFFIX,ad.qq.com
-DOMAIN-SUFFIX,gdt.qq.com
-DOMAIN-SUFFIX,pgdt.gtimg.cn
-DOMAIN-SUFFIX,adsmind.gdtimg.com
 DOMAIN-SUFFIX,ad.kuaishou.com
 DOMAIN-SUFFIX,log-sdk.gifshow.com
 DOMAIN-SUFFIX,cm.bilibili.com
@@ -30,15 +29,68 @@ DOMAIN-SUFFIX,apm.xiaohongshu.com
 DOMAIN-SUFFIX,ad.weibo.com
 DOMAIN-SUFFIX,atm.youku.com
 DOMAIN-SUFFIX,cm.iqiyi.com
+DOMAIN-SUFFIX,ad.zhihu.com
+DOMAIN-SUFFIX,ads.zhihu.com
+DOMAIN-SUFFIX,ad.mgtv.com
+DOMAIN-SUFFIX,ads.mgtv.com
+DOMAIN-SUFFIX,livead.qq.com
 DOMAIN-SUFFIX,ad.hongguodrama.com
 DOMAIN-SUFFIX,track.hongguodrama.com
+
+# ======= 穿山甲/字节短剧广告SDK（重点补充，红果、番茄、各类短剧APP）=======
 DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao.com
 DOMAIN-SUFFIX,log-api.pangolin-sdk.com
-DOMAIN-SUFFIX,adukwai.com
+DOMAIN-SUFFIX,adapi.pangolin.com
+DOMAIN-SUFFIX,track.pangolin-sdk.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao1.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao2.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao3.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao4.com
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com
 DOMAIN-SUFFIX,csjapp.com
+DOMAIN-SUFFIX,shturl.cc/
+DOMAIN-SUFFIX,ttadp.toutiao.com
+DOMAIN-SUFFIX,adukwai.com
+DOMAIN-SUFFIX,ksad.com
+DOMAIN-SUFFIX,bytecm.com
+
+# ======= 腾讯广告联盟 =======
+DOMAIN-SUFFIX,ad.qq.com
+DOMAIN-SUFFIX,gdt.qq.com
+DOMAIN-SUFFIX,pgdt.gtimg.cn
+DOMAIN-SUFFIX,adsmind.gdtimg.com
+DOMAIN-SUFFIX,stat.qq.com
+DOMAIN-SUFFIX,beacon.qq.com
+
+# ======= 手机厂商广告 & 系统追踪 =======
+DOMAIN-SUFFIX,ad.xiaomi.com
+DOMAIN-SUFFIX,analytics.miui.com
+DOMAIN-SUFFIX,ad.huawei.com
+DOMAIN-SUFFIX,tracking.huawei.com
+DOMAIN-SUFFIX,ad.oppo.com
+DOMAIN-SUFFIX,ad.vivo.com
+
+# ======= 第三方统计SDK（友盟、TalkingData、Mob）=======
+DOMAIN-SUFFIX,umeng.com
+DOMAIN-SUFFIX,umengcloud.com
+DOMAIN-SUFFIX,talkingdata.com
+DOMAIN-SUFFIX,mob.com
+DOMAIN-SUFFIX,51.la
+DOMAIN-SUFFIX,hm.baidu.com
+DOMAIN-SUFFIX,union.baidu.com
+DOMAIN-SUFFIX,adjust.com
+DOMAIN-SUFFIX,adjust.io
+DOMAIN-SUFFIX,flurry.com
+DOMAIN-SUFFIX,sd.domob.cn
+
+# ======= 海外成人网站广告 =======
 DOMAIN-SUFFIX,exoclick.com
 DOMAIN-SUFFIX,juicyads.com
 DOMAIN-SUFFIX,trafficjunky.net
+DOMAIN-SUFFIX,popads.net
+DOMAIN-SUFFIX,propellerads.com
+
+# ======= Twitter/X、Meta广告 =======
 DOMAIN-SUFFIX,ads-twitter.com
 DOMAIN-SUFFIX,ads-api.twitter.com
 DOMAIN-SUFFIX,p.twitter.com
@@ -46,14 +98,22 @@ DOMAIN-SUFFIX,facebookads.com
 DOMAIN-SUFFIX,fbcdn-ads.com
 DOMAIN-SUFFIX,ads.ak.facebook.com
 DOMAIN-SUFFIX,ads.ak.fbcdn.net
+
+# ======= Google广告、网页广告联盟 =======
 DOMAIN-SUFFIX,googlesyndication.com
 DOMAIN-SUFFIX,doubleclick.net
 DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,googleadservices.com
 DOMAIN-SUFFIX,advertising.com
-DOMAIN-SUFFIX,umeng.com
-DOMAIN-SUFFIX,51.la
-DOMAIN-SUFFIX,hm.baidu.com
-DOMAIN-SUFFIX,union.baidu.com
+DOMAIN-SUFFIX,adroll.com
+DOMAIN-SUFFIX,taboola.com
+DOMAIN-SUFFIX,outbrain.com
+DOMAIN-SUFFIX,adsense.com
+DOMAIN-SUFFIX,adcolony.com
+DOMAIN-SUFFIX,admob.com
+DOMAIN-SUFFIX,applovin.com
+DOMAIN-SUFFIX,ironsource.com
+DOMAIN-SUFFIX,mintegral.com
 
 # ======= 广告词语 =======
 DOMAIN-KEYWORD,adservice
@@ -67,3 +127,14 @@ DOMAIN-KEYWORD,twads
 DOMAIN-KEYWORD,weiboad
 DOMAIN-KEYWORD,biliad
 DOMAIN-KEYWORD,jdads
+DOMAIN-KEYWORD,pangolin
+DOMAIN-KEYWORD,umeng
+DOMAIN-KEYWORD,talkingdata
+DOMAIN-KEYWORD,mobads
+DOMAIN-KEYWORD,adtrack
+DOMAIN-KEYWORD,adlog
+DOMAIN-KEYWORD,adapi
+DOMAIN-KEYWORD,adx
+DOMAIN-KEYWORD,analytics
+DOMAIN-KEYWORD,stat
+DOMAIN-KEYWORD,apptrack
