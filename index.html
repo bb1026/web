@@ -370,7 +370,14 @@ footer{
     width:100%;
     justify-content:space-between;
   }
+}
 
+[data-theme="dark"] mark{
+  background-color:#facc1580;
+  color:#000;
+}
+mark{
+  background:#fef08a;
 }
 
 </style>
@@ -502,11 +509,14 @@ function safe(str){
 }
 
 async function load(){
-  const res = await fetch("/json/menu.json");
-  rawData = await res.json();
-
-  buildIndex();
-  render();
+  try{
+    const res = await fetch("/json/menu.json");
+    rawData = await res.json();
+    buildIndex();
+    render();
+  }catch(err){
+    console.error("菜单数据加载失败",err);
+  }
 }
 load();
 
@@ -533,19 +543,21 @@ function buildIndex(){
 }
 
 async function loadNotice(){
-  const res = await fetch("notice.html",{cache:"no-store"});
-  const text = await res.text();
-
-  const clean = text.replace(/<[^>]*>/g,'').trim();
-
-  const bar = document.getElementById("noticeBar");
-  const content = document.getElementById("noticeContent");
-
-  if(clean.length){
-    content.innerText = clean;
-    bar.classList.remove("hidden");
-  }else{
-    bar.classList.add("hidden");
+  try{
+    const res = await fetch("notice.html",{cache:"no-store"});
+    const text = await res.text();
+    const clean = text.replace(/<[^>]*>/g,'').trim();
+    const bar = document.getElementById("noticeBar");
+    const content = document.getElementById("noticeContent");
+    if(clean.length){
+      content.innerText = clean;
+      bar.classList.remove("hidden");
+    }else{
+      bar.classList.add("hidden");
+    }
+  }catch(e){
+    // 文件不存在，隐藏公告栏
+    document.getElementById("noticeBar").classList.add("hidden");
   }
 }
 loadNotice();
@@ -751,14 +763,46 @@ function doSearch(){
 }
 
 const savedTheme=localStorage.getItem("theme");
-
 if(savedTheme){
   document.documentElement.setAttribute("data-theme",savedTheme);
+}else{
+  // 没有本地存储，自动跟随系统
+  if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.documentElement.setAttribute("data-theme","dark");
+  }
 }
-
    document.getElementById("search").setAttribute("autocomplete","off");
   
 document.getElementById("searchBtn").addEventListener("click", doSearch);
+
+// 深色浅色切换逻辑
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = themeToggle.querySelector('i');
+
+// 更新图标函数
+function updateThemeIcon() {
+  const current = document.documentElement.getAttribute('data-theme');
+  if (current === 'dark') {
+    themeIcon.className = 'fa-solid fa-sun';
+  } else {
+    themeIcon.className = 'fa-solid fa-moon';
+  }
+}
+// 初始化图标
+updateThemeIcon();
+
+themeToggle.addEventListener('click', () => {
+  const root = document.documentElement;
+  const currentTheme = root.getAttribute('data-theme');
+  if (currentTheme === 'dark') {
+    root.removeAttribute('data-theme');
+    localStorage.removeItem('theme');
+  } else {
+    root.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+  }
+  updateThemeIcon();
+});
 
 </script>
 <!--SITE_HEALTH_CHECK:DOMAIN=0515364.xyz,OK-->
