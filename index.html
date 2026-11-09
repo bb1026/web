@@ -14,8 +14,8 @@
   
 <meta name="baidu-site-verification" content="codeva-nZ6EE9AjTC" />
 
-<link rel="icon" href="/imgs/logo.png">
-<link rel="apple-touch-icon" href="/imgs/logo.png">
+<link rel="icon" href="./imgs/logo.png">
+<link rel="apple-touch-icon" href="./imgs/logo.png">
 <meta name="theme-color" content="#0a0a0a">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -404,7 +404,7 @@ mark{
 <div class="nav">
 
   <div class="logo">
-    <img src="/imgs/logo.png" alt="logo">
+    <img src="./imgs/logo.png" alt="logo">
     <!-- 这里加上 class="logo-text" 实现流光 -->
     <span class="logo-text">0515364.xyz</span>
   </div>
@@ -413,12 +413,12 @@ mark{
 
     <div class="nav-links">
 
-      <a href="/pages/about.html">
+      <a href="./pages/about.html">
         <i class="fa-solid fa-circle-info"></i>
         关于
       </a>
 
-      <a href="/pages/message.html">
+      <a href="./pages/message.html">
         <i class="fa-solid fa-message"></i>
         留言板
       </a>
@@ -510,7 +510,7 @@ function safe(str){
 
 async function load(){
   try{
-    const res = await fetch("/json/menu.json");
+    const res = await fetch("./json/menu.json");
     rawData = await res.json();
     buildIndex();
     render();
