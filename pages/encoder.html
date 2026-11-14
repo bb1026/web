@@ -1,243 +1,280 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>编码解码工具（支持中文）</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    />
+    <title>编码解码工具（支持中文）</title>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    line-height: 1.6;
-    box-sizing: border-box;
-}
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+        box-sizing: border-box;
+      }
 
-/* ===== 首页按钮 ===== */
-.top-bar{
-    position:sticky;
-    top:0;
-    background:#fff;
-    padding:10px;
-    border-bottom:1px solid #ddd;
-    margin-bottom:15px;
-}
+      /* ===== 首页按钮 ===== */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        background: #fff;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 15px;
+      }
 
-.top-bar a{
-    text-decoration:none;
-    color:#007acc;
-    font-weight:600;
-}
+      .top-bar a {
+        text-decoration: none;
+        color: #007acc;
+        font-weight: 600;
+      }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
 
-.tool-box {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    background-color: #f9f9f9;
-}
+      .tool-box {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        background-color: #f9f9f9;
+      }
 
-h2 {
-    margin-top: 0;
-    color: #333;
-}
+      h2 {
+        margin-top: 0;
+        color: #333;
+      }
 
-textarea, .result {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-family: monospace;
-    margin-bottom: 10px;
-}
+      textarea,
+      .result {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 10px;
+      }
 
-textarea {
-    height: 150px;
-    resize: none;
-}
+      textarea {
+        height: 150px;
+        resize: none;
+      }
 
-.result {
-    height: 150px;
-    overflow-y: auto;
-    background:#fff;
-}
+      .result {
+        height: 150px;
+        overflow-y: auto;
+        background: #fff;
+      }
 
-button {
-    padding: 10px 15px;
-    border: none;
-    font-size: 16px;
-    margin: 10px 0;
-    cursor: pointer;
-    border-radius: 4px;
-    color: white;
-}
+      button {
+        padding: 10px 15px;
+        border: none;
+        font-size: 16px;
+        margin: 10px 0;
+        cursor: pointer;
+        border-radius: 4px;
+        color: white;
+      }
 
-.encode-btn { background:#4CAF50; }
-.copy-btn { background:#2196F3; }
-.clear-btn { background:#f44336; }
-.paste-btn { background:#9C27B0; }
+      .encode-btn {
+        background: #4caf50;
+      }
+      .copy-btn {
+        background: #2196f3;
+      }
+      .clear-btn {
+        background: #f44336;
+      }
+      .paste-btn {
+        background: #9c27b0;
+      }
 
-.button-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
+      .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
 
-.radio-group {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-</style>
-</head>
+      .radio-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
 
-<body>
-
-<!-- ✅ 首页按钮 -->
-<div class="top-bar">
-    <a href="/index.html">← 返回首页</a>
-</div>
-
-<div class="container">
-
-<!-- ===== 编码 ===== -->
-<div class="tool-box">
-    <h2>编码</h2>
-
-    <div class="radio-group">
-        <label><input type="radio" name="encodeType" value="base64" checked> Base64</label>
-        <label><input type="radio" name="encodeType" value="unicode"> Unicode</label>
-        <label><input type="radio" name="encodeType" value="url"> URL</label>
+  <body>
+    <!-- ✅ 首页按钮 -->
+    <div class="top-bar">
+      <a href="../index.html">← 返回首页</a>
     </div>
 
-    <textarea id="encodeInput" placeholder="输入要编码的文本..."></textarea>
+    <div class="container">
+      <!-- ===== 编码 ===== -->
+      <div class="tool-box">
+        <h2>编码</h2>
 
-    <div class="button-group">
-        <button class="paste-btn" onclick="handlePaste('encodeInput')">粘贴</button>
-        <button class="encode-btn" onclick="encodeText()">编码</button>
-        <button class="copy-btn" onclick="copyResult('encodeResult')">复制</button>
-        <button class="clear-btn" onclick="clearArea('encodeInput','encodeResult')">清除</button>
+        <div class="radio-group">
+          <label
+            ><input type="radio" name="encodeType" value="base64" checked />
+            Base64</label
+          >
+          <label
+            ><input type="radio" name="encodeType" value="unicode" />
+            Unicode</label
+          >
+          <label
+            ><input type="radio" name="encodeType" value="url" /> URL</label
+          >
+        </div>
+
+        <textarea id="encodeInput" placeholder="输入要编码的文本..."></textarea>
+
+        <div class="button-group">
+          <button class="paste-btn" onclick="handlePaste('encodeInput')">
+            粘贴
+          </button>
+          <button class="encode-btn" onclick="encodeText()">编码</button>
+          <button class="copy-btn" onclick="copyResult('encodeResult')">
+            复制
+          </button>
+          <button
+            class="clear-btn"
+            onclick="clearArea('encodeInput', 'encodeResult')"
+          >
+            清除
+          </button>
+        </div>
+
+        <div class="result" id="encodeResult"></div>
+      </div>
+
+      <!-- ===== 解码 ===== -->
+      <div class="tool-box">
+        <h2>解码</h2>
+
+        <div class="radio-group">
+          <label
+            ><input type="radio" name="decodeType" value="base64" checked />
+            Base64</label
+          >
+          <label
+            ><input type="radio" name="decodeType" value="unicode" />
+            Unicode</label
+          >
+          <label
+            ><input type="radio" name="decodeType" value="url" /> URL</label
+          >
+        </div>
+
+        <textarea id="decodeInput" placeholder="输入要解码的内容..."></textarea>
+
+        <div class="button-group">
+          <button class="paste-btn" onclick="handlePaste('decodeInput')">
+            粘贴
+          </button>
+          <button class="encode-btn" onclick="decodeText()">解码</button>
+          <button class="copy-btn" onclick="copyResult('decodeResult')">
+            复制
+          </button>
+          <button
+            class="clear-btn"
+            onclick="clearArea('decodeInput', 'decodeResult')"
+          >
+            清除
+          </button>
+        </div>
+
+        <div class="result" id="decodeResult"></div>
+      </div>
     </div>
 
-    <div class="result" id="encodeResult"></div>
-</div>
+    <script>
+      // ===== 类型 =====
+      function getEncodeType() {
+        return document.querySelector('input[name="encodeType"]:checked').value;
+      }
 
-<!-- ===== 解码 ===== -->
-<div class="tool-box">
-    <h2>解码</h2>
+      function getDecodeType() {
+        return document.querySelector('input[name="decodeType"]:checked').value;
+      }
 
-    <div class="radio-group">
-        <label><input type="radio" name="decodeType" value="base64" checked> Base64</label>
-        <label><input type="radio" name="decodeType" value="unicode"> Unicode</label>
-        <label><input type="radio" name="decodeType" value="url"> URL</label>
-    </div>
+      // ===== 粘贴 =====
+      async function handlePaste(id) {
+        try {
+          const text = await navigator.clipboard.readText();
+          document.getElementById(id).value = text;
+        } catch (e) {
+          alert("浏览器限制，请手动粘贴");
+        }
+      }
 
-    <textarea id="decodeInput" placeholder="输入要解码的内容..."></textarea>
+      // ===== 编码 =====
+      function encodeText() {
+        const input = document.getElementById("encodeInput").value;
+        const type = getEncodeType();
+        let result = "";
 
-    <div class="button-group">
-        <button class="paste-btn" onclick="handlePaste('decodeInput')">粘贴</button>
-        <button class="encode-btn" onclick="decodeText()">解码</button>
-        <button class="copy-btn" onclick="copyResult('decodeResult')">复制</button>
-        <button class="clear-btn" onclick="clearArea('decodeInput','decodeResult')">清除</button>
-    </div>
-
-    <div class="result" id="decodeResult"></div>
-</div>
-
-</div>
-
-<script>
-// ===== 类型 =====
-function getEncodeType(){
-    return document.querySelector('input[name="encodeType"]:checked').value;
-}
-
-function getDecodeType(){
-    return document.querySelector('input[name="decodeType"]:checked').value;
-}
-
-// ===== 粘贴 =====
-async function handlePaste(id){
-    try{
-        const text = await navigator.clipboard.readText();
-        document.getElementById(id).value = text;
-    }catch(e){
-        alert("浏览器限制，请手动粘贴");
-    }
-}
-
-// ===== 编码 =====
-function encodeText(){
-    const input = document.getElementById("encodeInput").value;
-    const type = getEncodeType();
-    let result = "";
-
-    try{
-        if(type === "base64"){
+        try {
+          if (type === "base64") {
             result = btoa(unescape(encodeURIComponent(input)));
-        }
-        else if(type === "unicode"){
+          } else if (type === "unicode") {
             result = Array.from(input)
-                .map(c=>"\\u"+c.charCodeAt(0).toString(16).padStart(4,"0"))
-                .join("");
-        }
-        else{
+              .map((c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"))
+              .join("");
+          } else {
             result = encodeURIComponent(input);
+          }
+
+          document.getElementById("encodeResult").textContent = result;
+        } catch (e) {
+          document.getElementById("encodeResult").textContent = "编码失败";
         }
+      }
 
-        document.getElementById("encodeResult").textContent = result;
+      // ===== 解码 =====
+      function decodeText() {
+        const input = document.getElementById("decodeInput").value;
+        const type = getDecodeType();
+        let result = "";
 
-    }catch(e){
-        document.getElementById("encodeResult").textContent = "编码失败";
-    }
-}
-
-// ===== 解码 =====
-function decodeText(){
-    const input = document.getElementById("decodeInput").value;
-    const type = getDecodeType();
-    let result = "";
-
-    try{
-        if(type === "base64"){
+        try {
+          if (type === "base64") {
             result = decodeURIComponent(escape(atob(input)));
-        }
-        else if(type === "unicode"){
-            result = input.replace(/\\u([\dA-Fa-f]{4})/g,
-                (_,g)=>String.fromCharCode(parseInt(g,16)));
-        }
-        else{
+          } else if (type === "unicode") {
+            result = input.replace(/\\u([\dA-Fa-f]{4})/g, (_, g) =>
+              String.fromCharCode(parseInt(g, 16)),
+            );
+          } else {
             result = decodeURIComponent(input);
+          }
+
+          document.getElementById("decodeResult").textContent = result;
+        } catch (e) {
+          document.getElementById("decodeResult").textContent = "解码失败";
         }
+      }
 
-        document.getElementById("decodeResult").textContent = result;
+      // ===== 复制 =====
+      function copyResult(id) {
+        const text = document.getElementById(id).textContent;
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+      }
 
-    }catch(e){
-        document.getElementById("decodeResult").textContent = "解码失败";
-    }
-}
-
-// ===== 复制 =====
-function copyResult(id){
-    const text = document.getElementById(id).textContent;
-    if(!text) return;
-    navigator.clipboard.writeText(text);
-}
-
-// ===== 清除 =====
-function clearArea(inputId, resultId){
-    document.getElementById(inputId).value = "";
-    document.getElementById(resultId).textContent = "";
-}
-</script>
-
-</body>
+      // ===== 清除 =====
+      function clearArea(inputId, resultId) {
+        document.getElementById(inputId).value = "";
+        document.getElementById(resultId).textContent = "";
+      }
+    </script>
+  </body>
 </html>

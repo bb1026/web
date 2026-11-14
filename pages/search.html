@@ -1,207 +1,216 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>工具搜索 - 在线工具箱</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>工具搜索 - 在线工具箱</title>
 
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/floating-menu.css">
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/floating-menu.css" />
 
-  <style>
-    .search-page {
-      max-width: 800px;
-      margin: 100px auto 0;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .search-header {
-      margin: 40px 0 30px;
-      text-align: center;
-    }
-
-    .search-box-container {
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-
-    .search-box {
-      position: relative;
-      margin: 0 auto 30px;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    #search-input {
-      width: 100%;
-      padding: 16px 24px;
-      font-size: 18px;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    }
-
-    .default-hint {
-      text-align: center;
-      color: #666;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-
-    .search-results {
-      margin-top: 30px;
-    }
-
-    .result-item {
-      display: block;
-      padding: 16px;
-      margin-bottom: 15px;
-      background: white;
-      border: 1px solid #e1e4e8;
-      border-radius: 8px;
-    }
-
-    .result-title {
-      font-size: 17px;
-      font-weight: 600;
-    }
-
-    .result-category {
-      font-size: 14px;
-      color: #586069;
-    }
-
-    .no-results {
-      text-align: center;
-      padding: 40px 20px;
-      background: #fafbfc;
-      border-radius: 8px;
-      margin-top: 30px;
-    }
-
-    /* ✅ 首页按钮 */
-    .home-btn {
-      display: inline-block;
-      margin: 15px auto;
-      padding: 8px 14px;
-      background: #333;
-      color: #fff;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .home-btn:hover {
-      background: #000;
-    }
-
-    @media (max-width: 768px) {
+    <style>
       .search-page {
-        margin: 80px auto 0;
-        padding: 15px;
+        max-width: 800px;
+        margin: 100px auto 0;
+        padding: 20px;
+        box-sizing: border-box;
       }
-    }
-  </style>
-</head>
 
-<body>
+      .search-header {
+        margin: 40px 0 30px;
+        text-align: center;
+      }
 
-<!-- 顶部导航栏 -->
-<div class="header">
-  <div class="header-main">
-    <div class="header-content">
-      <a href="https://www.0515364.xyz">
-        <img src="/imgs/apple-touch-icon.png" class="logo">
-      </a>
-      <div class="title-container">
-        <a href="https://www.0515364.xyz">
-          <span class="site-title">🧰在线小工具</span>
-        </a>
+      .search-box-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 20px;
+        box-sizing: border-box;
+      }
+
+      .search-box {
+        position: relative;
+        margin: 0 auto 30px;
+        width: 100%;
+        max-width: 800px;
+      }
+
+      #search-input {
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 18px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .default-hint {
+        text-align: center;
+        color: #666;
+        margin-top: 15px;
+        font-size: 14px;
+      }
+
+      .search-results {
+        margin-top: 30px;
+      }
+
+      .result-item {
+        display: block;
+        padding: 16px;
+        margin-bottom: 15px;
+        background: white;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+      }
+
+      .result-title {
+        font-size: 17px;
+        font-weight: 600;
+      }
+
+      .result-category {
+        font-size: 14px;
+        color: #586069;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 40px 20px;
+        background: #fafbfc;
+        border-radius: 8px;
+        margin-top: 30px;
+      }
+
+      /* ✅ 首页按钮 */
+      .home-btn {
+        display: inline-block;
+        margin: 15px auto;
+        padding: 8px 14px;
+        background: #333;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .home-btn:hover {
+        background: #000;
+      }
+
+      @media (max-width: 768px) {
+        .search-page {
+          margin: 80px auto 0;
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 顶部导航栏 -->
+    <div class="header">
+      <div class="header-main">
+        <div class="header-content">
+          <a href="https://www.0515364.xyz">
+            <img src="/imgs/apple-touch-icon.png" class="logo" />
+          </a>
+          <div class="title-container">
+            <a href="https://www.0515364.xyz">
+              <span class="site-title">🧰在线小工具</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<main class="search-page">
+    <main class="search-page">
+      <div class="search-header">
+        <h1>搜索工具箱</h1>
 
-  <div class="search-header">
-    <h1>搜索工具箱</h1>
+        <!-- ✅ 首页按钮 -->
+        <a class="home-btn" href="../">🏠 返回首页</a>
+      </div>
 
-    <!-- ✅ 首页按钮 -->
-    <a class="home-btn" href="/">🏠 返回首页</a>
-  </div>
+      <div class="search-box-container">
+        <div class="search-box">
+          <input
+            type="text"
+            id="search-input"
+            placeholder="输入工具名称、功能关键词..."
+          />
+        </div>
 
-  <div class="search-box-container">
-    <div class="search-box">
-      <input type="text" id="search-input" placeholder="输入工具名称、功能关键词...">
-    </div>
+        <div id="default-hint" class="default-hint">
+          <p>例如：时间戳转换、JSON格式化、URL编码</p>
+        </div>
+      </div>
 
-    <div id="default-hint" class="default-hint">
-      <p>例如：时间戳转换、JSON格式化、URL编码</p>
-    </div>
-  </div>
+      <div id="results" class="search-results"></div>
+    </main>
 
-  <div id="results" class="search-results"></div>
-</main>
+    <div id="footerContainer"></div>
 
-<div id="footerContainer"></div>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const loadToolsData = async () => {
+          const res = await fetch("/json/menu.json");
+          return await res.json();
+        };
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+        const performSearch = (data, query) => {
+          const results = [];
+          const q = query.toLowerCase().trim();
 
-  const loadToolsData = async () => {
-    const res = await fetch('/json/menu.json');
-    return await res.json();
-  };
+          if (!q) return [];
 
-  const performSearch = (data, query) => {
-    const results = [];
-    const q = query.toLowerCase().trim();
+          Object.entries(data).forEach(([cat, items]) => {
+            items.forEach(([name, url]) => {
+              if (name.toLowerCase().includes(q)) {
+                results.push({ name, url, category: cat });
+              }
+            });
+          });
 
-    if (!q) return [];
+          return results;
+        };
 
-    Object.entries(data).forEach(([cat, items]) => {
-      items.forEach(([name, url]) => {
-        if (name.toLowerCase().includes(q)) {
-          results.push({ name, url, category: cat });
-        }
-      });
-    });
+        const renderResults = (results) => {
+          const el = document.getElementById("results");
 
-    return results;
-  };
+          if (
+            !results.length &&
+            document.getElementById("search-input").value.trim()
+          ) {
+            el.innerHTML = `<div class="no-results">没有找到工具</div>`;
+            return;
+          }
 
-  const renderResults = (results) => {
-    const el = document.getElementById('results');
-
-    if (!results.length && document.getElementById('search-input').value.trim()) {
-      el.innerHTML = `<div class="no-results">没有找到工具</div>`;
-      return;
-    }
-
-    el.innerHTML = results.map(r => `
+          el.innerHTML = results
+            .map(
+              (r) => `
       <a class="result-item" href="${r.url}">
         <div class="result-title">${r.name}</div>
         <div class="result-category">${r.category}</div>
       </a>
-    `).join('');
-  };
+    `,
+            )
+            .join("");
+        };
 
-  (async () => {
-    const data = await loadToolsData();
-    const input = document.getElementById('search-input');
+        (async () => {
+          const data = await loadToolsData();
+          const input = document.getElementById("search-input");
 
-    input.addEventListener('input', e => {
-      const results = performSearch(data, e.target.value);
-      renderResults(results);
-    });
-  })();
-
-});
-</script>
-
-</body>
+          input.addEventListener("input", (e) => {
+            const results = performSearch(data, e.target.value);
+            renderResults(results);
+          });
+        })();
+      });
+    </script>
+  </body>
 </html>
