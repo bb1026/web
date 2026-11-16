@@ -57,16 +57,46 @@ h2{
   color:#fff;
 }
 
-/* 输入 */
-input,textarea{
+/* ========== 浮动标签输入框 ========== */
+.float-wrap{
+  position:relative;
+  margin-top:14px;
+}
+.float-wrap input,
+.float-wrap textarea{
   width:100%;
   box-sizing:border-box;
-  padding:10px;
-  margin-top:8px;
+  padding:14px 12px 8px 12px;
   border-radius:10px;
   border:1px solid #ddd;
   font-size:14px;
   outline:none;
+  background:#fff;
+}
+.float-wrap textarea{
+  min-height:100px;
+  resize:vertical;
+}
+.float-label{
+  position:absolute;
+  left:12px;
+  top:14px;
+  font-size:14px;
+  color:#888;
+  pointer-events:none;
+  transition:0.2s ease;
+}
+/* 上浮状态 */
+.float-wrap.focus .float-label,
+.float-wrap.has-value .float-label{
+  top:4px;
+  left:10px;
+  font-size:11px;
+  color:#2563eb;
+}
+.float-wrap.focus input,
+.float-wrap.focus textarea{
+  border-color:#2563eb;
 }
 
 button{
@@ -78,6 +108,14 @@ button{
   background:#2563eb;
   color:#fff;
   font-size:15px;
+}
+#downloadBtn{
+  background:#10b981;
+  display:none;
+}
+#locBtn{
+  background:#f97316;
+  margin-top:14px;
 }
 
 /* QR */
@@ -96,7 +134,7 @@ img{
 .enc-box{
   display:flex;
   gap:6px;
-  margin-top:10px;
+  margin-top:14px;
   background:#f1f3f5;
   padding:6px;
   border-radius:10px;
@@ -143,43 +181,94 @@ img{
 
 <div class="card">
   <button onclick="gen()">生成二维码</button>
+  <button id="downloadBtn" onclick="downloadQR()" style="margin-top:12px;">下载二维码</button>
 </div>
 
 <div id="qr"></div>
 
 <script>
 let type="text";
+let qrSrc = "";
 
 const inputs=document.getElementById("inputs");
 const typeBox=document.getElementById("typeBox");
+const downloadBtn = document.getElementById("downloadBtn");
+
+// 绑定浮动标签事件
+function bindFloat(el){
+  const inp = el.querySelector('input,textarea');
+  const wrap = el;
+  function check(){
+    if(inp.value.trim()!=='') wrap.classList.add('has-value');
+    else wrap.classList.remove('has-value');
+  }
+  inp.addEventListener('focus',()=>{ wrap.classList.add('focus'); check(); });
+  inp.addEventListener('blur',()=>{ wrap.classList.remove('focus'); check(); });
+  inp.addEventListener('input',check);
+  check();
+}
 
 function render(){
 let html="";
 
-if(type==="text") html=`<input id="text" placeholder="输入文本">`;
-if(type==="url") html=`<input id="url" placeholder="https://example.com">`;
-if(type==="tel") html=`<input id="tel" placeholder="电话号码">`;
+if(type==="text") html=`
+<div class="float-wrap">
+  <label class="float-label">文本内容</label>
+  <textarea id="text"></textarea>
+</div>`;
+
+if(type==="url") html=`
+<div class="float-wrap">
+  <label class="float-label">网址</label>
+  <input id="url">
+</div>`;
+
+if(type==="tel") html=`
+<div class="float-wrap">
+  <label class="float-label">电话号码</label>
+  <input id="tel">
+</div>`;
 
 if(type==="sms"){
 html=`
-<input id="sms_tel" placeholder="手机号">
-<input id="sms_text" placeholder="短信内容">
+<div class="float-wrap">
+  <label class="float-label">接收手机号</label>
+  <input id="sms_tel">
+</div>
+<div class="float-wrap">
+  <label class="float-label">短信内容</label>
+  <textarea id="sms_text"></textarea>
+</div>
 `;
 }
 
 if(type==="email"){
 html=`
-<input id="email" placeholder="邮箱">
-<input id="subject" placeholder="主题">
-<input id="body" placeholder="内容">
+<div class="float-wrap">
+  <label class="float-label">收件邮箱</label>
+  <input id="email">
+</div>
+<div class="float-wrap">
+  <label class="float-label">邮件主题</label>
+  <input id="subject">
+</div>
+<div class="float-wrap">
+  <label class="float-label">邮件正文</label>
+  <textarea id="body"></textarea>
+</div>
 `;
 }
 
 if(type==="wifi"){
 html=`
-<input id="ssid" placeholder="WiFi名称">
-<input id="password" placeholder="密码">
-
+<div class="float-wrap">
+  <label class="float-label">WiFi名称 SSID</label>
+  <input id="ssid">
+</div>
+<div class="float-wrap">
+  <label class="float-label">WiFi密码</label>
+  <input id="password">
+</div>
 <div class="enc-box">
 <div class="enc-option active"><input type="radio" name="enc" value="WPA" checked>WPA</div>
 <div class="enc-option"><input type="radio" name="enc" value="WEP">WEP</div>
@@ -190,27 +279,55 @@ html=`
 
 if(type==="vcard"){
 html=`
-<input id="name" placeholder="姓名">
-<input id="phone" placeholder="电话">
-<input id="email" placeholder="邮箱">
+<div class="float-wrap">
+  <label class="float-label">姓名</label>
+  <input id="name">
+</div>
+<div class="float-wrap">
+  <label class="float-label">电话</label>
+  <input id="phone">
+</div>
+<div class="float-wrap">
+  <label class="float-label">邮箱</label>
+  <input id="email">
+</div>
 `;
 }
 
 if(type==="whatsapp"){
 html=`
-<input id="wa" placeholder="手机号">
-<input id="wa_text" placeholder="消息">
+<div class="float-wrap">
+  <label class="float-label">WhatsApp手机号</label>
+  <input id="wa">
+</div>
+<div class="float-wrap">
+  <label class="float-label">消息内容</label>
+  <textarea id="wa_text"></textarea>
+</div>
 `;
 }
 
 if(type==="geo"){
 html=`
-<input id="lat" placeholder="纬度">
-<input id="lng" placeholder="经度">
+<div class="float-wrap">
+  <label class="float-label">纬度 Lat</label>
+  <input id="lat">
+</div>
+<div class="float-wrap">
+  <label class="float-label">经度 Lng</label>
+  <input id="lng">
+</div>
+<button id="locBtn" onclick="getLocation()">📌 获取当前位置</button>
 `;
 }
 
 inputs.innerHTML=html;
+// 给所有浮动框绑定事件
+document.querySelectorAll('.float-wrap').forEach(bindFloat);
+
+// 切换类型时隐藏下载按钮
+downloadBtn.style.display="none";
+qrSrc = "";
 }
 
 typeBox.addEventListener("click",e=>{
@@ -233,6 +350,37 @@ el.classList.add("active");
 el.querySelector("input").checked=true;
 }
 });
+
+// 获取地理位置
+function getLocation(){
+  if (!navigator.geolocation) {
+    alert("你的浏览器不支持定位");
+    return;
+  }
+  const btn = document.getElementById("locBtn");
+  btn.textContent = "定位中...";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById("lat").value = pos.coords.latitude.toFixed(6);
+      document.getElementById("lng").value = pos.coords.longitude.toFixed(6);
+      // 手动触发一次标签上浮
+      document.querySelectorAll('#lat,#lng').forEach(inp=>{
+        const w = inp.closest('.float-wrap');
+        if(inp.value) w.classList.add('has-value');
+      })
+      btn.textContent = "📌 获取当前位置";
+    },
+    err => {
+      btn.textContent = "📌 获取当前位置";
+      let msg = "定位失败";
+      if(err.code === 1) msg = "请允许位置权限";
+      else if(err.code ===2) msg = "无法获取位置";
+      else if(err.code ===3) msg = "定位超时";
+      alert(msg);
+    },
+    {enableHighAccuracy:true,timeout:10000}
+  )
+}
 
 function gen(){
 let data="";
@@ -273,8 +421,17 @@ data=`geo:${lat.value},${lng.value}`;
 
 if(!data) return alert("请输入内容");
 
-document.getElementById("qr").innerHTML=
-`<img src="https://qr.0515364.xyz/?data=${encodeURIComponent(data)}" width="260">`;
+qrSrc = `https://qr.0515364.xyz/?data=${encodeURIComponent(data)}`;
+document.getElementById("qr").innerHTML=`<img id="qrImg" src="${qrSrc}" width="260">`;
+downloadBtn.style.display="block";
+}
+
+function downloadQR(){
+const a = document.createElement('a');
+a.href = qrSrc;
+a.download = "qrcode.png";
+a.target="_blank";
+a.click();
 }
 </script>
 
