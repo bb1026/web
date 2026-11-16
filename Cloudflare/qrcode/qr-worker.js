@@ -263,11 +263,21 @@ export default {
   async fetch(request) {
     const url = new URL(request.url);
     const data = url.searchParams.get("data");
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,HEAD,OPTIONS",
+      "Access-Control-Allow-Headers": "*"
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
 
     if (!data) {
       return new Response(renderDocPage(), {
         headers: {
-          "Content-Type": "text/html; charset=utf-8"
+          "Content-Type": "text/html; charset=utf-8",
+          ...corsHeaders
         }
       });
     }
@@ -284,7 +294,8 @@ export default {
       return new Response(imgRes.body, {
         headers: {
           "Content-Type": "image/png",
-          "Cache-Control": "public,max-age=86400"
+          "Cache-Control": "public,max-age=86400",
+          ...corsHeaders
         }
       });
     } else {
@@ -297,7 +308,8 @@ export default {
       return new Response(svg, {
         headers: {
           "Content-Type": "image/svg+xml; charset=utf-8",
-          "Cache-Control": "public,max-age=86400"
+          "Cache-Control": "public,max-age=86400",
+          ...corsHeaders
         }
       });
     }
